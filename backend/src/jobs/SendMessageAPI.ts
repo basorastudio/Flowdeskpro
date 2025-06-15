@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { proto } from "@whiskeysockets/baileys";
+import { MessageMedia, Message as WbotMessage } from "whatsapp-web.js";
 import fs from "fs";
 import { v4 as uuid } from "uuid";
 import axios from "axios";
@@ -30,92 +30,103 @@ export default {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   async handle({ data }: any) {
     try {
-      const { sessionId, tenantId } = data;
-      const wbot = getWbot(sessionId);
+      const wbot = getWbot(data.sessionId);
+      const message: any = {} as WbotMessage;
+      try {
+        const idNumber = await wbot.getNumberId(data.number);
+        if (!idNumber) {
+          const payload = {
+            ack: -1,
+            body: data.body,
+            messageId: "",
+            number: data.number,
+            externalKey: data.externalKey,
+            error: "number invalid in whatsapp",
+            type: "hookMessageStatus",
+            authToken: data.authToken
+          };
 
-      if (!wbot) {
-        throw new Error("Wbot not found");
-      }
+          if (data.media) {
+            // excluir o arquivo se o número não existir
+            fs.unlinkSync(data.media.path);
+          }
 
-      const chatId = `${data.number}@s.whatsapp.net`;
-
-      let message: proto.WebMessageInfo | undefined;
-
-      if (data.mediaUrl) {
-        // Envío de media
-        let mediaBuffer: Buffer;
-        let filename: string;
-        let mimetype: string;
-
-        if (data.mediaUrl.startsWith('http')) {
-          const response = await axios.get(data.mediaUrl, { responseType: 'arraybuffer' });
-          mediaBuffer = Buffer.from(response.data);
-          mimetype = response.headers['content-type'] || 'application/octet-stream';
-          filename = data.mediaName || `media_${uuid()}.${mime.extension(mimetype)}`;
-        } else {
-          const mediaPath = join(process.cwd(), 'public', data.mediaUrl);
-          mediaBuffer = fs.readFileSync(mediaPath);
-          mimetype = mime.lookup(mediaPath) || 'application/octet-stream';
-          filename = data.mediaName || data.mediaUrl.split('/').pop();
+          if (data?.apiConfig?.urlMessageStatus) {
+            Queue.add("WebHooksAPI", {
+              url: data.apiConfig.urlMessageStatus,
+              type: payload.type,
+              payload
+            });
+          }
+          return payload;
         }
 
-        // Determinar tipo de media y enviar
-        if (mimetype.startsWith('image/')) {
-          message = await wbot.sendMessage(chatId, {
-            image: mediaBuffer,
-            caption: data.body || '',
-            mimetype
-          });
-        } else if (mimetype.startsWith('video/')) {
-          message = await wbot.sendMessage(chatId, {
-            video: mediaBuffer,
-            caption: data.body || '',
-            mimetype
-          });
-        } else if (mimetype.startsWith('audio/')) {
-          message = await wbot.sendMessage(chatId, {
-            audio: mediaBuffer,
-            mimetype,
-            ptt: true
-          });
-        } else {
-          message = await wbot.sendMessage(chatId, {
-            document: mediaBuffer,
-            fileName: filename,
-            mimetype
-          });
-        }
-      } else {
-        // Envío de texto simple
-        message = await wbot.sendMessage(chatId, {
-          text: data.body
+        // '559891191708@c.us'
+        const msgContact = await wbot.getContactById(idNumber._serialized);
+        const contact = await VerifyContact(msgContact, data.tenantId);
+        const ticket = await FindOrCreateTicketService({
+          contact,
+          whatsappId: wbot.id!,
+          unreadMessages: 0,
+          tenantId: data.tenantId,
+          groupContact: undefined,
+          msg: data,
+          channel: "whatsapp"
         });
-      }
 
-      if (message?.key?.id) {
-        const messageData = {
-          messageId: message.key.id,
+        await CreateMessageSystemService({
+          msg: data,
+          tenantId: data.tenantId,
+          ticket,
+          sendType: "API",
+          status: "pending"
+        });
+
+        await ticket.update({
+          apiConfig: {
+            ...data.apiConfig,
+            externalKey: data.externalKey
+          }
+        });
+      } catch (error) {
+        const payload = {
+          ack: -2,
           body: data.body,
-          ack: 1,
+          messageId: "",
           number: data.number,
-          mediaName: data.mediaName,
-          mediaUrl: data.mediaUrl,
-          timestamp: Date.now(),
           externalKey: data.externalKey,
-          messageWA: message,
-          apiConfig: data.apiConfig,
-          sessionId,
-          tenantId
+          error: "error session",
+          type: "hookMessageStatus",
+          authToken: data.authToken
         };
 
-        await UpsertMessageAPIService(messageData);
-
-        logger.info(`Message API sent successfully: ${message.key.id}`);
+        if (data?.apiConfig?.urlMessageStatus) {
+          Queue.add("WebHooksAPI", {
+            url: data.apiConfig.urlMessageStatus,
+            type: payload.type,
+            payload
+          });
+        }
+        throw new Error(error);
       }
 
+      // const apiMessage = await UpsertMessageAPIService({
+      //   sessionId: data.sessionId,
+      //   messageId: message.id.id,
+      //   body: data.body,
+      //   ack: message.ack,
+      //   number: data.number,
+      //   mediaName: data?.media?.filename,
+      //   mediaUrl: data.mediaUrl,
+      //   timestamp: message.timestamp,
+      //   externalKey: data.externalKey,
+      //   messageWA: message,
+      //   apiConfig: data.apiConfig,
+      //   tenantId: data.tenantId
+      // });
     } catch (error) {
-      logger.error(`Error in SendMessageAPI job: ${error.message}`);
-      throw error;
+      logger.error({ message: "Error send message api", error });
+      throw new Error(error);
     }
   }
 };

@@ -1,4 +1,4 @@
-// servidor express simple para ejecutar la compilación de producción del frontend;
+// servidor express simple para ejecutar build de producción del frontend;
 const express = require('express')
 const path = require('path')
 const app = express()

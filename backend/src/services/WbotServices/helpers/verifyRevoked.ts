@@ -1,44 +1,69 @@
-import { proto } from "@whiskeysockets/baileys";
-import { logger } from "../../../utils/logger";
-import { getIO } from "../../../libs/socket";
+import { Message as WbotMessage } from "whatsapp-web.js";
 import Message from "../../../models/Message";
 import Ticket from "../../../models/Ticket";
+import socketEmit from "../../../helpers/socketEmit";
 
-const verifyRevoked = async (
-  msg: proto.IWebMessageInfo,
-  tenantId: number | string
-): Promise<void> => {
+const verifyRevoked = async (msgBody?: string): Promise<void> => {
+  await new Promise(r => setTimeout(r, 500));
+
+  if (msgBody === undefined) {
+    return;
+  }
+
   try {
-    if (!msg.key.id) return;
-
-    const messageToUpdate = await Message.findOne({
-      where: { messageId: msg.key.id },
-      include: [
+    const message = await Message.findOne({
+      where: {
+        body: msgBody
+      },
+	  include: [
+        "contact",
         {
           model: Ticket,
           as: "ticket",
-          where: { tenantId, channel: "whatsapp" },
+          attributes: ["id", "tenantId", "apiConfig"]
+        },
+        {
+          model: Message,
+          as: "quotedMsg",
           include: ["contact"]
         }
       ]
     });
 
-    if (!messageToUpdate) return;
+    if (!message) {
+      return;
+    }
 
-    await messageToUpdate.update({ 
-      body: "Esta mensagem foi apagada",
-      isDeleted: true 
-    });
+    if (message) {
+      // console.log(message);
+      await Message.update(
+        { isDeleted: true },
+        {
+          where: { id: message.id }
+        }
+      );
 
-    const io = getIO();
-    io.to(`tenant:${tenantId}:${messageToUpdate.ticketId}`)
-      .emit(`tenant:${tenantId}:appMessage`, {
-        action: "update",
-        message: messageToUpdate
+      const msgIsDeleted = await Message.findOne({
+        where: {
+          body: msgBody
+        }
       });
+
+      if (!msgIsDeleted) {
+        return;
+      }
+	    const { ticket } = message;
+	    socketEmit({
+        tenantId: ticket.tenantId,
+        type: "chat:update",
+        payload: message
+      });
+//socket nao funciona descobrir motivo
+    }
   } catch (err) {
-    logger.error(`Error handling revoked message: ${err}`);
+    console.error(`Error Message Revoke. Err: ${err}`);
   }
 };
+
 
 export default verifyRevoked;

@@ -89,7 +89,7 @@ export const remove = async (
   const { messageId } = req.params;
   const { tenantId } = req.user;
   try {
-    await DeleteMessageSystem(req.body.id, tenantId);
+    await DeleteMessageSystem(req.body.id, messageId, tenantId);
   } catch (error) {
     console.error("ERR_DELETE_SYSTEM_MSG", error.message);
     throw new AppError("ERR_DELETE_SYSTEM_MSG");
@@ -126,7 +126,7 @@ export const edit = async (
   const { tenantId } = req.user;
   const { body }: MessageData = req.body;
   try {
-    await EditWhatsAppMessage(req.body.id, body, tenantId);
+    await EditWhatsAppMessage(req.body.id, messageId, tenantId, body);
   } catch (error) {
     if (error instanceof AppError && error.message === "ERR_EDITING_WAPP_MSG") {
       return res.status(400).json({ error: error.message });

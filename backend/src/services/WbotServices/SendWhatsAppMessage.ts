@@ -1,11 +1,13 @@
-import { proto } from "@whiskeysockets/baileys";
-import * as Sentry from "@sentry/node";
+import { Message as WbotMessage } from "whatsapp-web.js";
 import AppError from "../../errors/AppError";
 import GetTicketWbot from "../../helpers/GetTicketWbot";
+import GetWbotMessage from "../../helpers/GetWbotMessage";
+import SerializeWbotMsgId from "../../helpers/SerializeWbotMsgId";
 import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
 import UserMessagesLog from "../../models/UserMessagesLog";
 import { logger } from "../../utils/logger";
+// import { StartWhatsAppSessionVerify } from "./StartWhatsAppSessionVerify";
 
 interface Request {
   body: string;
@@ -19,59 +21,44 @@ const SendWhatsAppMessage = async ({
   ticket,
   quotedMsg,
   userId
-}: Request): Promise<proto.WebMessageInfo> => {
-  const wbot = await GetTicketWbot(ticket);
-  const chatId = `${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`;
+}: Request): Promise<WbotMessage> => {
+  let quotedMsgSerializedId: string | undefined;
+  if (quotedMsg) {
+    await GetWbotMessage(ticket, quotedMsg.id);
+    quotedMsgSerializedId = SerializeWbotMsgId(ticket, quotedMsg);
+  }
 
-  let message;
+  const wbot = await GetTicketWbot(ticket);
 
   try {
-    if (quotedMsg) {
-      message = await wbot.sendMessage(
-        chatId,
-        {
-          text: body
-        },
-        {
-          quoted: {
-            key: {
-              id: quotedMsg.messageId,
-              fromMe: quotedMsg.fromMe,
-              remoteJid: chatId
-            },
-            message: {
-              conversation: quotedMsg.body
-            }
-          }
-        }
-      );
-    } else {
-      message = await wbot.sendMessage(chatId, {
-        text: body
-      });
-    }
+    const sendMessage = await wbot.sendMessage(
+      `${ticket.contact.number}@${ticket.isGroup ? "g" : "c"}.us`,
+      body,
+      {
+        quotedMessageId: quotedMsgSerializedId,
+        linkPreview: false // fix: send a message takes 2 seconds when there's a link on message body
+      }
+    );
 
     await ticket.update({
       lastMessage: body,
       lastMessageAt: new Date().getTime()
     });
-
     try {
-      if (userId && message?.key?.id) {
+      if (userId) {
         await UserMessagesLog.create({
-          messageId: message.key.id,
+          messageId: sendMessage.id.id,
           userId,
           ticketId: ticket.id
         });
       }
     } catch (error) {
-      logger.error(`Error creating user message log: ${error}`);
+      logger.error(`Error criar log mensagem ${error}`);
     }
-
-    return message;
+    return sendMessage;
   } catch (err) {
-    Sentry.captureException(err);
-    logger.error(err);
+    logger.error(`SendWhatsAppMessage | Error: ${err}`);
+    // await StartWhatsAppSessionVerify(ticket.whatsappId, err);
     throw new AppError("ERR_SENDING_WAPP_MSG");
   }
 };

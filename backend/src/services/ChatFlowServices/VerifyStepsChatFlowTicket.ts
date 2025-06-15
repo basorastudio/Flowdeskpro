@@ -1,5 +1,5 @@
 /* eslint-disable no-return-assign */
-import { proto } from "@whiskeysockets/baileys";
+import { Message as WbotMessage } from "whatsapp-web.js";
 import socketEmit from "../../helpers/socketEmit";
 import Ticket from "../../models/Ticket";
 import CreateMessageSystemService from "../MessageServices/CreateMessageSystemService";
@@ -237,7 +237,7 @@ const isAnswerCloseTicket = async (
 };
 
 const VerifyStepsChatFlowTicket = async (
-  msg: proto.WebMessageInfo | any,
+  msg: WbotMessage | any,
   ticket: Ticket | any
 ): Promise<void> => {
   let celularTeste; // ticket.chatFlow?.celularTeste;
