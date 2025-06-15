@@ -1,25 +1,19 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
 import { join } from "path";
-import {
-  Message as WbotMessage,
-  Buttons,
-  Client,
-  List,
-  MessageMedia
-} from "whatsapp-web.js";
+import { WASocket, proto } from "@whiskeysockets/baileys";
 import { Op } from "sequelize";
 import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
 import { logger } from "../../utils/logger";
 import { sleepRandomTime } from "../../utils/sleepRandomTime";
 import Contact from "../../models/Contact";
-import GetWbotMessage from "../../helpers/GetWbotMessage";
-// import SetTicketMessagesAsRead from "../../helpers/SetTicketMessagesAsRead";
+import fs from "fs";
+import mime from "mime-types";
 
-interface Session extends Client {
-  id: number;
-}
+type Session = WASocket & {
+  id?: number;
+};
 
 const SendMessagesSystemWbot = async (
   wbot: Session,
@@ -40,6 +34,7 @@ const SendMessagesSystemWbot = async (
       }
     ]
   };
+  
   const messages = await Message.findAll({
     where,
     include: [
@@ -75,76 +70,97 @@ const SendMessagesSystemWbot = async (
     ],
     order: [["createdAt", "ASC"]]
   });
-  let sendedMessage;
-
-  // logger.info(
-  //   `SystemWbot SendMessages | Count: ${messages.length} | Tenant: ${tenantId} `
-  // );
 
   for (const message of messages) {
-    let quotedMsgSerializedId: string | undefined;
     const { ticket } = message;
     const contactNumber = ticket.contact.number;
-    const typeGroup = ticket?.isGroup ? "g" : "c";
-    const chatId = `${contactNumber}@${typeGroup}.us`;
-
-    if (message.quotedMsg) {
-      const inCache: WbotMessage | undefined = await GetWbotMessage(
-        ticket,
-        message.quotedMsg.messageId,
-        200
-      );
-      if (inCache) {
-        quotedMsgSerializedId = inCache?.id?._serialized || undefined;
-      } else {
-        quotedMsgSerializedId = undefined;
-      }
-      // eslint-disable-next-line no-underscore-dangle
-    }
+    const chatId = `${contactNumber}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`;
 
     try {
+      let sendedMessage: proto.WebMessageInfo | undefined;
+
       if (message.mediaType !== "chat" && message.mediaName) {
+        // Envío de media
         const customPath = join(__dirname, "..", "..", "..", "public");
         const mediaPath = join(customPath, message.mediaName);
-        const newMedia = MessageMedia.fromFilePath(mediaPath);
-        sendedMessage = await wbot.sendMessage(chatId, newMedia, {
-          quotedMessageId: quotedMsgSerializedId,
-          linkPreview: false, // fix: send a message takes 2 seconds when there's a link on message body
-          sendAudioAsVoice: true
-        });
+        const mediaBuffer = fs.readFileSync(mediaPath);
+        const mimetype = mime.lookup(mediaPath) || 'application/octet-stream';
+        
+        // Determinar tipo de media basado en mediaType
+        if (message.mediaType === "image") {
+          sendedMessage = await wbot.sendMessage(chatId, {
+            image: mediaBuffer,
+            caption: message.body || "",
+            mimetype
+          });
+        } else if (message.mediaType === "video") {
+          sendedMessage = await wbot.sendMessage(chatId, {
+            video: mediaBuffer,
+            caption: message.body || "",
+            mimetype
+          });
+        } else if (message.mediaType === "audio" || message.mediaType === "ptt") {
+          sendedMessage = await wbot.sendMessage(chatId, {
+            audio: mediaBuffer,
+            ptt: true,
+            mimetype
+          });
+        } else {
+          // Documentos
+          sendedMessage = await wbot.sendMessage(chatId, {
+            document: mediaBuffer,
+            fileName: message.mediaName,
+            mimetype
+          });
+        }
+        
         logger.info("sendMessage media");
       } else {
-        sendedMessage = await wbot.sendMessage(chatId, message.body, {
-          quotedMessageId: quotedMsgSerializedId,
-          linkPreview: false // fix: send a message takes 2 seconds when there's a link on message body
-        });
+        // Envío de texto
+        const messageOptions: any = {
+          text: message.body
+        };
+
+        // Agregar mensaje citado si existe
+        if (message.quotedMsg) {
+          messageOptions.quoted = {
+            key: {
+              id: message.quotedMsg.messageId,
+              fromMe: message.quotedMsg.fromMe,
+              remoteJid: chatId
+            }
+          };
+        }
+
+        sendedMessage = await wbot.sendMessage(chatId, messageOptions);
         logger.info("sendMessage text");
       }
 
-      // enviar old_id para substituir no front a mensagem corretamente
-      const messageToUpdate = {
-        ...message,
-        ...sendedMessage,
-        id: message.id,
-        messageId: sendedMessage.id.id,
-        status: "sended"
-      };
+      if (sendedMessage?.key?.id) {
+        // Actualizar mensaje con el ID generado
+        const messageToUpdate = {
+          messageId: sendedMessage.key.id,
+          status: "sended",
+          ack: 1
+        };
 
-      await Message.update(
-        { ...messageToUpdate },
-        { where: { id: message.id } }
-      );
+        await Message.update(
+          { ...messageToUpdate },
+          { where: { id: message.id } }
+        );
 
-      logger.info("Message Update");
-      // await SetTicketMessagesAsRead(ticket);
+        logger.info("Message Update");
+      }
 
-      // delay para processamento da mensagem
+      // Delay para procesamiento de la mensagem
       await sleepRandomTime({
         minMilliseconds: Number(process.env.MIN_SLEEP_INTERVAL || 500),
         maxMilliseconds: Number(process.env.MAX_SLEEP_INTERVAL || 2000)
       });
 
-      logger.info("sendMessage", sendedMessage.id.id);
+      if (sendedMessage?.key?.id) {
+        logger.info("sendMessage", sendedMessage.key.id);
+      }
     } catch (error) {
       const idMessage = message.id;
       const ticketId = message.ticket.id;

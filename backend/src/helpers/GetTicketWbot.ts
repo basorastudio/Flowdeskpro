@@ -1,7 +1,11 @@
-import { Client as Session } from "whatsapp-web.js";
+import { WASocket } from "@whiskeysockets/baileys";
 import { getWbot } from "../libs/wbot";
 import GetDefaultWhatsApp from "./GetDefaultWhatsApp";
 import Ticket from "../models/Ticket";
+
+type Session = WASocket & {
+  id?: number;
+};
 
 const GetTicketWbot = async (ticket: Ticket): Promise<Session> => {
   if (!ticket.whatsappId) {

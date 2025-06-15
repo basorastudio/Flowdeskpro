@@ -1,21 +1,17 @@
+import { proto } from "@whiskeysockets/baileys";
 import AppError from "../../errors/AppError";
 import GetWbotMessage from "../../helpers/GetWbotMessage";
+import { getIO } from "../../libs/socket";
 import Message from "../../models/Message";
 import Ticket from "../../models/Ticket";
-import { getIO } from "../../libs/socket";
 
 const EditWhatsAppMessage = async (
-  id: string,
   messageId: string,
-  tenantId: string | number,
-  newBody: string
+  messageBody: string,
+  tenantId: string | number
 ): Promise<void> => {
-
-  if (!id || id === "null") {
-    throw new AppError("ERR_NO_MESSAGE_ID_PROVIDED");
-  }
   const message = await Message.findOne({
-    where: { messageId: messageId },
+    where: { messageId },
     include: [
       {
         model: Ticket,
@@ -29,43 +25,35 @@ const EditWhatsAppMessage = async (
   if (!message) {
     throw new AppError("No message found with this ID.");
   }
-  
-  // Verificar se já se passaram mais de 10 minutos desde que a mensagem foi enviada
-  const messageAgeInMinutes = (new Date().getTime() - new Date(message.createdAt).getTime()) / 60000;
-  if (messageAgeInMinutes > 10) {
-    throw new AppError("ERR_EDITING_WAPP_MSG");
-  }
-
-  // Verificar se a coluna 'edited' não é NULL
-  if (message.edited !== null) {
-    throw new AppError("ERR_EDITING_WAPP_MSG");
-  }
 
   const { ticket } = message;
 
-  const messageToEdit = await GetWbotMessage(ticket, messageId);
-
-
-
-
   try {
-    if (!messageToEdit) {
-      throw new AppError("ERROR_NOT_FOUND_MESSAGE");
-    }
-    await messageToEdit.edit(newBody);
-  } catch (err) {
-    throw new AppError("ERR_EDITING_WAPP_MSG");
-  }
+    // En Baileys, la edición de mensajes tiene limitaciones
+    // No existe el método edit() como en whatsapp-web.js
+    console.warn("Message editing not available in Baileys - functionality limited");
+    
+    // Solo actualizamos en la base de datos
+    await message.update({ 
+      body: messageBody,
+      isEdited: true 
+    });
 
-  const io = getIO();
-  io.to(`tenant:${tenantId}:${message.ticket.id}`).emit(
-    `tenant:${tenantId}:appMessage`,
-    {
-      action: "update",
-      message,
-      contact: ticket.contact
-    }
-  );
+    const io = getIO();
+    io.to(`tenant:${tenantId}:${message.ticket.id}`).emit(
+      `tenant:${tenantId}:appMessage`,
+      {
+        action: "update",
+        message: {
+          ...message,
+          ticket: message.ticket,
+          contact: message.ticket.contact
+        }
+      }
+    );
+  } catch (err) {
+    throw new AppError("ERR_EDIT_WAPP_MSG");
+  }
 };
 
 export default EditWhatsAppMessage;

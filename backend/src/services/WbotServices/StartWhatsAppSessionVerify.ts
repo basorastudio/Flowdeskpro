@@ -23,13 +23,14 @@ export const StartWhatsAppSessionVerify = async (
     try {
       if (whatsapp) {
         await whatsapp.update({ status: "OPENING" });
+
         const io = getIO();
         io.emit(`${whatsapp?.tenantId}:whatsappSession`, {
           action: "update",
           session: whatsapp
         });
         const wbot = await initWbot(whatsapp);
-        wbotMessageListener(wbot);
+        wbotMessageListener(wbot, whatsapp.tenantId);
         wbotMonitor(wbot, whatsapp);
       }
     } catch (err) {

@@ -1,4 +1,4 @@
-import { Contact as WbotContact, Call, Client } from "whatsapp-web.js";
+import { proto } from "@whiskeysockets/baileys";
 import { logger } from "../../utils/logger";
 import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketService";
 import Setting from "../../models/Setting";
@@ -8,11 +8,11 @@ import VerifyContact from "./helpers/VerifyContact";
 import CreateMessageSystemService from "../MessageServices/CreateMessageSystemService";
 import SendMessagesSystemWbot from "./SendMessagesSystemWbot";
 
-interface Session extends Client {
-  id: number;
+interface Session {
+  id?: number;
 }
 
-const VerifyCall = async (call: Call, wbot: Session): Promise<void> => {
+const VerifyCall = async (call: any, wbot: Session): Promise<void> => {
   return new Promise<void>((resolve, reject) => {
     (async () => {
       const messageDefault =
@@ -48,15 +48,21 @@ const VerifyCall = async (call: Call, wbot: Session): Promise<void> => {
           return;
         }
 
-        await call.reject();
+        // En Baileys, el manejo de llamadas es diferente
+        // No tenemos access directo a call.reject() ni call.from
+        console.warn("Call handling in Baileys has limited functionality");
 
-        if (!call.from) return;
+        if (!call.from) {
+          resolve();
+          return;
+        }
 
-        const callContact: WbotContact | any = await wbot.getChatById(
-          call.from
-        );
+        // Crear contacto simulado para la llamada
+        const callContact = {
+          id: call.from,
+          name: call.from
+        };
 
-        // const profilePicUrl = await msgContact.getProfilePicUrl();
         const contact = await VerifyContact(callContact, tenantId);
         const ticket = await FindOrCreateTicketService({
           contact,

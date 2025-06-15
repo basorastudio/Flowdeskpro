@@ -2,45 +2,45 @@ import { differenceInHours, parseJSON } from "date-fns";
 import Message from "../models/Message";
 import Ticket from "../models/Ticket";
 import { getTbot } from "../libs/tbot";
-// import { getInstaBot } from "../libs/InstaBot";
+import { getInstaBot } from "../libs/InstaBot";
 import GetWbotMessage from "./GetWbotMessage";
-import AppError from "../errors/AppError";
+import { getWbot } from "../libs/wbot";
 import { getIO } from "../libs/socket";
+import AppError from "../errors/AppError";
+import { logger } from "../utils/logger";
 
 const DeleteMessageSystem = async (
-  id: string,
   messageId: string,
-  tenantId: string | number
+  tenantId: number | string
 ): Promise<void> => {
   const message = await Message.findOne({
-    where: { id },
+    where: { id: messageId, tenantId },
     include: [
       {
-        model: Ticket,
-        as: "ticket",
-        include: ["contact"],
-        where: { tenantId }
+        association: "ticket",
+        include: ["contact"]
       }
     ]
   });
 
-  if (message) {
-    const diffHoursDate = differenceInHours(
-      new Date(),
-      parseJSON(message?.createdAt)
-    );
+  if (!message) {
+    throw new AppError("No message found with this ID.");
+  }
 
-    if (diffHoursDate > 2) {
-      console.log("Error: Cannot delete message after 2 hours");
+  // Verificar si el mensaje puede ser eliminado (dentro de 2 horas)
+  const currentTime = new Date().getTime();
+  const messageTime = new Date(message.createdAt).getTime();
+  const timeDifference = currentTime - messageTime;
+  const twoHoursInMs = 2 * 60 * 60 * 1000; // 2 horas en milisegundos
+
+  if (timeDifference > twoHoursInMs && message.fromMe) {
+    if (message.status !== "pending") {
       throw new AppError("Cannot delete message after 2 hours of being sent");
     }
   }
 
-  if (!message) {
-    throw new AppError("No message found with this ID.");
-  }
-  
-    if (message.messageId === null && message.status === "pending") {
+  // Si es un mensaje programado pendiente, simplemente eliminarlo de la BD
+  if (message.messageId === null && message.status === "pending") {
     await message.destroy();
     console.log("Scheduled message deleted from the database.");
     return;
@@ -49,11 +49,24 @@ const DeleteMessageSystem = async (
   const { ticket } = message;
 
   if (ticket.channel === "whatsapp") {
-    const messageToDelete = await GetWbotMessage(ticket, messageId);
-    if (!messageToDelete) {
-      throw new AppError("ERROR_NOT_FOUND_MESSAGE");
+    try {
+      const wbot = getWbot(ticket.whatsappId);
+      const chatId = `${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`;
+      
+      // En Baileys, usamos sendMessage con delete para eliminar mensajes
+      await wbot.sendMessage(chatId, {
+        delete: {
+          id: message.messageId,
+          fromMe: message.fromMe,
+          remoteJid: chatId
+        }
+      });
+      
+      logger.info(`Message deleted successfully: ${message.messageId}`);
+    } catch (error) {
+      logger.error(`Error deleting WhatsApp message: ${error}`);
+      // Continuar con el marcado como eliminado aunque falle la eliminación en WhatsApp
     }
-    await messageToDelete.delete(true);
   }
 
   if (ticket.channel === "telegram") {
@@ -73,6 +86,7 @@ const DeleteMessageSystem = async (
     return;
   }
 
+  // Marcar mensaje como eliminado en la base de datos
   await message.update({ isDeleted: true });
   console.log("Message marked as deleted");
 

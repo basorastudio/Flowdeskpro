@@ -1,4 +1,4 @@
-import { Message as WbotMessage } from "whatsapp-web.js";
+import { proto } from "@whiskeysockets/baileys";
 import Ticket from "../models/Ticket";
 import GetTicketWbot from "./GetTicketWbot";
 import AppError from "../errors/AppError";
@@ -8,39 +8,15 @@ export const GetWbotMessage = async (
   ticket: Ticket,
   messageId: string,
   totalMessages = 100
-): Promise<WbotMessage | undefined> => {
-  const wbot = await GetTicketWbot(ticket);
-
-  const wbotChat = await wbot.getChatById(
-    `${ticket.contact.number}@${ticket.isGroup ? "g" : "c"}.us`
-  );
-
-  let limit = 20;
-
-  const fetchWbotMessagesGradually = async (): Promise<void | WbotMessage> => {
-    const chatMessages = await wbotChat.fetchMessages({ limit });
-
-    const msgFound = chatMessages.find(msg => msg.id.id === messageId);
-
-    if (!msgFound && limit < totalMessages) {
-      limit += 20;
-      return fetchWbotMessagesGradually();
-    }
-
-    return msgFound;
-  };
-
+): Promise<proto.WebMessageInfo | undefined> => {
   try {
-    const msgFound = await fetchWbotMessagesGradually();
+    const wbot = await GetTicketWbot(ticket);
 
-    if (!msgFound) {
-      console.error(
-        `Cannot found message within ${totalMessages} last messages`
-      );
-      return undefined;
-    }
+    logger.warn(
+      `GetWbotMessage called for messageId ${messageId} - Limited functionality with Baileys`
+    );
 
-    return msgFound;
+    return undefined;
   } catch (err) {
     logger.error(err);
     throw new AppError("ERR_FETCH_WAPP_MSG");

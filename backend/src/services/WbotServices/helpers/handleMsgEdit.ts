@@ -1,49 +1,48 @@
-import { Message as WbotMessage } from "whatsapp-web.js";
+import { proto } from "@whiskeysockets/baileys";
+import { logger } from "../../../utils/logger";
+import { getIO } from "../../../libs/socket";
 import Message from "../../../models/Message";
 import Ticket from "../../../models/Ticket";
-import socketEmit from "../../../helpers/socketEmit";
 
 const handleMsgEdit = async (
-  msg: WbotMessage,
-  newBody: string
+  msg: proto.IWebMessageInfo,
+  tenantId: number | string
 ): Promise<void> => {
-  
   try {
-    // Buscar a mensagem no banco de dados
-    const editedMsg = await Message.findOne({ 
-	where: { messageId: msg.id.id },
-	  include: [
-        "contact",
+    if (!msg.key.id) return;
+
+    const messageToUpdate = await Message.findOne({
+      where: { messageId: msg.key.id },
+      include: [
         {
           model: Ticket,
           as: "ticket",
-          attributes: ["id", "tenantId", "apiConfig"]
-        },
-        {
-          model: Message,
-          as: "quotedMsg",
+          where: { tenantId, channel: "whatsapp" },
           include: ["contact"]
         }
       ]
-	});
+    });
 
-    if (!editedMsg) {
-      return;
-    }
+    if (!messageToUpdate) return;
 
-    // Atualizar o campo 'edited'
-    await editedMsg.update({ edited: newBody });
-	
-	const { ticket } = editedMsg;
-	   socketEmit({
-       tenantId: ticket.tenantId,
-       type: "chat:update",
-       payload: editedMsg
+    const newBody = msg.message?.conversation || 
+                   msg.message?.extendedTextMessage?.text || 
+                   messageToUpdate.body;
+
+    await messageToUpdate.update({ 
+      body: newBody,
+      isEdited: true 
+    });
+
+    const io = getIO();
+    io.to(`tenant:${tenantId}:${messageToUpdate.ticketId}`)
+      .emit(`tenant:${tenantId}:appMessage`, {
+        action: "update",
+        message: messageToUpdate
       });
-
   } catch (err) {
-    console.error(`Erro ao manipular a edição da mensagem com ID ${msg.id.id}. Erro: ${err}`);
+    logger.error(`Error handling message edit: ${err}`);
   }
-}
+};
 
 export default handleMsgEdit;

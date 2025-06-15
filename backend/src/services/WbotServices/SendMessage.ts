@@ -1,52 +1,60 @@
-import { join } from "path";
-import { MessageMedia } from "whatsapp-web.js";
+import { proto } from "@whiskeysockets/baileys";
+import GetTicketWbot from "../../helpers/GetTicketWbot";
 import Message from "../../models/Message";
-import { logger } from "../../utils/logger";
-import { getWbot } from "../../libs/wbot";
+import Ticket from "../../models/Ticket";
 
-const SendMessage = async (message: Message): Promise<void> => {
-  logger.info(`SendMessage: ${message.id}`);
-  const wbot = getWbot(message.ticket.whatsappId);
-  let sendedMessage;
+interface Request {
+  message: Message;
+  tenantId: string | number;
+}
 
-  let quotedMsgSerializedId: string | undefined;
-  const { ticket } = message;
-  const contactNumber = message.contact.number;
-  const typeGroup = ticket?.isGroup ? "g" : "c";
-  const chatId = `${contactNumber}@${typeGroup}.us`;
+const SendMessage = async ({ 
+  message, 
+  tenantId 
+}: Request): Promise<proto.WebMessageInfo | null> => {
+  const ticket = await Ticket.findByPk(message.ticketId, {
+    include: ["contact", "whatsapp"]
+  });
 
-  if (message.quotedMsg) {
-    quotedMsgSerializedId = `${message.quotedMsg.fromMe}_${contactNumber}@${typeGroup}.us_${message.quotedMsg.messageId}`;
+  if (!ticket) {
+    throw new Error("Ticket not found");
   }
 
-  if (message.mediaType !== "chat" && message.mediaName) {
-    const customPath = join(__dirname, "..", "..", "..", "public");
-    const mediaPath = join(customPath, message.mediaName);
-    const newMedia = MessageMedia.fromFilePath(mediaPath);
-    sendedMessage = await wbot.sendMessage(chatId, newMedia, {
-      quotedMessageId: quotedMsgSerializedId,
-      linkPreview: false, // fix: send a message takes 2 seconds when there's a link on message body
-      sendAudioAsVoice: true
+  const wbot = await GetTicketWbot(ticket);
+  const chatId = `${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`;
+
+  let sendedMessage: proto.WebMessageInfo | undefined;
+
+  if (message.quotedMsgId) {
+    const quotedMessage = await Message.findOne({
+      where: { messageId: message.quotedMsgId }
     });
+
+    if (quotedMessage) {
+      sendedMessage = await wbot.sendMessage(
+        chatId,
+        { text: message.body },
+        {
+          quoted: {
+            key: {
+              id: quotedMessage.messageId,
+              fromMe: quotedMessage.fromMe,
+              remoteJid: chatId
+            },
+            message: {
+              conversation: quotedMessage.body
+            }
+          }
+        }
+      );
+    } else {
+      sendedMessage = await wbot.sendMessage(chatId, { text: message.body });
+    }
   } else {
-    sendedMessage = await wbot.sendMessage(chatId, message.body, {
-      quotedMessageId: quotedMsgSerializedId,
-      linkPreview: false // fix: send a message takes 2 seconds when there's a link on message body
-    });
+    sendedMessage = await wbot.sendMessage(chatId, { text: message.body });
   }
 
-  // enviar old_id para substituir no front a mensagem corretamente
-  const messageToUpdate = {
-    ...message,
-    ...sendedMessage,
-    id: message.id,
-    messageId: sendedMessage.id.id,
-    status: "sended"
-  };
-
-  await Message.update({ ...messageToUpdate }, { where: { id: message.id } });
-
-  logger.info("rabbit::sendedMessage", sendedMessage.id.id);
+  return sendedMessage || null;
 };
 
 export default SendMessage;

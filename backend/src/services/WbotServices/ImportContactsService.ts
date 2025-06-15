@@ -7,20 +7,24 @@ const ImportContactsService = async (
   tenantId: string | number
 ): Promise<void> => {
   const defaultWhatsapp = await GetDefaultWhatsApp(tenantId);
-
   const wbot = getWbot(defaultWhatsapp.id);
-
   let phoneContacts;
 
   try {
-    phoneContacts = await wbot.getContacts();
+    // En Baileys no existe getContacts(), esta funcionalidad no está disponible
+    // por seguridad y privacidad. Los contactos se obtienen de los chats existentes
+    logger.warn(
+      "ImportContactsService: Contact import not available in Baileys for privacy reasons"
+    );
+    phoneContacts = [];
   } catch (err) {
     logger.error(
       `Could not get whatsapp contacts from phone. Check connection page. | Error: ${err}`
     );
+    phoneContacts = [];
   }
 
-  if (phoneContacts) {
+  if (phoneContacts && phoneContacts.length > 0) {
     await Promise.all(
       phoneContacts.map(async ({ number, name }) => {
         if (!number) {

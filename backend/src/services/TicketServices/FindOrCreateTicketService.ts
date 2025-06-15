@@ -1,6 +1,5 @@
 // import { subHours } from "date-fns";
 import { Op } from "sequelize";
-import { Message } from "whatsapp-web.js";
 import Contact from "../../models/Contact";
 import Ticket from "../../models/Ticket";
 import User from "../../models/User";
@@ -19,7 +18,7 @@ interface Data {
   unreadMessages: number;
   tenantId: number | string;
   groupContact?: Contact;
-  msg?: Message | any;
+  msg?: any;
   isSync?: boolean;
   channel: string;
 }

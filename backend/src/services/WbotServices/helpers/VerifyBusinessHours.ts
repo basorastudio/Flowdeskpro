@@ -1,4 +1,4 @@
-import { Message as WbotMessage } from "whatsapp-web.js";
+import { proto } from "@whiskeysockets/baileys";
 import { fromUnixTime, parse, isWithinInterval } from "date-fns";
 // import { getIO } from "../../../libs/socket";
 // import SetTicketMessagesAsRead from "../../../helpers/SetTicketMessagesAsRead";
@@ -10,7 +10,7 @@ import CreateMessageSystemService from "../../MessageServices/CreateMessageSyste
 // import { sleepRandomTime } from "../../../utils/sleepRandomTime";
 
 const verifyBusinessHours = async (
-  msg: WbotMessage | any,
+  msg: proto.IWebMessageInfo | any,
   ticket: Ticket
 ): Promise<boolean> => {
   let isBusinessHours = true;
