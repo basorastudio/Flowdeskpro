@@ -183,7 +183,7 @@
 
 import { DeletarWhatsapp, DeleteWhatsappSession, StartWhatsappSession, ListarWhatsapps, RequestNewQrCode, UpdateWhatsapp } from 'src/service/sessoesWhatsapp'
 import { format, parseISO } from 'date-fns'
-import es from 'date-fns/locale/es/index'
+import pt from 'date-fns/locale/pt-BR/index'
 import ModalQrCode from './ModalQrCode'
 import { mapGetters } from 'vuex'
 import ModalWhatsapp from './ModalWhatsapp'
@@ -278,7 +278,7 @@ export default {
   },
   methods: {
     formatarData (data, formato) {
-      return format(parseISO(data), formato, { locale: es })
+      return format(parseISO(data), formato, { locale: pt })
     },
     handleOpenQrModal (channel) {
       this.whatsappSelecionado = channel

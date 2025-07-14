@@ -9,7 +9,6 @@ import { StartInstaBotSession } from "../InstagramBotServices/StartInstaBotSessi
 import { StartTbotSession } from "../TbotServices/StartTbotSession";
 import { StartWaba360 } from "../WABA360/StartWaba360";
 import { StartMessengerBot } from "../MessengerChannelServices/StartMessengerBot";
-import * as Sentry from "@sentry/node";
 
 export const StartWhatsAppSession = async (
   whatsapp: Whatsapp
@@ -25,8 +24,8 @@ export const StartWhatsAppSession = async (
   try {
     if (whatsapp.type === "whatsapp") {
       const wbot = await initWbot(whatsapp);
-      wbotMessageListener(wbot, whatsapp.tenantId);
-      await wbotMonitor(wbot, whatsapp);
+      wbotMessageListener(wbot);
+      wbotMonitor(wbot, whatsapp);
     }
 
     if (whatsapp.type === "telegram") {
@@ -47,7 +46,6 @@ export const StartWhatsAppSession = async (
       }
     }
   } catch (err) {
-    Sentry.captureException(err);
     logger.error(`StartWhatsAppSession | Error: ${err}`);
     throw new AppError("ERR_START_SESSION", 404);
   }

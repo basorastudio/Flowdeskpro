@@ -125,7 +125,7 @@
                 :showSearch="false"
                 :emojisByRow="20"
                 labelSearch="Localizar..."
-                lang="es"
+                lang="pt-BR"
                 @select="onInsertSelectEmoji"
               />
             </q-menu>
@@ -207,7 +207,7 @@
                     :showSearch="false"
                     :emojisByRow="20"
                     labelSearch="Localizar..."
-                    lang="es"
+                    lang="pt-BR"
                     @select="onInsertSelectEmoji"
                   />
                 </q-menu>

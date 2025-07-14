@@ -199,7 +199,7 @@ export const syncContacts = async (
     sessoes.map(async s => {
       if (s.id) {
         if (s.id) {
-          await SyncContactsWhatsappInstanceService(s.id);
+          await SyncContactsWhatsappInstanceService(s.id, +tenantId);
         }
       }
     })

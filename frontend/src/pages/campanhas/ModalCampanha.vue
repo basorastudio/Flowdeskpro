@@ -152,7 +152,7 @@
                     :showSearch="false"
                     :emojisByRow="20"
                     labelSearch="Localizar..."
-                    lang="es"
+                    lang="pt-BR"
                     @select="(v) => onInsertSelectEmoji(v, 'message1')"
                   />
                 </q-menu>
@@ -223,7 +223,7 @@
                     :showSearch="false"
                     :emojisByRow="20"
                     labelSearch="Localizar..."
-                    lang="es"
+                    lang="pt-BR"
                     @select="(v) => onInsertSelectEmoji(v, 'message2')"
                   />
                 </q-menu>
@@ -294,7 +294,7 @@
                     :showSearch="false"
                     :emojisByRow="20"
                     labelSearch="Localizar..."
-                    lang="es"
+                    lang="pt-BR"
                     @select="(v) => onInsertSelectEmoji(v, 'message3')"
                   />
                 </q-menu>

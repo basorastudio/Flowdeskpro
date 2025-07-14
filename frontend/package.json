@@ -1,26 +1,26 @@
 {
-  "name": "frontend",
-  "version": "2.6.0",
-  "description": "FlowDeskPro Frontend",
-  "private": true,
+  "name": "FlowDeskPro",
+  "version": "2.5.0",
+  "description": "Bot Multiatendimento, multicanais e multiempresas.",
+  "productName": "FlowDeskPro",
+  "author": "FlowDeskPro <FlowDeskPro@FlowDeskPro.io>",
+  "private": false,
   "license": "AGPL-3.0-or-later",
+  "github": "https://github.com/flowdeskpro/flowdeskpro.git",
   "scripts": {
     "lint": "eslint --ext .js,.vue ./",
-    "test": "echo \"No test specified\" && exit 0",
-    "start": "pm2 start server.js --name FlowDeskPro-frontend",
-    "stop": "pm2 stop server.js --name FlowDeskPro-frontend",
-    "build": "export NODE_OPTIONS=--openssl-legacy-provider && npx quasar build -P -m pwa"
+    "test": "echo \"No test specified\" && exit 0"
   },
   "dependencies": {
-    "@quasar/cli": "^2.5.0",
-    "@quasar/extras": "^1.16.12",
-    "apexcharts": "^3.52.0",
-    "axios": "^1.7.4",
-    "core-js": "^3.38.1",
+    "@quasar/cli": "^2.4.0",
+    "@quasar/extras": "^1.16.3",
+    "apexcharts": "^3.40.0",
+    "axios": "^1.4.0",
+    "core-js": "^3.30.2",
     "date-fns": "^2.30.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.0.3",
     "drawflow": "0.0.59",
-    "js-base64": "^3.7.7",
+    "js-base64": "^3.7.5",
     "lodash": "^4.17.21",
     "mic-recorder-to-mp3": "^2.2.2",
     "printd": "^1.6.0",
@@ -32,30 +32,35 @@
     "vue": "^2.7.14",
     "vue-apexcharts": "^1.6.2",
     "vue-codemirror": "^4.0.6",
-    "vue-easy-lightbox": "^0.23.0",
+    "vue-easy-lightbox": "^0.14.0",
     "vue-facebook-login-component": "^4.0.2",
     "vue-infinite-loading": "^2.4.5",
     "vue-linkify": "^1.0.1",
-    "vue-loader": "^15.11.1",
+    "vue-loader": "^15.10.1",
     "vuedraggable": "^2.24.3",
     "vuelidate": "^0.7.7",
     "vuelidate-error-extractor": "^2.4.1",
-    "xlsx": "^0.17.5"
+    "xlsx": "^0.16.9"
   },
   "devDependencies": {
     "@babel/plugin-proposal-optional-chaining": "^7.21.0",
-    "@quasar/app": "^2.4.4",
+    "@quasar/app": "^2.4.3",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.8.0",
     "eslint-config-standard": "^14.1.0",
     "eslint-loader": "^3.0.3",
-    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.3.1",
+    "eslint-plugin-promise": "^4.0.1",
     "eslint-plugin-standard": "^4.0.0",
-    "eslint-plugin-vue": "^6.2.2",
+    "eslint-plugin-vue": "^6.1.2",
     "quasar-app-extension-qdatetimepicker": "^1.0.0-rc.18",
     "workbox-webpack-plugin": "^6.6.0"
+  },
+  "scripts": {
+    "start": "pm2 start server.js --name FlowDeskPro-frontend",
+    "stop": "pm2 stop server.js --name FlowDeskPro-frontend",
+    "build": "export NODE_OPTIONS=--openssl-legacy-provider && npx quasar build -P -m pwa"
   },
   "browserslist": [
     "last 10 Chrome versions",
@@ -69,8 +74,8 @@
     "last 5 Opera versions"
   ],
   "engines": {
-    "node": ">=20.16.0",
-    "npm": ">=10.8.2",
-    "yarn": ">=1.21.1"
+    "node": ">= 18.20.3",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
   }
 }

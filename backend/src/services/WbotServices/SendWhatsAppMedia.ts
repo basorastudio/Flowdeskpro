@@ -1,5 +1,5 @@
 import fs from "fs";
-import { proto } from "@whiskeysockets/baileys";
+import { MessageMedia, Message as WbotMessage } from "whatsapp-web.js";
 import AppError from "../../errors/AppError";
 import GetTicketWbot from "../../helpers/GetTicketWbot";
 import Ticket from "../../models/Ticket";
@@ -16,63 +16,39 @@ const SendWhatsAppMedia = async ({
   media,
   ticket,
   userId
-}: Request): Promise<proto.WebMessageInfo> => {
+}: Request): Promise<WbotMessage> => {
   try {
     const wbot = await GetTicketWbot(ticket);
-    const chatId = `${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`;
 
-    const mediaBuffer = fs.readFileSync(media.path);
-    
-    let message;
-    
-    // Determinar el tipo de media basado en mimetype
-    if (media.mimetype.startsWith('image/')) {
-      message = await wbot.sendMessage(chatId, {
-        image: mediaBuffer,
-        caption: media.originalname,
-        mimetype: media.mimetype
-      });
-    } else if (media.mimetype.startsWith('video/')) {
-      message = await wbot.sendMessage(chatId, {
-        video: mediaBuffer,
-        caption: media.originalname,
-        mimetype: media.mimetype
-      });
-    } else if (media.mimetype.startsWith('audio/')) {
-      message = await wbot.sendMessage(chatId, {
-        audio: mediaBuffer,
-        mimetype: media.mimetype,
-        ptt: true // Para enviar como nota de voz
-      });
-    } else {
-      // Para documentos
-      message = await wbot.sendMessage(chatId, {
-        document: mediaBuffer,
-        fileName: media.originalname,
-        mimetype: media.mimetype
-      });
-    }
+    const newMedia = MessageMedia.fromFilePath(media.path);
+
+    const sendMessage = await wbot.sendMessage(
+      `${ticket.contact.number}@${ticket.isGroup ? "g" : "c"}.us`,
+      newMedia,
+      { sendAudioAsVoice: true }
+    );
 
     await ticket.update({
-      lastMessage: media.originalname,
+      lastMessage: media.filename,
       lastMessageAt: new Date().getTime()
     });
-
     try {
       if (userId) {
         await UserMessagesLog.create({
-          messageId: message.key.id,
+          messageId: sendMessage.id.id,
           userId,
           ticketId: ticket.id
         });
       }
     } catch (error) {
-      logger.error(`Error creating user message log: ${error}`);
+      logger.error(`Error criar log mensagem ${error}`);
     }
+ //   fs.unlinkSync(media.path);
 
-    return message;
+    return sendMessage;
   } catch (err) {
-    logger.error(`Error sending media: ${err}`);
+    logger.error(`SendWhatsAppMedia | Error: ${err}`);
+    // StartWhatsAppSessionVerify(ticket.whatsappId, err);
     throw new AppError("ERR_SENDING_WAPP_MSG");
   }
 };

@@ -13,22 +13,12 @@ const CheckIsValidContact = async (
   const wbot = getWbot(defaultWhatsapp.id);
 
   try {
-    // En Baileys, onWhatsApp puede devolver undefined
-    const results = await wbot.onWhatsApp(number);
-
-    if (results && results.length > 0) {
-      const result = results[0];
-      if (result && result.exists) {
-        return {
-          exists: true,
-          jid: result.jid,
-        };
-      }
+    // const isValidNumber = await wbot.isRegisteredUser(`${number}@c.us`);
+    const idNumber = await wbot.getNumberId(number);
+    if (!idNumber) {
+      throw new AppError("invalidNumber", 400);
     }
-
-    return {
-      exists: false,
-    };
+    return idNumber;
   } catch (err: any) {
     logger.error(`CheckIsValidContact | Error: ${err}`);
     // StartWhatsAppSessionVerify(defaultWhatsapp.id, err);

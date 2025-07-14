@@ -5,15 +5,15 @@ import DatePick from 'src/components/cDatePick'
 import cDateTimePick from 'src/components/cDateTimePick'
 
 import { format, parseISO } from 'date-fns'
-import es from 'date-fns/locale/es'
+import pt from 'date-fns/locale/pt-BR'
 import { UpdateConfiguracoesUsuarios } from 'src/service/user'
 
 const formatarValorMoeda = (num, black = false, intl = {}) => {
   const config = {
-    language: 'es-DO',
+    language: 'pt-br',
     options: {
       // style: 'currency',
-      // currency: 'DOP',
+      // currency: 'BRL',
       // currencyDisplay: 'symbol',
       minimumFractionDigits: 2,
       maximumFractionDigits: 3
@@ -60,7 +60,7 @@ const iniciaisString = nomecompleto => {
 }
 
 const formatarData = (data, formato = 'dd/MM/yyyy') => {
-  return format(parseISO(data), formato, { locale: es })
+  return format(parseISO(data), formato, { locale: pt })
 }
 
 const setConfigsUsuario = ({ isDark }) => {

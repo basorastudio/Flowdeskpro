@@ -79,7 +79,7 @@ const SendMessagesSchenduleWbot = async (): Promise<void> => {
         );
       }
     } else {
-      await SendMessage({ message, tenantId: message.tenantId }).catch(e => {
+      await SendMessage(message).catch(e => {
         logger.error("SendMessagesSchenduleWbot > SendMessage", e);
       });
     }

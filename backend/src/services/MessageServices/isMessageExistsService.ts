@@ -1,20 +1,19 @@
-import { proto } from "@whiskeysockets/baileys";
+import { Message as WbotMessage } from "whatsapp-web.js";
 import Message from "../../models/Message";
 
-const isMessageExistsService = async (
-  msg: proto.IWebMessageInfo,
-  tenantId: string | number
-): Promise<Message | null> => {
-  if (!msg.key.id) return null;
-  
+const isMessageExistsService = async (msg: WbotMessage): Promise<boolean> => {
   const message = await Message.findOne({
-    where: {
-      messageId: msg.key.id,
-      tenantId
-    }
+    where: { messageId: msg?.id?.id }
   });
 
-  return message;
+  if (!message) {
+    console.log("Mensagem não existe", msg.id.id);
+
+    return false;
+  }
+  console.log("Mensagem existente", msg.id.id);
+
+  return true;
 };
 
 export default isMessageExistsService;

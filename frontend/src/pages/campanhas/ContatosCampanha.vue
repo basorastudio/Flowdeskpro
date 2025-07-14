@@ -144,7 +144,7 @@
                   outlined
                   v-model="pesquisa.ddds"
                   multiple
-                  :options="estadosDO"
+                  :options="estadosBR"
                   use-chips
                   option-value="sigla"
                   option-label="nome"
@@ -365,7 +365,7 @@
 
 <script>
 import { ListarEtiquetas } from 'src/service/etiquetas'
-import { estadoPorDdd, estadosDO } from 'src/utils/constants'
+import { estadoPorDdd, estadosBR } from 'src/utils/constants'
 import { RelatorioContatos } from 'src/service/estatisticas'
 import { AdicionarContatosCampanha, DeletarTodosContatosCampanha, ListarContatosCampanha, DeletarContatoCampanha } from 'src/service/campanhas'
 import { format, parseISO, sub } from 'date-fns'
@@ -388,7 +388,7 @@ export default {
         searchParam: ''
       },
       estadoPorDdd,
-      estadosDO,
+      estadosBR,
       contatosCampanha: [],
       filter: null,
       pagination: {
@@ -487,7 +487,7 @@ export default {
     },
     definirEstadoNumero (numero) {
       const ddd = numero.substring(2, 4)
-      return estadosDO.find(e => e.sigla === estadoPorDdd[ddd])?.nome || ''
+      return estadosBR.find(e => e.sigla === estadoPorDdd[ddd])?.nome || ''
     },
     async addContatosCampanha () {
       if (this.selected.length > 300) {

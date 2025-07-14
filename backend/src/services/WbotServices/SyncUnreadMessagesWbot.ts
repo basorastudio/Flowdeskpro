@@ -1,34 +1,93 @@
-import { proto } from "@whiskeysockets/baileys";
-import { getWbot } from "../../libs/wbot";
+import { Client } from "whatsapp-web.js";
+import Queue from "../../libs/Queue";
 import { logger } from "../../utils/logger";
+import VerifyStepsChatFlowTicket from "../ChatFlowServices/VerifyStepsChatFlowTicket";
+import FindOrCreateTicketService from "../TicketServices/FindOrCreateTicketService";
+import VerifyContact from "./helpers/VerifyContact";
+import VerifyMediaMessage from "./helpers/VerifyMediaMessage";
+import VerifyMessage from "./helpers/VerifyMessage";
 
-type Session = any;
+interface Session extends Client {
+  id?: number;
+}
 
 const SyncUnreadMessagesWbot = async (
   wbot: Session,
   tenantId: number | string
 ): Promise<void> => {
   try {
-    // En Baileys, no existe getChats() de la misma manera que en whatsapp-web.js
-    // Esta funcionalidad tendría que implementarse de forma diferente
-    console.warn("SyncUnreadMessagesWbot: getChats() not available in Baileys - functionality limited");
+    const chats = await wbot.getChats();
+    await Promise.all(
+      chats.map(async chat => {
+        if (chat.unreadCount > 0) {
+          const unreadMessages = await chat.fetchMessages({
+            limit: chat.unreadCount
+          });
+          logger.info(`CHAT: ${chat}`);
 
-    // Implementación alternativa sería escuchar mensajes no leídos
-    // a través de los eventos de Baileys
-    const chats: any[] = [];
+          if (chat.isGroup) {
+            return;
+          }
+          const chatContact = await chat.getContact();
+          const contact = await VerifyContact(chatContact, tenantId);
+          const ticket = await FindOrCreateTicketService({
+            contact,
+            whatsappId: wbot.id!,
+            unreadMessages: chat.unreadCount,
+            tenantId,
+            isSync: true,
+            channel: "whatsapp"
+          });
 
-    if (chats.length === 0) {
-      logger.info("No chats found to sync unread messages");
-      return;
-    }
+          if (ticket?.isCampaignMessage) {
+            return;
+          }
 
-    // Procesar chats si estuvieran disponibles
-    for (const chat of chats) {
-      // Lógica de sincronización de mensajes no leídos
-      console.log(`Processing chat: ${chat.id}`);
-    }
+          if (ticket?.isFarewellMessage) {
+            return;
+          }
+
+          unreadMessages.map(async (msg, idx) => {
+            logger.info(`MSG: ${msg}`, msg.id?.id);
+            if (msg.hasMedia) {
+              await VerifyMediaMessage(msg, ticket, contact);
+            } else {
+              await VerifyMessage(msg, ticket, contact);
+            }
+            // enviar mensagem do bot na ultima mensagem
+            if (idx === unreadMessages.length - 1) {
+              await VerifyStepsChatFlowTicket(msg, ticket);
+
+              const apiConfig: any = ticket.apiConfig || {};
+              if (
+                !msg.fromMe &&
+                !ticket.isGroup &&
+                !ticket.answered &&
+                apiConfig?.externalKey &&
+                apiConfig?.urlMessageStatus
+              ) {
+                const payload = {
+                  timestamp: Date.now(),
+                  msg,
+                  messageId: msg.id.id,
+                  ticketId: ticket.id,
+                  externalKey: apiConfig?.externalKey,
+                  authToken: apiConfig?.authToken,
+                  type: "hookMessage"
+                };
+                Queue.add("WebHooksAPI", {
+                  url: apiConfig.urlMessageStatus,
+                  type: payload.type,
+                  payload
+                });
+              }
+            }
+          });
+        }
+      })
+    );
   } catch (error) {
-    logger.error(`Error syncing unread messages: ${error}`);
+    logger.error("Erro ao syncronizar mensagens", error);
   }
 };
 

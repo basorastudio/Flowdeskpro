@@ -1,22 +1,20 @@
-import { proto } from "@whiskeysockets/baileys";
+import { Message as WbotMessage } from "whatsapp-web.js";
 import Message from "../../../models/Message";
 
 const VerifyQuotedMessage = async (
-  msg: proto.IWebMessageInfo
+  msg: WbotMessage
 ): Promise<Message | null> => {
-  if (!msg.message?.extendedTextMessage?.contextInfo?.stanzaId) {
-    return null;
-  }
+  if (!msg.hasQuotedMsg) return null;
 
-  try {
-    const quotedMsg = await Message.findOne({
-      where: { messageId: msg.message.extendedTextMessage.contextInfo.stanzaId }
-    });
+  const wbotQuotedMsg = await msg.getQuotedMessage();
 
-    return quotedMsg;
-  } catch (err) {
-    return null;
-  }
+  const quotedMsg = await Message.findOne({
+    where: { messageId: wbotQuotedMsg.id.id }
+  });
+
+  if (!quotedMsg) return null;
+
+  return quotedMsg;
 };
 
 export default VerifyQuotedMessage;

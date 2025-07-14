@@ -11,7 +11,6 @@ import { getTbot, removeTbot } from "../libs/tbot";
 import { getInstaBot, removeInstaBot } from "../libs/InstaBot";
 import AppError from "../errors/AppError";
 import { getIO } from "../libs/socket";
-import DeleteBaileysService from "../services/BaileysServices/DeleteBaileysService";
 
 const store = async (req: Request, res: Response): Promise<Response> => {
   const { whatsappId } = req.params;
@@ -42,9 +41,7 @@ const update = async (req: Request, res: Response): Promise<Response> => {
     tenantId
   });
 
-  // Limpiar datos de Baileys para forzar nueva autenticación
-  await DeleteBaileysService(+whatsappId);
-  
+  // await apagarPastaSessao(whatsappId);
   StartWhatsAppSession(whatsapp);
   return res.status(200).json({ message: "Starting session." });
 };
@@ -52,7 +49,6 @@ const update = async (req: Request, res: Response): Promise<Response> => {
 const remove = async (req: Request, res: Response): Promise<Response> => {
   const { whatsappId } = req.params;
   const { tenantId } = req.user;
-
   const channel = await ShowWhatsAppService({ id: whatsappId, tenantId });
 
   const io = getIO();
@@ -61,10 +57,13 @@ const remove = async (req: Request, res: Response): Promise<Response> => {
     if (channel.type === "whatsapp") {
       const wbot = getWbot(channel.id);
       await setValue(`${channel.id}-retryQrCode`, 0);
-      await wbot.logout();
+      await wbot
+        .logout()
+        .catch(error => logger.error("Erro ao fazer logout da conexão", error)); // --> fecha o client e conserva a sessão para reconexão (criar função desconectar)
       removeWbot(channel.id);
-      // Eliminar datos de Baileys
-      await DeleteBaileysService(channel.id);
+      // await wbot
+      //   .destroy()
+      //   .catch(error => logger.error("Erro ao destuir conexão", error)); // --> encerra a sessão e desconecta o bot do whatsapp, geando um novo QRCODE
     }
 
     if (channel.type === "telegram") {
@@ -84,19 +83,25 @@ const remove = async (req: Request, res: Response): Promise<Response> => {
     await channel.update({
       status: "DISCONNECTED",
       session: "",
-      qrcode: ""
+      qrcode: null,
+      retries: 0
+    });
+  } catch (error) {
+    logger.error(error);
+    await channel.update({
+      status: "DISCONNECTED",
+      session: "",
+      qrcode: null,
+      retries: 0
     });
 
-    io.emit(`${tenantId}:whatsappSession`, {
+    io.emit(`${channel.tenantId}:whatsappSession`, {
       action: "update",
       session: channel
     });
-
-    return res.status(200).json({ message: "Session disconnected." });
-  } catch (error) {
-    logger.error(`Erro ao desconectar sessão: ${error}`);
-    throw new AppError("ERR_DISCONNECT_SESSION");
+    throw new AppError("ERR_NO_WAPP_FOUND", 404);
   }
+  return res.status(200).json({ message: "Session disconnected." });
 };
 
 export default { store, remove, update };

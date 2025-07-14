@@ -14,7 +14,7 @@
                 outlined
                 v-model="pesquisa.ddds"
                 multiple
-                :options="estadosDO"
+                :options="estadosBR"
                 use-chips
                 option-value="sigla"
                 option-label="nome"
@@ -179,7 +179,7 @@ import ccPrintModelLandscape from './ccPrintModelLandscape'
 import XLSX from 'xlsx'
 import { RelatorioContatos } from 'src/service/estatisticas'
 import { ListarEtiquetas } from 'src/service/etiquetas'
-import { estadoPorDdd, estadosDO } from 'src/utils/constants'
+import { estadoPorDdd, estadosBR } from 'src/utils/constants'
 
 export default {
   name: 'RelatorioContatosEtiquetas',
@@ -196,7 +196,7 @@ export default {
       data: null,
       bl_sintetico: false,
       estadoPorDdd,
-      estadosDO,
+      estadosBR,
       contatos: [],
       etiquetas: [],
       columns: [
@@ -256,7 +256,7 @@ export default {
     },
     definirEstadoNumero (numero) {
       const ddd = numero.substring(2, 4)
-      return estadosDO.find(e => e.sigla === estadoPorDdd[ddd])?.nome || ''
+      return estadosBR.find(e => e.sigla === estadoPorDdd[ddd])?.nome || ''
     },
     async gerarRelatorio () {
       if (!this.pesquisa.ddds.length) {

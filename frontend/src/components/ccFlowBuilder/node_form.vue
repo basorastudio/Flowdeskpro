@@ -420,7 +420,7 @@
                           :showSearch="false"
                           :emojisByRow="20"
                           labelSearch="Localizar..."
-                          lang="es"
+                          lang="pt-BR"
                           @select="onInsertSelectEmojiSaudacao"
                         />
                       </q-menu>
@@ -489,7 +489,7 @@
                           :showSearch="false"
                           :emojisByRow="20"
                           labelSearch="Localizar..."
-                          lang="es"
+                          lang="pt-BR"
                           @select="onInsertSelectEmojiNotOptionsSelectMessage"
                         />
                       </q-menu>

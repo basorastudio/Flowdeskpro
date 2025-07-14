@@ -262,7 +262,7 @@ export default {
 
       const contato = {
         ...this.contato,
-        number: '' + this.contato.number // inserir el DDI de República Dominicana para consultar el número
+        number: '' + this.contato.number // inserir o DDI do brasil para consultar o número
       }
 
       try {

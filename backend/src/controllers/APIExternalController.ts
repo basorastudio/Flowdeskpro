@@ -108,11 +108,9 @@ export const startSession = async (
   });
   try {
     const wbot = getWbot(APIConfig.sessionId);
-    // En Baileys, verificamos el estado de conexión de forma diferente
-    const isConnectStatus = wbot.user ? "CONNECTED" : "DISCONNECTED";
-    
-    if (isConnectStatus !== "CONNECTED") {
-      throw new AppError("ERR_WAPP_NOT_INITIALIZED", 404);
+    const isConnectStatus = (await wbot.getState()) === "CONNECTED";
+    if (!isConnectStatus) {
+      throw new Error("Necessário iniciar sessão");
     }
   } catch (error) {
     StartWhatsAppSession(whatsapp);
