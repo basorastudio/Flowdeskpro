@@ -24,7 +24,7 @@
         <div
           v-if="mensagem.isDeleted"
           class="text-italic"
-        > Mensagem apagada em {{ formatarData(mensagem.updatedAt, 'dd/MM/yyyy') }}.</div>
+        > Mensaje eliminada en {{ formatarData(mensagem.updatedAt, 'dd/MM/yyyy') }}.</div>
         <div
           v-if="isGroupLabel(mensagem)"
           class="q-mb-sm"
@@ -46,7 +46,10 @@
               class="full-width"
               controls
             >
-              <source :src="mensagem.mediaUrl" type="audio/mp3" />
+              <source
+                :src="mensagem.mediaUrl"
+                type="audio/ogg"
+              />
             </audio>
           </div>
         </template>
@@ -60,7 +63,7 @@
             download="vCard"
             :href="`data:text/x-vcard;charset=utf-8;base64,${returnCardContato(mensagem.body)}`"
           >
-            Download Contato
+            Descargar Contacto
           </q-btn>
         </template>
         <template v-if="mensagem.mediaType === 'image'">
@@ -113,7 +116,7 @@
                 v-if="mensagem.mediaUrl"
                 content-class="bg-padrao text-grey-9 text-bold"
               >
-                Baixar: {{ mensagem.body }}
+                Descargar: {{ mensagem.body }}
               </q-tooltip>
               <template slot>
                 <div
@@ -121,7 +124,7 @@
                   style="max-width: 180px"
                 >
                   <div class="ellipsis col-grow q-pr-sm">
-                    {{ farmatarMensagemWhatsapp(mensagem.body) }}
+                    {{ formatarMensagemWhatsapp(mensagem.body) }}
                   </div>
                   <q-icon
                     class="col"
@@ -150,7 +153,7 @@
           :class="{'q-mt-sm': mensagem.mediaType !== 'chat'}"
           class="q-message-container row items-end no-wrap ellipsis-3-lines"
         >
-          <div v-html="farmatarMensagemWhatsapp(mensagem.body)">
+          <div v-html="formatarMensagemWhatsapp(mensagem.body)">
           </div>
         </div>
       </div>
@@ -191,7 +194,7 @@ export default {
       abrirModalImagem: false,
       urlMedia: '',
 
-      ackIcons: { // Se ACK == 3 ou 4 entao color green
+      ackIcons: { // Si ACK == 3 o 4 entonces color verde
         0: 'mdi-clock-outline',
         1: 'mdi-check',
         2: 'mdi-check-all',
@@ -228,9 +231,9 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<!-- <style lang="scss">
 // .q-message-text {
 //   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 1px rgba(0, 0, 0, 0.14),
 //     0 2px 1px -1px rgba(0, 0, 0, 0.12);
 // }
-</style>
+</style> -->

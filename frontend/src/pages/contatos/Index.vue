@@ -1,8 +1,21 @@
 <template>
   <div>
+    <div v-if="!canAccessPage">
+      <q-banner dense inline-actions class="bg-red text-white">
+        <template v-slot:avatar>
+          <q-icon name="warning" />
+        </template>
+        Solo los administradores pueden acceder a esta página.
+        <template v-slot:action>
+          <q-btn flat dense @click="redirectHome">OK</q-btn>
+        </template>
+      </q-banner>
+    </div>
+  <div>
+    <div v-if="canAccessPage">
     <q-table
-      class="my-sticky-dynamic"
-      title="Contatos"
+      class="contact-table my-sticky-dynamic container-rounded-10"
+      title="Contactos"
       :id="`tabela-contatos-${isChatContact ? 'atendimento' : ''}`"
       :data="contacts"
       :columns="columns"
@@ -24,7 +37,7 @@
       }"
     >
       <template v-slot:top>
-        <div class="row col-2 q-table__title items-center ">
+        <div class="row full-width q-table__title items-center ">
           <q-btn
             v-if="isChatContact"
             class="q-mr-sm"
@@ -34,69 +47,65 @@
             icon="mdi-close"
             @click="$router.push({ name: 'chat-empty' })"
           />
-          Contatos
-        </div>
-        <q-space />
+          <h2 :class="$q.dark.isActive ? ('text-green') : ''">
+            <q-icon name="eva-people-outline q-pr-sm" />
+            Contactos
+          </h2>
+          <div class="contact-header full-width">
         <q-input
+        class="contact-search"
           :class="{
           'order-last q-mt-md': $q.screen.width < 500
         }"
           style="width: 300px"
-          dense
-          outlined
-          rounded
+          filled
           debounce="500"
           v-model="filter"
           clearable
-          placeholder="Localize"
+          placeholder="Localizar"
           @input="filtrarContato"
         >
           <template v-slot:prepend>
             <q-icon name="search" />
           </template>
         </q-input>
-        <q-space />
-        <q-btn-dropdown
-          color="primary"
-          label="Adicionar"
-          rounded
-          split
-          class="glossy"
+        <q-btn
+          class="generate-button btn-rounded-50 q-ml-md"
+          icon="eva-sync-outline"
+          label="Sincronizar Contactos"
+          @click="confirmarSincronizarContatos('whatsapp')"
+        />
+        <q-btn
+          class="generate-button btn-rounded-50 q-ml-md"
+          icon="eva-cloud-upload-outline"
+          label="Importar"
+          v-if="!isChatContact"
+          @click="modalImportarContatos = true"
+          >
+          <q-tooltip :offset="[5, 5]">
+            Nombre;Usuario<br>
+            Número;5551900000
+          </q-tooltip>
+        </q-btn>
+        <q-btn
+          class="generate-button btn-rounded-50 q-ml-md"
+          v-if="!isChatContact"
+          icon="eva-cloud-download-outline"
+          label="Exportar"
+          @click="handleExportContacts"
+        />
+        <q-btn
+          class="generate-button btn-rounded-50 q-ml-md"
+          icon="eva-person-add-outline"
+          label="Añadir"
           @click="selectedContactId = null; modalContato = true"
-        >
-          <q-list separator>
-            <q-item
-              clickable
-              v-close-popup
-              @click="confirmarSincronizarContatos"
-            >
-              <q-item-section>
-                <q-item-label>Importar do Whatsapp</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item
-              clickable
-              v-close-popup
-              @click="modalImportarContatos = true"
-            >
-              <q-item-section>
-                <q-item-label>Importar .CSV</q-item-label>
-              </q-item-section>
-            </q-item>
-            <q-item
-              clickable
-              v-close-popup
-              @click="handleExportContacts"
-            >
-              <q-item-section>
-                <q-item-label>Exportar</q-item-label>
-              </q-item-section>
-            </q-item>
-          </q-list>
-        </q-btn-dropdown>
-      </template>
-      <template v-slot:body-cell-profilePicUrl="props">
-        <q-td>
+        />
+        </div>
+        </div>
+
+        </template>
+      <template  v-slot:body-cell-profilePicUrl="props">
+        <q-td >
           <q-avatar style="border: 1px solid #9e9e9ea1 !important">
             <q-icon
               name="mdi-account"
@@ -131,28 +140,63 @@
           <q-btn
             flat
             round
-            icon="img:instagram-logo.png"
-            @click="handleSaveTicket(props.row, 'instagram')"
-            v-if="props.row.instagramPK"
-          />
-          <q-btn
-            flat
-            round
-            icon="img:telegram-logo.png"
-            @click="handleSaveTicket(props.row, 'telegram')"
-            v-if="props.row.telegramId"
-          />
-          <q-btn
-            flat
-            round
-            icon="edit"
+            icon="eva-edit-outline"
             @click="editContact(props.row.id)"
+            :class="$q.dark.isActive ? ('text-green') : ''"
           />
           <q-btn
             flat
             round
-            icon="mdi-delete"
+            icon="eva-trash-outline"
             @click="deleteContact(props.row.id)"
+            :class="$q.dark.isActive ? ('text-green') : ''"
+          />
+        </q-td>
+      </template>
+      <template v-slot:body-cell-number="props" >
+        <q-td>
+          <span v-if="props.row.number" class="blur-effect">
+            <a :class="$q.dark.isActive ? ('text-white') : ''" :href="getPhoneNumberLink(props.row.number)">
+              {{ props.row.number }}
+
+            </a>
+          </span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-email="props">
+        <q-td>
+          <span  v-if="props.row.email">
+            <a :class="$q.dark.isActive ? ('text-white') : ''" :href="'mailto:' + props.row.email">{{ props.row.email }}</a>
+          </span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-name="props">
+        <q-td>
+          <span  :class="$q.dark.isActive ? ('text-white') : ''" v-if="props.row.name">
+            {{ props.row.name }}
+          </span>
+        </q-td>
+      </template>
+      <template v-slot:body-cell-tags="props">
+      <q-td :props="props">
+        <span :class="$q.dark.isActive ? ('bg-black text-white') : ''" v-html="formatTags(props.row.tags)"></span>
+      </q-td>
+    </template>
+      <template v-slot:body-cell-disableBot="props">
+        <q-td class="text-center">
+          <q-icon
+            size="24px"
+            :name="props.value ? 'mdi-close-circle-outline' : 'mdi-check-circle-outline'"
+            :color="props.value ? 'negative' : 'positive'"
+          />
+        </q-td>
+      </template>
+      <template v-slot:body-cell-disableCampaign="props">
+        <q-td class="text-center">
+          <q-icon
+            size="24px"
+            :name="props.value ? 'mdi-close-circle-outline' : 'mdi-check-circle-outline'"
+            :color="props.value ? 'negative' : 'positive'"
           />
         </q-td>
       </template>
@@ -170,25 +214,38 @@
     <q-dialog
       v-model="modalImportarContatos"
       persistent
-      position="top"
       @show="abrirEnvioArquivo"
     >
-      <q-card style="width: 400px;">
-        <q-card-section class="row items-center">
-          <div class="text-h6">Selecione o arquivo</div>
+      <q-card class="modal-container container-rounded-10">
+
+        <q-card-actions align="right">
+          <q-btn
+            flat
+            dense
+            color="negative"
+            icon="eva-close"
+            v-close-popup
+            @click="isImportCSV = false; modalImportarContatos = false"
+          />
+        </q-card-actions>
+
+        <q-card-section class="items-center">
+          <div class="text-h6 text-center font-family-main">Importar Contactos</div>
         </q-card-section>
-        <q-card-section>
+        <div class="q-ma-lg container-border container-rounded-10">
+          <q-card-section>
           <q-file
+            rounded
             ref="PickerFileMessage"
             id="PickerFileMessage"
+            bg-color="blue-grey-1"
             outlined
             dense
-            rounded
             use-chips
             accept=".csv"
             v-model="file"
-            label="Arquivo de contatos"
-            hint="Colunas: Nome; Numero"
+            label="Importar contactos"
+            hint="El archivo debe contener las columnas Nombre y Número"
           >
             <template v-slot:prepend>
               <q-icon name="cloud_upload" />
@@ -196,134 +253,204 @@
           </q-file>
 
         </q-card-section>
-        <q-card-section class="row q-gutter-sm">
-          <div class="col-12">
-            <q-select
-              class="full-width"
-              outlined
-              dense
-              rounded
-              v-model="tags"
-              multiple
-              label="Etiquetas"
-              :options="etiquetas"
-              use-chips
-              option-value="id"
-              option-label="tag"
-              emit-value
-              map-options
-            >
-              <template v-slot:option="{ itemProps, itemEvents, opt, selected, toggleOption }">
-                <q-item
-                  v-bind="itemProps"
-                  v-on="itemEvents"
-                >
-                  <q-item-section>
-                    <q-item-label v-html="opt.tag"></q-item-label>
-                  </q-item-section>
-                  <q-item-section side>
-                    <q-checkbox
-                      :value="selected"
-                      @input="toggleOption(opt)"
+        </div>
+
+        <div class="q-ma-lg container-border container-rounded-10">
+          <q-card-section>
+          <q-card
+            class="bg-white q-mt-sm btn-rounded"
+            style="width: 100%"
+            bordered
+            flat
+          >
+            <q-card-section class="text-bold font-family-main q-pb-none">
+              Etiquetas
+              <q-separator />
+            </q-card-section>
+            <q-card-section class="q-pa-none">
+              <q-select
+                square
+                borderless
+                v-model="tags"
+                multiple
+                :options="etiquetas"
+                use-chips
+                option-value="id"
+                option-label="tag"
+                emit-value
+                map-options
+                dropdown-icon="add"
+              >
+                <template v-slot:option="{ itemProps, itemEvents, opt, selected, toggleOption }">
+                  <q-item
+                    v-bind="itemProps"
+                    v-on="itemEvents"
+                  >
+                    <q-item-section>
+                      <q-item-label v-html="opt.tag"></q-item-label>
+                    </q-item-section>
+                    <q-item-section side>
+                      <q-checkbox
+                        :value="selected"
+                        @input="toggleOption(opt)"
+                      />
+                    </q-item-section>
+                  </q-item>
+                </template>
+                <template v-slot:selected-item="{ opt }">
+                  <q-chip
+                    dense
+                    square
+                    color="white"
+                    text-color="primary"
+                    class="q-ma-xs row col-12 text-body1"
+                  >
+                    <q-icon
+                      :style="`color: ${opt.color}`"
+                      name="mdi-pound-box-outline"
+                      size="28px"
+                      class="q-mr-sm"
                     />
-                  </q-item-section>
-                </q-item>
-              </template>
-              <template v-slot:selected-item="{ opt }">
-                <q-chip
-                  dense
-                  square
-                  color="white"
-                  text-color="primary"
-                  class="q-ma-xs row col-12 text-body1"
-                >
-                  <q-icon
-                    :style="`color: ${opt.color}`"
-                    name="mdi-pound-box-outline"
-                    size="28px"
-                    class="q-mr-sm"
-                  />
-                  {{ opt.tag }}
-                </q-chip>
-              </template>
-              <template v-slot:no-option="{ itemProps, itemEvents }">
-                <q-item
-                  v-bind="itemProps"
-                  v-on="itemEvents"
-                >
-                  <q-item-section>
-                    <q-item-label class="text-negative text-bold">
-                      Ops... Sem etiquetas criadas!
-                    </q-item-label>
-                    <q-item-label caption>
-                      Cadastre novas etiquetas na administração de sistemas.
-                    </q-item-label>
-                  </q-item-section>
-                </q-item>
-              </template>
+                    {{ opt.tag }}
+                  </q-chip>
+                </template>
+                <template v-slot:no-option="{ itemProps, itemEvents }">
+                  <q-item
+                    v-bind="itemProps"
+                    v-on="itemEvents"
+                  >
+                    <q-item-section>
+                      <q-item-label class="text-negative text-bold">
+                        Ops... ¡Sin etiquetas creadas!
+                      </q-item-label>
+                      <q-item-label caption>
+                        Registra nuevas etiquetas en la administración del sistema.
+                      </q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </template>
 
-            </q-select>
-          </div>
-          <div class="col-12">
-            <q-select
-              outlined
-              dense
-              rounded
-              class="full-width"
-              v-model="wallets"
-              multiple
-              :max-values="1"
-              :options="usuarios"
-              use-chips
-              label="Carteira"
-              option-value="id"
-              option-label="name"
-              emit-value
-              map-options
-            >
-            </q-select>
+              </q-select>
+            </q-card-section>
+          </q-card>
+        </q-card-section>
+        <q-card-section>
+          <q-card
+            class="bg-white q-mt-sm btn-rounded"
+            style="width: 100%"
+            bordered
+            flat
+          >
+            <q-card-section class="text-bold font-family-main q-pb-none">
+              Cartera
+              <q-separator />
+            </q-card-section>
+            <q-card-section class="q-pa-none">
+              <q-select
+                square
+                borderless
+                v-model="wallets"
+                multiple
+                :max-values="1"
+                :options="usuarios"
+                use-chips
+                option-value="id"
+                option-label="name"
+                emit-value
+                map-options
+                dropdown-icon="add"
+              >
+              </q-select>
+            </q-card-section>
+          </q-card>
+        </q-card-section>
+        </div>
 
-          </div>
+        <q-card-section>
 
         </q-card-section>
         <q-card-actions align="right">
           <q-btn
-            class="q-ml-md"
+            class="q-ml-md btn-rounded-50"
             color="negative"
             label="Cancelar"
             v-close-popup
-            rounded
             @click="isImportCSV = false; modalImportarContatos = false"
           />
 
           <q-btn
-            class="q-ml-md"
+            class="q-ml-md btn-rounded-50"
             color="positive"
+            icon="eva-checkmark"
             label="Confirmar"
-            rounded
             @click="handleImportCSV"
           />
           <q-btn
-            class="q-ml-md"
-            color="primary"
-            label="Baixar Modelo"
-            rounded
+            class="q-ml-md generate-button btn-rounded-50"
+            icon="eva-download"
+            label="Descargar Modelo"
             @click="downloadModelCsv"
           />
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="modalTransferirTicket"
+      @hide="modalTransferirTicket = false"
+      persistent>
+      <q-card class="q-pa-md"
+        style="width: 500px">
+        <q-card-section>
+          <div class="text-h6">Seleccione el destino:</div>
+        </q-card-section>
+        <q-card-section>
+          <q-select square
+            outlined
+            v-model="filaSelecionada"
+            :options="filas"
+            emit-value
+            map-options
+            option-value="id"
+            option-label="queue"
+            label="Fila de destino" />
+        </q-card-section>
+        <q-card-section>
+          <q-select square
+            outlined
+            v-model="usuarioSelecionado"
+            :options="usuariosTransferencia.filter(filterUsers)"
+            emit-value
+            map-options
+            option-value="id"
+            option-label="name"
+            label="Usuario destino" />
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat
+            label="Salir"
+            color="negative"
+            v-close-popup
+            class="q-mr-lg" />
+          <q-btn flat
+            label="Guardar"
+            color="primary"
+            @click="confirmarTransferenciaTicket" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+    </div>
   </div>
 </template>
 
 <script>
 const userId = +localStorage.getItem('userId')
-import { CriarTicket } from 'src/service/tickets'
+import { CriarTicket, AtualizarTicket } from 'src/service/tickets'
 import { ListarContatos, ImportarArquivoContato, DeletarContato, SyncronizarContatos, ExportarArquivoContato } from 'src/service/contatos'
 import ContatoModal from './ContatoModal'
 import { ListarUsuarios } from 'src/service/user'
 import { ListarEtiquetas } from 'src/service/etiquetas'
 import { mapGetters } from 'vuex'
+import { ListarFilas } from 'src/service/filas'
+import { ListarConfiguracoes } from 'src/service/configuracoes'
 
 export default {
   name: 'IndexContatos',
@@ -337,11 +464,22 @@ export default {
     }
   },
   computed: {
+    canAccessPage() {
+      return this.ContactAdmin !== 'enabled' || this.userProfile === 'admin'
+    },
     ...mapGetters(['whatsapps'])
   },
   data () {
     return {
+      modalTransferirTicket: false,
+      usuarioSelecionado: null,
+      filaSelecionada: null,
+      filas: [],
+      usuariosTransferencia: [],
       contacts: [],
+      userProfile: 'user',
+      ContactAdmin: null,
+      ticketFocado: '',
       modalImportarContatos: false,
       modalContato: false,
       file: [],
@@ -367,7 +505,7 @@ export default {
         { name: 'profilePicUrl', label: '', field: 'profilePicUrl', style: 'width: 50px', align: 'center' },
         {
           name: 'name',
-          label: 'Nome',
+          label: 'Nombre',
           field: 'name',
           align: 'left',
           style: 'width: 300px',
@@ -378,43 +516,54 @@ export default {
             return r.name
           }
         },
-        { name: 'number', label: 'WhatsApp', field: 'number', align: 'center', style: 'width: 300px' },
+        {
+          name: 'number',
+          label: 'WhatsApp',
+          field: 'number',
+          align: 'center',
+          style: 'width: 300px'
+        },
         {
           name: 'wallet',
-          label: 'Carteira',
+          label: 'Cartera',
           field: 'wallet',
           align: 'center',
           style: 'width: 300px'
           // format: v => v ? v.map(n => n.name)?.join(', ') : ''
         },
         {
-          name: 'instagramPK',
-          label: 'Instagram',
-          field: 'instagramPK',
+          name: 'tags',
+          label: 'Etiquetas',
+          field: 'tags',
           align: 'center',
-          style: 'width: 300px',
-          format: (v, r) => {
-            return r.instagramPK ? r.pushname : ''
-          }
-        },
-        {
-          name: 'telegramId',
-          label: 'Id Telegram',
-          field: 'telegramId',
-          align: 'center',
-          style: 'width: 300px',
-          format: (v, r) => {
-            return r.telegramId ? r.pushname : ''
-          }
+          style: 'width: 300px'
         },
         { name: 'email', label: 'Email', field: 'email', style: 'width: 500px', align: 'left' },
-        { name: 'acoes', label: 'Ações', field: 'acoes', align: 'center' }
+        { name: 'disableBot', label: 'BOT', field: 'disableBot', align: 'center' },
+        { name: 'disableCampaign', label: 'Campaña', field: 'disableCampaign', align: 'center' },
+        { name: 'acoes', label: 'Acciones', field: 'acoes', align: 'center' }
       ]
     }
   },
   methods: {
-    downloadModelCsv () {
-      const csvContent = 'nome;numero\nCliente;5511999999999'
+    redirectHome() {
+      this.$router.push('/')
+    },
+    async listarConfiguracoes () {
+      const { data } = await ListarConfiguracoes()
+      localStorage.setItem('configuracoes', JSON.stringify(data))
+      const ContactAdmin = data.find(config => config.key === 'ContactAdmin')
+      this.ContactAdmin = ContactAdmin.value
+    },
+    formatTags(tags) {
+      if (!Array.isArray(tags)) return ''
+
+      return tags.map(tag => {
+        return `<span style="background-color: ${tag.color}; padding: 2px 8px; border-radius: 4px; color: white; margin-right: 4px;">${tag.tag}</span>`
+      }).join('')
+    },
+    downloadModelCsv() {
+      const csvContent = 'nombre;número\nUsuario;5551900000'
       const blob = new Blob([csvContent], { type: 'text/csv' })
       const link = document.createElement('a')
       link.href = window.URL.createObjectURL(blob)
@@ -423,7 +572,14 @@ export default {
       link.click()
       document.body.removeChild(link)
     },
-    abrirEnvioArquivo (event) {
+    getPhoneNumberLink(number) {
+      if ((number.startsWith('55')) && (number.charAt(4) > 5)) {
+        return `tel:${number.slice(0, 4)}9${number.slice(-8)}`
+      } else {
+        return `tel:${number}`
+      }
+    },
+    abrirEnvioArchivo (event) {
       this.isImportCSV = true
       this.$refs.PickerFileMessage.pickFiles(event)
     },
@@ -431,8 +587,8 @@ export default {
       try {
         this.$q.notify({
           type: 'warning',
-          message: 'Isso pode demorar um pouco.',
-          caption: 'Após finalizar, a página será atualizada.',
+          message: 'Esto puede tardar un poco.',
+          caption: 'Al finalizar, la página se actualizará.',
           position: 'top'
         })
         const formData = new FormData()
@@ -444,10 +600,40 @@ export default {
           formData.append('wallets', this.wallets)
         }
         await ImportarArquivoContato(formData)
-        this.$notificarSucesso('Contatos importados com sucesso!')
+        this.$notificarSucesso('Contactos importados con éxito!')
         this.$router.go(0)
       } catch (err) {
         this.$notificarErro(err)
+      }
+    },
+    async listarFilas() {
+      return new Promise((resolve, reject) => {
+        ListarFilas()
+          .then(({ data }) => {
+            this.filas = data.filter(fila => fila.isActive)
+            this.modalTransferirTicket = true
+            return this.listarUsuariosTransferencia()
+          })
+          .then(() => {
+            this.$once('modalClosed', () => {
+              resolve()
+            })
+          })
+          .catch(error => {
+            console.error(error)
+            this.$notificarErro('Problema al cargar filas', error)
+            reject(error)
+          })
+      })
+    },
+    async listarUsuariosTransferencia () {
+      try {
+        const { data } = await ListarUsuarios()
+        this.usuariosTransferencia = data.users
+        this.modalTransferirTicket = true
+      } catch (error) {
+        console.error(error)
+        this.$notificarErro('Problema al cargar usuarios', error)
       }
     },
     async listarUsuarios () {
@@ -456,17 +642,60 @@ export default {
         this.usuarios = data.users
       } catch (error) {
         console.error(error)
-        this.$notificarErro('Problema ao carregar usuários', error)
+        this.$notificarErro('Problema al cargar usuarios', error)
       }
     },
     async listarEtiquetas () {
       const { data } = await ListarEtiquetas(true)
       this.etiquetas = data
     },
+    filterUsers (element, index, array) {
+      const fila = this.filaSelecionada
+      if (fila == null) return true
+      const queues_valid = element.queues.filter(function (element, index, array) {
+        return (element.id == fila)
+      })
+      return (queues_valid.length > 0)
+    },
+    async confirmarTransferenciaTicket () {
+      // if (!this.filaSelecionada) return
+      // if(!this.usuarioSelecionado){
+      //   this.$q.notify({
+      //     type: 'negative',
+      //     message: 'Seleccione un usuario.',
+      //     progress: true,
+      //     actions: [{
+      //       icon: 'close',
+      //       round: true,
+      //       color: 'white'
+      //     }]
+      //   })
+      //   return
+      // }
+      await AtualizarTicket(this.ticketFocado.id, {
+        userId: this.usuarioSelecionado || userId,
+        queueId: this.filaSelecionada || null,
+        status: 'open',
+        isTransference: 1
+      })
+      this.$q.notify({
+        type: 'positive',
+        message: 'Ticket transferido.',
+        progress: true,
+        actions: [{
+          icon: 'close',
+          round: true,
+          color: 'white'
+        }]
+      })
+      this.modalTransferirTicket = false
+      this.$emit('modalClosed')
+      this.$store.commit('TICKET_FOCADO', {})
+    },
     downloadFile (downloadLink) {
       const link = document.createElement('a')
       link.href = downloadLink
-      link.setAttribute('download', 'contatos.xlsx')
+      link.setAttribute('download', 'contactos.xlsx')
       link.style.display = 'none'
       document.body.appendChild(link)
       link.click()
@@ -479,7 +708,7 @@ export default {
           this.downloadFile(downloadLink)
         })
         .catch(error => {
-          console.error('Erro ao exportar contatos:', error)
+          console.error('Error al exportar contactos:', error)
         })
     },
     LOAD_CONTACTS (contacts) {
@@ -523,6 +752,12 @@ export default {
     async listarContatos () {
       this.loading = true
       const { data } = await ListarContatos(this.params)
+      // console.log(data.contacts)
+      // const user = this.usuario
+      // console.log(data)
+      // data.contacts = data.contacts.filter(function (element) {
+      //   return (user.profile == 'admin' || element.tickets[0].userId == user.userId)
+      // })
       this.params.hasMore = data.hasMore
       this.LOAD_CONTACTS(data.contacts)
       this.loading = false
@@ -538,7 +773,6 @@ export default {
     },
     async handleSaveTicket (contact, channel) {
       if (!contact.id) return
-
       const itens = []
       const channelId = null
       this.whatsapps.forEach(w => {
@@ -546,10 +780,9 @@ export default {
           itens.push({ label: w.name, value: w.id })
         }
       })
-
       this.$q.dialog({
-        title: `Contato: ${contact.name}`,
-        message: 'Selecione o canal para iniciar o atendimento.',
+        title: `Contacto: ${contact.name}`,
+        message: 'Seleccione el canal para iniciar la atención.',
         options: {
           type: 'radio',
           model: channelId,
@@ -559,13 +792,11 @@ export default {
         },
         ok: {
           push: true,
-          rounded: true,
           color: 'positive',
           label: 'Iniciar'
         },
         cancel: {
           push: true,
-          rounded: true,
           label: 'Cancelar',
           color: 'negative'
         },
@@ -582,10 +813,12 @@ export default {
             channelId,
             status: 'open'
           })
+          this.ticketFocado = ticket
+          await this.listarFilas()
           await this.$store.commit('SET_HAS_MORE', true)
           await this.$store.dispatch('AbrirChatMensagens', ticket)
           this.$q.notify({
-            message: `Atendimento Iniciado || ${ticket.contact.name} - Ticket: ${ticket.id}`,
+            message: `Atención Iniciada || ${ticket.contact.name} - Ticket: ${ticket.id}`,
             type: 'positive',
             position: 'top',
             progress: true,
@@ -598,11 +831,20 @@ export default {
           this.$router.push({ name: 'chat', params: { ticketId: ticket.id } })
         } catch (error) {
           if (error.status === 409) {
+            console.log(error)
             const ticketAtual = JSON.parse(error.data.error)
-            this.abrirAtendimentoExistente(contact, ticketAtual)
-            return
+            if (ticketAtual.whatsappId === null) {
+              await AtualizarTicket(ticketAtual.id, {
+                whatsapp: channelId
+              })
+              this.abrirAtendimentoExistente(contact, ticketAtual)
+              return
+            } else {
+              this.abrirAtendimentoExistente(contact, ticketAtual)
+              return
+            }
           }
-          this.$notificarErro('Ocorreu um erro!', error)
+          this.$notificarErro('¡Ocurrió un error!', error)
         }
         this.loading = false
       })
@@ -613,18 +855,16 @@ export default {
     },
     deleteContact (contactId) {
       this.$q.dialog({
-        title: 'Atenção!! Deseja realmente deletar o contato? ',
-        // message: 'Mensagens antigas não serão apagadas no whatsapp.',
+        title: '¡Atención! ¿Realmente desea eliminar el contacto?',
+        // message: 'Los mensajes antiguos no se eliminarán en WhatsApp.',
         cancel: {
-          label: 'Não',
+          label: 'No',
           color: 'primary',
-          rounded: true,
           push: true
         },
         ok: {
-          label: 'Sim',
+          label: 'Sí',
           color: 'negative',
-          rounded: true,
           push: true
         },
         persistent: true
@@ -637,7 +877,7 @@ export default {
               type: 'positive',
               progress: true,
               position: 'top',
-              message: 'Contato deletado!',
+              message: '¡Contacto eliminado!',
               actions: [{
                 icon: 'close',
                 round: true,
@@ -647,13 +887,13 @@ export default {
           })
           .catch(error => {
             console.error(error)
-            this.$notificarErro('Não é possível deletar o contato', error)
+            this.$notificarErro('No se puede eliminar el contacto', error)
           })
         this.loading = false
       })
     },
     abrirChatContato (ticket) {
-      // caso esteja em um tamanho mobile, fechar a drawer dos contatos
+      // en caso de estar en tamaño móvil, cerrar el drawer de los contactos
       if (this.$q.screen.lt.md && ticket.status !== 'pending') {
         this.$root.$emit('infor-cabecalo-chat:acao-menu')
       }
@@ -663,15 +903,15 @@ export default {
     },
     abrirAtendimentoExistente (contato, ticket) {
       this.$q.dialog({
-        title: 'Atenção!!',
-        message: `${contato.name} possui um atendimento em curso (Atendimento: ${ticket.id}). Deseja abrir o atendimento?`,
+        title: '¡Atención!',
+        message: `${contato.name} tiene una atención en curso (Atención: ${ticket.id}). ¿Desea abrir la atención?`,
         cancel: {
-          label: 'Não',
+          label: 'No',
           color: 'primary',
           push: true
         },
         ok: {
-          label: 'Sim',
+          label: 'Sí',
           color: 'negative',
           push: true
         },
@@ -681,45 +921,57 @@ export default {
           this.abrirChatContato(ticket)
         } catch (error) {
           this.$notificarErro(
-            'Não foi possível atualizar o token',
+            'No se pudo actualizar el token',
             error
           )
         }
       })
     },
-    confirmarSincronizarContatos () {
+    confirmarSincronizarContatos(channel) {
+      const itens = []
+      const channelId = null
+      console.log(this.whatsapps)
+      this.whatsapps.forEach(w => {
+        if (w.type === channel) {
+          itens.push({ label: w.name, value: w.id })
+        }
+      })
       this.$q.dialog({
-        title: 'Atenção!! Deseja realmente sincronizar os contatos? ',
-        message: 'Todas os contatos com os quais você já conversou pelo Whatsapp serão criados. Isso pode demorar um pouco...',
+        title: '¡Atención! ¿Realmente desea sincronizar los contactos?',
+        message: 'Todos los contactos con los que ya ha conversado por WhatsApp serán creados. Esto puede tardar un poco...',
+        options: {
+          type: 'radio',
+          model: channelId, // Use el channelId como modelo
+          isValid: v => !!v,
+          items: itens
+        },
         cancel: {
-          label: 'Não',
-          rounded: true,
+          label: 'No',
           color: 'primary',
           push: true
         },
         ok: {
-          label: 'Sim',
-          rounded: true,
+          label: 'Sí',
           color: 'warning',
           push: true
         },
         persistent: true
-      }).onOk(async () => {
+      }).onOk(async (channelId) => {
         this.loading = true
-        await this.sincronizarContatos()
+        await this.sincronizarContatos(channelId)
         this.loading = false
       })
     },
-    async sincronizarContatos () {
+    async sincronizarContatos (channelId) {
       try {
         this.loading = true
-        await SyncronizarContatos()
+        await SyncronizarContatos(channelId)
         this.$q.notify({
           type: 'info',
           progress: true,
           position: 'top',
           textColor: 'black',
-          message: 'Contatos estão sendo atualizados. Isso pode levar um tempo...',
+          message: 'Los contactos están siendo actualizados. Esto puede tardar un tiempo...',
           actions: [{
             icon: 'close',
             round: true,
@@ -728,14 +980,14 @@ export default {
         })
       } catch (error) {
         console.error(error)
-        this.$notificarErro('Ocorreu um erro ao sincronizar os contatos', error)
+        this.$notificarErro('Ocurrió un error al sincronizar los contactos', error)
         this.loading = true
       }
       this.loading = true
     }
-
   },
   mounted () {
+    this.listarConfiguracoes()
     this.usuario = JSON.parse(localStorage.getItem('usuario'))
     this.userProfile = localStorage.getItem('profile')
     this.listarContatos()
@@ -774,4 +1026,7 @@ export default {
   thead
     th
       height: 55px
+
+.blur-effect
+  filter: blur(0px)
 </style>

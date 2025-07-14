@@ -1,0 +1,92 @@
+/* Container que encapsula todo o cabeçalho da página */
+.dashboard-header
+    background-color: transparent
+    box-shadow: none !important
+    
+
+.dashboard-header > .row
+    padding-left: 0 !important
+    padding-right: 0 !important
+
+/* Div que armazena o titulo da página */
+.dashboard-title
+    font-family: "Josefin Sans"
+    color: #2f2f2f
+
+/* Div que armazena os inputs do header */
+.dashboard-header-inputs
+    display: flex !important
+    flex-direction: row !important
+    justify-content: end !important
+
+.generate-button
+    background: linear-gradient(150deg, rgba(86,144,240,1) 0%, rgba(94,86,246,1) 100%) !important
+    color: white !important
+
+.generate-button-dark
+    background: green !important
+    color: white !important
+
+/* Div que armazena todos os cards*/
+
+.dashboard-container-cards
+    background-color: transparent
+    box-shadow: none !important
+
+.dashboard-cards > .row
+    width: 100%
+    justify-content: space-between !important
+    background: transparent !important
+    display: grid
+    grid-template-columns: 270px 270px 270px 270px 270px 270px
+    grid-template-rows: 154px
+
+.my-card
+    width: 270px
+    background-color: white
+    color: #2f2f2f
+    height: 100% !important
+    display: flex
+    align-items: center
+    justify-content: center
+
+.my-card-number, .my-card-text
+    font-family: "Josefin Sans"
+
+.my-card-text
+    font-size: 1rem
+
+.my-card-number
+    display: flex
+    justify-content: center
+    align-items: center
+    margin: 0 !important
+
+/* Titulo da tabela */
+
+.q-table__title
+    font-family: "Josefin Sans"
+
+@media (max-width: 1800px)
+    .dashboard-cards > .row
+        display: flex
+        flex-direction: row
+        justify-content: center !important
+        gap: 0.5vh
+
+@media (max-width: 600px)
+    .dashboard-header
+        height: auto !important
+        padding-bottom: 0 !important
+
+    .dashboard-header > div
+        height: auto !important
+        margin-bottom: 0 !important
+        padding-bottom: 0 !important
+
+    .my-card
+        flex-direction: column
+        justify-content: center !important
+        gap: 2vh
+        width: 100%
+

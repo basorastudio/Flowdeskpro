@@ -132,42 +132,42 @@ export const estadosBR = [
 
 export const messagesLog = {
   access: {
-    message: 'Acessou o ticket',
+    message: 'Accedió al ticket',
     color: 'grey-8',
     icon: 'mdi-eye'
   },
   closed: {
-    message: 'Resolveu o ticket',
+    message: 'Resolvió el ticket',
     color: 'positive',
     icon: 'mdi-check-circle-outline'
   },
   create: {
-    message: 'Ticket criado',
+    message: 'Ticket creado',
     color: 'green-6',
     icon: 'mdi-plus-circle'
   },
   delete: {
-    message: 'Deletou o Ticket',
+    message: 'Eliminó el Ticket',
     color: 'negative',
     icon: 'mdi-delete'
   },
   open: {
-    message: 'Iniciou o atendimento',
+    message: 'Inició la atención',
     color: 'primary',
     icon: 'mdi-play-circle-outline'
   },
   pending: {
-    message: 'Retornou atendimento para fila de pendentes',
+    message: 'Devolvió la atención a la fila de pendientes',
     color: 'amber',
     icon: 'mdi-account-convert'
   },
   transfered: {
-    message: 'Transferiu o atendimento',
+    message: 'Transferió la atención',
     color: 'teal-3',
     icon: 'mdi-account-arrow-right'
   },
   receivedTransfer: {
-    message: 'Recebeu o atendimento por transferência',
+    message: 'Recibió la atención por transferencia',
     color: 'teal-5',
     icon: 'mdi-account-arrow-left'
   },
@@ -177,17 +177,17 @@ export const messagesLog = {
     icon: 'mdi-arrow-decision'
   },
   userDefine: {
-    message: 'Bot: Usuário definido',
+    message: 'Bot: Usuario definido',
     color: 'cyan-2',
     icon: 'mdi-account-check'
   },
   retriesLimitQueue: {
-    message: 'Bot: Fila definida (Limite de tentativas)',
+    message: 'Bot: Fila definida (Límite de intentos)',
     color: 'green-2',
     icon: 'mdi-arrow-decision'
   },
   retriesLimitUserDefine: {
-    message: 'Bot: Usuário definido (Limite de tentativas)',
+    message: 'Bot: Usuario definido (Límite de intentos)',
     color: 'cyan-2',
     icon: 'mdi-account-check'
   },
@@ -197,7 +197,7 @@ export const messagesLog = {
     icon: 'mdi-robot'
   },
   autoClose: {
-    message: 'Bot: Atendimento fechado pelo cliente',
+    message: 'Bot: Atención cerrada automáticamente',
     color: 'blue-8',
     icon: 'mdi-check-circle-outline'
   }

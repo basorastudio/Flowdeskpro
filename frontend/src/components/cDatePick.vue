@@ -13,7 +13,7 @@
       v-on="$listeners"
       :error="cError"
       :error-message="cErrorMessage"
-      :ruler="[val => dateIsValid(val) || 'Data inválida!' ]"
+      :ruler="[val => dateIsValid(val) || '¡Fecha inválida!' ]"
     >
       <template v-slot:append>
         <q-icon
@@ -92,13 +92,30 @@ export default {
   },
   computed: {
     cValue () {
-      return this.value ? this.value : this.dateSelect ? format(parse(this.dateSelect, 'dd/MM/yyyy', new Date()), 'yyyy-MM-dd') : null
+      if (this.value) {
+        // Tenta parsear a data do formato completo com hora e fuso horário
+        const parseDate = parse(this.value, 'yyyy-MM-dd HH:mm:ss.SSS X', new Date())
+        // Verifica se a data é válida
+        if (isValid(parseDate)) {
+          return format(parseDate, 'yyyy-MM-dd')
+        } else {
+          // Caso não seja válida, retorna a string original ou null
+          return this.value
+        }
+      }
+      if (this.dateSelect) {
+        const parseDate = parse(this.dateSelect, 'dd/MM/yyyy', new Date())
+        return format(parseDate, 'yyyy-MM-dd')
+      }
+      return null
     },
     cQDate () {
-      if (isValid(this.cValue)) {
-        return format(this.cValue, 'dd/MM/yyyy')
+      if (this.cValue) {
+        // Converte a data do formato 'yyyy-MM-dd' para 'dd/MM/yyyy'
+        const parseDate = parse(this.cValue, 'yyyy-MM-dd', new Date())
+        return isValid(parseDate) ? format(parseDate, 'dd/MM/yyyy') : this.cValue
       }
-      return this.cValue ? format(parse(this.cValue, 'yyyy-MM-dd', new Date()), 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')
+      return format(new Date(), 'dd/MM/yyyy')
     },
     cError () {
       if (this.error == 'NI') {
@@ -132,7 +149,7 @@ export default {
         date = `${dt.day}/${dt.month}/${dt.year}`
       }
       const parseDate = parse(date, 'dd/MM/yyyy', new Date())
-      this.$emit('input', format(parseDate, 'yyyy-MM-dd'))
+      this.$emit('input', format(parseDate, 'yyyy-MM-dd HH:mm:ss.SSS X'))
       this.$refs.qDateProxy.hide()
     },
     dateIsValid (d) {

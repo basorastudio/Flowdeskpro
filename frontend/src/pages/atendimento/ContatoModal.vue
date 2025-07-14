@@ -2,10 +2,10 @@
   <q-dialog v-model="isVisible">
     <q-card>
       <q-card-section>
-        <div class="text-h6">Adicionar Contato</div>
+        <div class="text-h6">Agregar contacto</div>
       </q-card-section>
       <q-card-section>
-        <q-input v-model="localContact.name" label="Nome" />
+        <q-input v-model="localContact.name" label="Nombre" />
         <q-input v-model="localContact.number" label="Número" />
       </q-card-section>
       <q-card-actions align="right">

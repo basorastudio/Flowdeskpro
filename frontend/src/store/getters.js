@@ -15,6 +15,17 @@ const getters = {
   hasMore: state => state.atendimentoTicket.hasMore,
   whatsapps: state => state.whatsapp.whatsApps,
   isSuporte: state => state.user.isSuporte,
-  isAdmin: state => state.user.isAdmin
+  isAdmin: state => state.user.isAdmin,
+  empresas: state => state.empresa.empresas,
+  listaUsuarios: state => state.chatInterno.listaUsuarios,
+  listaGrupos: state => state.chatInterno.listaGrupos,
+  unreadMessageInterna: state => state.chatInterno.unreadMessageInterna,
+  mensagemChatInterno: state => state.chatInterno.mensagemChatInterno,
+  userChat: state => state.chatInterno.userChat,
+  chatFocado: state => state.chatInterno.chatFocado,
+  notificacaoChatInterno: state => state.chatInterno.notificacaoChatInterno,
+  notificacoesChat: state => state.chatInterno.notificacoesChat,
+  showMenu: state => state.usersApp.showMenu,
+  notificacaoTicket: state => state.atendimentoTicket.notificacaoTicket
 }
 export default getters

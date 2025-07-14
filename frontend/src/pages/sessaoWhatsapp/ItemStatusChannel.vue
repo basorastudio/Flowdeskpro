@@ -25,36 +25,36 @@
       </q-item-section>
       <q-item-section>
         <q-item-label v-if="item.status == 'qrcode'">
-          <span class="text-weight-medium"> Esperando leitura do QR Code </span>
-          <span class="row col"> Clique no botão 'QR CODE' e leia o QR Code com o seu celular para iniciar a sessão
+          <span class="text-weight-medium"> Esperando la lectura del código QR </span>
+          <span class="row col"> Haga clic en el botón 'Código QR' y lea el código QR con su teléfono para iniciar la sesión
           </span>
         </q-item-label>
         <q-item-label v-if="item.status == 'DISCONNECTED'">
-          <span class="text-weight-medium"> Falha ao iniciar comunicação para este canal. </span>
+          <span class="text-weight-medium"> No se pudo comenzar la comunicación para este canal. </span>
           <span class="row col"
-            v-if="item.type === 'whatsapp'"> Certifique-se de que seu celular esteja conectado à internet e tente
-            novamente, ou solicite um novo QR Code </span>
+            v-if="item.type === 'whatsapp'"> Asegúrese de que su teléfono esté conectado a Internet e intente
+ De nuevo, o solicite un nuevo código QR </span>
           <span class="row col"
-            v-if="item.type === 'telegram'"> Tente conectar novamente. Caso o erro permaneça, confirme se o token está
-            correto.</span>
+            v-if="item.type === 'telegram'"> Intenta conectarte de nuevo. Si el error permanece, confirme si el token es
+ correcto.</span>
           <span class="row col"
-            v-if="item.type === 'instagram'"> Tente conectar novamente. Caso o erro permaneça, confirme se as
-            credenciais estão corretas.</span>
+            v-if="item.type === 'instagram'"> Intenta conectarte de nuevo. Si el error permanece, confirme si el
+ Las credenciales son correctas.</span>
         </q-item-label>
         <q-item-label v-if="item.status == 'CONNECTED'">
-          <span class="text-weight-medium"> Conexão estabelecida! </span>
+          <span class="text-weight-medium"> ¡Conexión establecida! </span>
         </q-item-label>
         <q-item-label v-if="['PAIRING', 'TIMEOUT'].includes(item.status)">
-          <span class="text-weight-medium"> A conexão com o celular foi perdida </span>
-          <span class="row col"> Certifique-se de que seu celular esteja conectado à internet e o WhatsApp esteja
-            aberto, ou clique no botão 'Desconectar' para obter um novo QR Code </span>
+          <span class="text-weight-medium"> La conexión con el teléfono celular se perdió </span>
+          <span class="row col"> Asegúrese de que su teléfono esté conectado a Internet y WhatsApp esté
+ Abra o haga clic en el botón 'Desconectar' para obtener un nuevo código QR </span>
         </q-item-label>
         <q-item-label v-if="item.status == 'OPENING'">
-          <span class="text-weight-medium"> Estabelecendo conexão. </span>
-          <span class="row col"> Isso poderá demorar um pouco... </span>
+          <span class="text-weight-medium"> Establecimiento de conexión. </span>
+          <span class="row col"> Esto puede llevar un tiempo ... </span>
         </q-item-label>
         <q-item-label caption>
-          Última Atualização: {{ formatarData(item.updatedAt, 'dd/MM/yyyy HH:mm') }}
+          Última actualización: {{ formatarData(item.updatedAt, 'dd/MM/yyyy HH:mm') }}
         </q-item-label>
       </q-item-section>
     </q-item>
@@ -62,7 +62,7 @@
 </template>
 <script>
 import { format, parseISO } from 'date-fns'
-import pt from 'date-fns/locale/pt-BR/index'
+import es from 'date-fns/locale/es/index'
 
 export default {
   name: 'ItemStatusChannel',
@@ -74,7 +74,7 @@ export default {
   },
   methods: {
     formatarData (data, formato) {
-      return format(parseISO(data), formato, { locale: pt })
+      return format(parseISO(data), formato, { locale: es })
     }
   }
 }

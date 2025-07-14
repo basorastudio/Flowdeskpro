@@ -51,6 +51,13 @@ export function LocalizarMensagens (params) {
   })
 }
 
+export function CountMensage (params) {
+  return request({
+    url: '/count/messages',
+    method: 'get',
+    params
+  })
+}
 export function EnviarMensagemTexto (ticketId, data) {
   return request({
     url: `/messages/${ticketId}`,
@@ -92,5 +99,37 @@ export function EditarMensagem (mensagem) {
     url: `/messages/edit/${mensagem.messageId}`,
     method: 'post',
     data: mensagem
+  })
+}
+
+export function ReagirMensagem (data) {
+  return request({
+    url: '/messages/reactions/${data.messageId}',
+    method: 'post',
+    data
+  })
+}
+
+export function FecharemMassaTickets (data) {
+  return request({
+    url: '/tickets/close-tickets',
+    method: 'post',
+    data
+  })
+}
+
+export function ApagaremMassaTickets (data) {
+  return request({
+    url: '/tickets/del-tickets',
+    method: 'post',
+    data
+  })
+}
+
+export function ListarAgendamento(params) {
+  return request({
+    url: '/schedule',
+    method: 'get',
+    params
   })
 }

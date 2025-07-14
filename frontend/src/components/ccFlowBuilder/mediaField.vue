@@ -11,8 +11,7 @@
         <q-file
           style="display: none"
           :loading="loading"
-          rounded
-          label="Mídia composição mensagem"
+          label="Mensaje de composición de medios"
           ref="PickerFileMessage"
           v-model="file"
           class="col-grow"
@@ -24,9 +23,9 @@
           append
           :max-files="1"
           counter
-          :max-file-size="10242880"
-          :max-total-size="10242880"
-          accept=".txt, .jpg, .png, image/jpeg, .jpeg, image/*, .pdf, .doc, .docx, .xls, .xlsx, .zip, .ppt, .pptx, .mp4, .mp3, .ogg, .mpeg"
+          :max-file-size="52428800"
+          :max-total-size="52428800"
+          accept=".txt, .jpg, .png, image/jpeg, .jpeg, image/*, .pdf, .doc, .docx, .xls, .xlsx, .zip, .ppt, .pptx, .mp4, .mp3, .ogg"
           @rejected="onRejectedFiles"
           @input="getMediaUrl"
         />
@@ -53,7 +52,7 @@
             class="no-scroll hide-scrollbar"
             :src="cMediaUrl"
           >
-            Faça download do PDF
+          Descargue el PDF
             <!-- alt : <a href="mensagem.cMediaUrl"></a> -->
           </iframe>
           <video
@@ -69,7 +68,7 @@
                   borderBottomLeftRadius: 8px;
                   borderBottomRightRadius: 8px;"
             type="video/mp4"
-          >
+                >
           </video>
           <audio
             v-if="cMediaUrl && $attrs.element.data.type.indexOf('audio') != -1"
@@ -131,10 +130,25 @@
             @click="$refs.PickerFileMessage.pickFiles()"
           >
             <q-tooltip>
-              Substituir Arquivo
+              Reemplazar el archivo
             </q-tooltip>
           </q-btn>
         </div>
+        <!-- <q-input
+          v-if="cMediaUrl && $attrs.element.data.type.indexOf('audio') == -1"
+          dense
+          outlined
+          label="Subtítulo"
+          v-model="$attrs.element.data.caption"
+          color="black"
+          class="z-max q-pa-none q-mt-sm"
+        >
+
+          <template
+            slot="after"
+          >
+          </template>
+        </q-input> -->
 
       </q-card-section>
     </q-card>
@@ -229,10 +243,10 @@ export default {
     onRejectedFiles (rejectedEntries) {
       this.$q.notify({
         html: true,
-        message: `Ops... Ocorreu um erro! <br>
+        message: `Ops... ¡Ocurrió un error! <br>
         <ul>
-          <li>Arquivo deve ter no máximo 5MB.</li>
-          <li>Priorize o envio de imagem ou vídeo.</li>
+          <li>Verifique el tamaño del archivo.</li>
+          <li>En caso de múltiples archivos, el tamaño total (la suma de todos) debe ser de hasta 50MB.</li>
         </ul>`,
         type: 'negative',
         progress: true,

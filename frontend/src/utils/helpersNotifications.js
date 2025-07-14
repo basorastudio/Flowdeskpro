@@ -4,7 +4,7 @@ import Errors from 'src/utils/errors'
 export const notificarErro = (msg, error = null) => {
   let erro = ''
   if (error) {
-    erro = error?.data?.error || error?.data?.msg || error?.data?.message || error?.response?.data.error || 'Não identificado'
+    erro = error?.data?.error || error?.data?.msg || error?.data?.message || error?.response?.data.error || 'No identificado'
   }
   const findErro = Errors.find(e => e.error == erro)
   let message = ''
@@ -21,12 +21,11 @@ export const notificarErro = (msg, error = null) => {
     <p class="text-bold">
       <span class="text-bold">${msg}</span>
     </p>
-    <p>Detail: ${erro}</p>
     `
   }
 
   Notify.create({
-    type: 'negative',
+    type: 'warning',
     progress: true,
     position: 'top',
     timeout: 500,
@@ -42,7 +41,7 @@ export const notificarErro = (msg, error = null) => {
 }
 
 export const notificarSucesso = (msg) => {
-  const message = `Tudo certo... <br>${msg}.`
+  const message = `Todo muy bien ... <br>${msg}.`
   Notify.create({
     type: 'positive',
     progress: true,

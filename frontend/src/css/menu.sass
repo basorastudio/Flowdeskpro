@@ -1,0 +1,53 @@
+
+/* Container que encapsula todo o menu */
+.container-menu
+    background: rgb(86,144,240) !important
+    background: linear-gradient(150deg, rgba(86,144,240,1) 0%, rgba(94,86,246,1) 100%) !important
+    color: white
+
+/* Lista que encapsula os botões do menu */
+.menu-list
+    display: flex
+    flex-direction: column
+    justify-content: center
+    align-items: center
+    gap: 1vh
+    margin-bottom: 4vh
+
+/* Lista que encapsula os botões do menu relacionados ao nível de usuário*/
+.menu-list-level
+  width: 90%
+
+/* Botão do menu */
+.menu-list-item
+  width: 90% !important
+  border-radius: 5px
+
+/* Essa classe indica um botão do menu ativo */
+.menu-link-active-item-top
+  border-radius: 10px
+  position: relative
+  height: 100%
+  width: 90%
+
+.menu-link-active-item-top > .q-icon
+    color: #5690f0 !important
+
+.menu-list-item-caption
+    color: white
+
+/* Texto que aparece quando passamos o mouse em cima de cada botão do menu */
+.q-tooltip
+  > .menu-list-item-tooltip
+    font-size: 1rem !important
+    
+
+.q-tooltip
+  background: linear-gradient(150deg, rgba(86,144,240,1) 0%, rgba(94,86,246,1) 100%) !important
+
+
+/* Icone do menu na versão mobile */
+.menu-icon-mobile
+  background-color: transparent !important
+  box-shadow: none !important
+

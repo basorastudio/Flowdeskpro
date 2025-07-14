@@ -14,7 +14,7 @@ const service = axios.create({
 
 const handlerError = err => {
   const errorMsg = err?.response?.data?.error
-  let error = 'Ocorreu um erro não identificado.'
+  let error = 'Se produjo un error no identificado.'
   if (errorMsg) {
     if (backendErrors[errorMsg]) {
       error = backendErrors[errorMsg]
@@ -110,7 +110,7 @@ service.interceptors.response.use(
       handlerError(error)
     } else if (error.message.indexOf('timeout') > -1) {
       Notify.create({
-        message: 'Processando informações de estatisticas',
+        message: 'Procesamiento de información estadística',
         position: 'top',
         type: 'positive',
         progress: true,

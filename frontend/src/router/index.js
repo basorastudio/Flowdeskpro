@@ -1,41 +1,15 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import { Notify } from 'quasar'
-
+import { MostrarVencimento } from 'src/service/empresas'
+import { parseISO, differenceInDays } from 'date-fns'
 import routes from './routes'
 
-// Ajuste para desativar error por navegação duplicada
-// https://github.com/vuejs/vue-router/issues/2881#issuecomment-520554378
-// const originalPush = VueRouter.prototype.push
-// VueRouter.prototype.push = function push (location, onResolve, onReject) {
-//   if (onResolve || onReject) { return originalPush.call(this, location, onResolve, onReject) }
-//   return originalPush.call(this, location).catch((err) => {
-//     if (VueRouter.isNavigationFailure(err)) {
-//       // resolve err
-//       return err
-//     }
-//     // rethrow error
-//     return Promise.reject(err)
-//   })
-// }
-
 Vue.use(VueRouter)
-
-/*
- * If not building with SSR mode, you can
- * directly export the Router instantiation;
- *
- * The function below can be async too; either use
- * async/await or return a Promise which resolves
- * with the Router instance.
- */
 
 const Router = new VueRouter({
   scrollBehavior: () => ({ x: 0, y: 0 }),
   routes,
-  // Leave these as they are and change in quasar.conf.js instead!
-  // quasar.conf.js -> build -> vueRouterMode
-  // quasar.conf.js -> build -> publicPath
   mode: process.env.VUE_ROUTER_MODE,
   base: process.env.VUE_ROUTER_BASE
 })
@@ -44,13 +18,13 @@ const whiteListName = [
   'login'
 ]
 
-Router.beforeEach((to, from, next) => {
+Router.beforeEach(async (to, from, next) => {
   const token = JSON.parse(localStorage.getItem('token'))
 
   if (!token) {
-    if (whiteListName.indexOf(to.name) == -1) {
-      if (to.fullPath !== '/login' && !to.query.tokenSetup) {
-        Notify.create({ message: 'Necessário realizar login', position: 'top' })
+    if (whiteListName.indexOf(to.name) === -1) {
+      if (to.fullPath !== '/login' && to.fullPath !== '/signup' && !to.query.tokenSetup) {
+        Notify.create({ message: 'Es necesario iniciar sesión', position: 'top' })
         next({ name: 'login' })
       } else {
         next()
@@ -59,7 +33,31 @@ Router.beforeEach((to, from, next) => {
       next()
     }
   } else {
-    next()
+    // Verificación de vencimiento del plan
+    const { data } = await MostrarVencimento()
+    const dueDate = parseISO(data.dueDate)
+    const daysUntilDue = differenceInDays(dueDate, new Date())
+
+    if (daysUntilDue < 0 && to.name !== 'financeiro') {
+      Notify.create({ message: 'Su plan ha vencido. Por favor, renueve su plan.', position: 'top' })
+      next({ name: 'financeiro' })
+    } else {
+      if (to.meta.requiresAuth) {
+        const usuario = JSON.parse(localStorage.getItem('usuario'))
+        if (usuario.profile === 'admin') {
+          if (to.fullPath === '/empresas' && usuario.tenantId !== 1) {
+            Notify.create({ message: 'Acceso no autorizado', position: 'top' })
+            next({ name: 'home-dashboard' })
+          }
+          next()
+        } else {
+          Notify.create({ message: 'Acceso no autorizado', position: 'top' })
+          next({ name: 'home-dashboard' })
+        }
+      } else {
+        next()
+      }
+    }
   }
 })
 

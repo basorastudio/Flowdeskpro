@@ -8,7 +8,7 @@ export default {
   name: 'App',
   data () {
     return {
-      IDLE_TIMEOUT: 5, // seconds
+      IDLE_TIMEOUT: 300, // seconds
       idleSecondsCounter: 0
 
     }
@@ -19,8 +19,19 @@ export default {
       // var oPanel = document.getElementById('SecondsUntilExpire')
       // if (oPanel) { oPanel.innerHTML = (this.IDLE_TIMEOUT - this.idleSecondsCounter) + '' }
       if (this.idleSecondsCounter >= this.IDLE_TIMEOUT) {
-        alert('Time expired!')
+        window.location.reload()
         // document.location.href = 'logout.html'
+      }
+    },
+    bindEventListeners() {
+      document.onclick = () => {
+        this.idleSecondsCounter = 0
+      }
+      document.onmousemove = () => {
+        this.idleSecondsCounter = 0
+      }
+      document.onkeypress = () => {
+        this.idleSecondsCounter = 0
       }
     }
   },
@@ -29,16 +40,8 @@ export default {
     if (usuario?.configs?.isDark) {
       this.$q.dark.set(usuario?.configs?.isDark)
     }
-    //   document.onclick = function () {
-    //     this.idleSecondsCounter = 0
-    //   }
-    //   document.onmousemove = function () {
-    //     this.idleSecondsCounter = 0
-    //   }
-    //   document.onkeypress = function () {
-    //     this.idleSecondsCounter = 0
-    //   }
-    //   window.setInterval(this.CheckIdleTime, 1000)
+    this.bindEventListeners()
+    setInterval(this.CheckIdleTime, 1000)
   }
 
 }

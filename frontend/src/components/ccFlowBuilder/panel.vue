@@ -1,66 +1,58 @@
 <template>
-  <div
-    v-if="easyFlowVisible"
-    :class="{
+<div v-if="easyFlowVisible"
+  :class="[
+    'mass-container container-rounded-10',
+    {
       'fullscreen bg-white': isFullScreen,
       'flowHeightDefault': !isFullScreen
-    }"
-  >
+    }
+  ]">
     <q-toolbar class="text-grey-8 ">
       <q-toolbar-title>
         <div class="text-h6">{{ data.name }}</div>
       </q-toolbar-title>
-      <q-btn
-        round
+      <q-btn round
         flat
         icon="mdi-delete"
         @click="deleteElement"
-        :disabled="!this.activeElement.type || ['start', 'exception'].includes(this.activeElement.type)"
-      ></q-btn>
-      <q-separator
-        inset
+        :disabled="!this.activeElement.type || ['start', 'exception'].includes(this.activeElement.type)"></q-btn>
+      <q-separator inset
         spaced
-        vertical
-      />
-
-      <q-btn
+        vertical />
+       <q-btn
         round
         flat
+        icon="mdi-download"
+        @click="downloadData"
+      ></q-btn>
+      <q-btn round
+        flat
         :icon="isFullScreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
-        @click="isFullScreen = !isFullScreen"
-      />
-
+        @click="isFullScreen = !isFullScreen" />
     </q-toolbar>
     <q-separator color="text-grey-3" />
-    <div
-      class="q-mt-sm"
-      style="display: flex; height: calc(100% - 60px);"
-    >
-      <div
-        id="efContainer"
+    <div class="q-mt-sm"
+      style="display: flex; height: calc(100% - 60px);">
+      <div id="efContainer"
         ref="efContainer"
         class="container"
-        v-flowDrag
-      >
+        v-flowDrag>
         <template v-for="node in data.nodeList">
-          <flow-node
-            :id="node.id"
+          <flow-node :id="node.id"
             :key="node.id"
             :node="node"
             :activeElement="activeElement"
             @changeNodeSite="changeNodeSite"
             @nodeRightMenu="nodeRightMenu"
-            @clickNode="clickNode"
-          >
+            @clickNode="clickNode">
           </flow-node>
         </template>
         <!-- Forçar área de construção -->
         <div style="position:absolute;top: 2000px;left: 2000px;">&nbsp;</div>
       </div>
       <!-- Configuração node -->
-      <div style="width: 500px; border-left: 1px solid #dce3e8;">
-        <flow-node-form
-          ref="nodeForm"
+      <div style="width: 400px; border-left: 1px solid #dce3e8;">
+        <flow-node-form ref="nodeForm"
           @setLineLabel="setLineLabel"
           @repaintEverything="repaintEverything"
           :filas="cDataFlow.filas"
@@ -69,27 +61,24 @@
           @addNode="addNode"
           @deleteLine="deleteLine"
           @addNewLineCondition="addNewLineCondition"
-          @saveFlow="saveFlow"
-        >
+          @saveFlow="saveFlow">
         </flow-node-form>
       </div>
     </div>
     <!-- Visualização Resultado -->
-    <flow-info
-      v-if="flowInfoVisible"
+    <flow-info v-if="flowInfoVisible"
       ref="flowInfo"
-      :data="data"
-    ></flow-info>
-    <flow-help
-      v-if="flowHelpVisible"
-      ref="flowHelp"
-    ></flow-help>
+      :data="data"></flow-info>
+    <flow-help v-if="flowHelpVisible"
+      ref="flowHelp"></flow-help>
   </div>
 
 </template>
 
 <script>
 import draggable from 'vuedraggable'
+// import jsPlumb from './jsplumb.js'
+
 import './jsplumb'
 import { easyFlowMixin } from './mixins'
 import flowNode from './node'
@@ -187,7 +176,7 @@ export default {
       const connParam = {
         source: from,
         target: to,
-        paintStyle: { strokeWidth: 3, stroke: '#8db1dd' }
+        paintStyle: { strokeWidth: 3, stroke: '#ff7103' }
       }
       this.jsPlumb.connect(connParam, this.jsplumbConnectOptions)
       if (oldTo) {
@@ -206,7 +195,7 @@ export default {
       }
       UpdateChatFlow(data)
         .then(res => {
-          this.$notificarSucesso('Fluxo salvo!')
+          this.$notificarSucesso('¡Flujo guardado!')
         })
         .catch(error => {
           console.error(error)
@@ -222,7 +211,7 @@ export default {
           progress: true,
           position: 'top',
           timeout: 2500,
-          message: 'Não é possível conectar o elemento a si mesmo.',
+          message: 'No es posible conectar el elemento consigo mismo.',
           actions: [{
             icon: 'close',
             round: true,
@@ -231,7 +220,7 @@ export default {
         })
         return false
       }
-      this.$notificarSucesso('Conexão realizada.')
+      this.$notificarSucesso('Conexión realizada.')
       return true
     },
     jsPlumbInit () {
@@ -240,7 +229,6 @@ export default {
         this.jsPlumb.setSuspendDrawing(false, true)
         this.loadEasyFlow()
         this.jsPlumb.bind('click', (conn, originalEvent) => {
-          // this.activeElement.type = 'line'
           this.activeElement.sourceId = conn.sourceId
           this.activeElement.targetId = conn.targetId
           this.$refs.nodeForm.lineInit({
@@ -299,7 +287,7 @@ export default {
           this.jsPlumb.draggable(node.id, {
             containment: 'parent',
             stop: function (el) {
-              console.log('arraste para o final: ', el)
+              console.log('Arrastrar hasta el final: ', el)
             }
           })
         }
@@ -312,7 +300,7 @@ export default {
           label: line.label ? line.label : '',
           connector: line.connector ? line.connector : '',
           anchors: line.anchors ? line.anchors : undefined,
-          paintStyle: { strokeWidth: 3, stroke: '#8db1dd' }
+          paintStyle: { strokeWidth: 3, stroke: '#ff7103' }
         }
         this.jsPlumb.connect(connParam, this.jsplumbConnectOptions)
       }
@@ -336,7 +324,7 @@ export default {
         label: label
       })
 
-      conn.setPaintStyle({ strokeWidth: 3, stroke: '#8db1dd' })
+      conn.setPaintStyle({ strokeWidth: 3, stroke: '#ff7103' })
 
       this.data.lineList.forEach(function (line) {
         if (line.from == from && line.to == to) {
@@ -346,19 +334,20 @@ export default {
     },
 
     deleteElement () {
+      if (this.activeElement.id === 'nodeC') return
       if (this.activeElement.type === 'node') {
         this.deleteNode(this.activeElement)
       } else if (this.activeElement.type === 'line') {
         this.$q.dialog({
-          title: 'Atenção!!',
-          message: 'Deseja realmente deletar a linha selecionada?',
+          title: '¡¡Atención!!',
+          message: '¿Realmente quieres eliminar la línea seleccionada?',
           cancel: {
-            label: 'Não',
+            label: 'No',
             color: 'primary',
             push: true
           },
           ok: {
-            label: 'Sim',
+            label: 'Si',
             color: 'negative',
             push: true
           },
@@ -402,7 +391,7 @@ export default {
       var containerRect = efContainer.getBoundingClientRect()
       var left = screenX, top = screenY
       if (left < containerRect.x || left > containerRect.width + containerRect.x || top < containerRect.y || containerRect.y > containerRect.y + containerRect.height) {
-        this.$notificarErro('Arraste o elemento para a tela.')
+        this.$notificarErro('Arrastre el elemento a la pantalla.')
         return
       }
       left = left - containerRect.x + efContainer.scrollLeft
@@ -447,7 +436,7 @@ export default {
         this.jsPlumb.draggable(nodeId, {
           containment: 'parent',
           stop: function (el) {
-            console.log('arastado para o final: ', el)
+            console.log('Arrastrado hasta el final: ', el)
           }
         })
       })
@@ -455,15 +444,15 @@ export default {
 
     deleteNode (node) {
       this.$q.dialog({
-        title: 'Atenção!!',
-        message: `Deseja realmente deletar o elemento (${node.name})?`,
+        title: '¡¡Atención!!',
+        message: `¿Realmente quiero eliminar el elemento (${node.name})?`,
         cancel: {
-          label: 'Não',
+          label: 'No',
           color: 'primary',
           push: true
         },
         ok: {
-          label: 'Sim',
+          label: 'Si',
           color: 'negative',
           push: true
         },
@@ -546,15 +535,15 @@ export default {
     },
     downloadData () {
       this.$q.dialog({
-        title: 'Oi!!',
-        message: 'Confirma o download?',
+        title: '¡¡Ey!!',
+        message: 'Confirmar la descarga?',
         cancel: {
-          label: 'Não',
+          label: 'No',
           color: 'primary',
           push: true
         },
         ok: {
-          label: 'Sim',
+          label: 'Si',
           color: 'negative',
           push: true
         },
@@ -566,7 +555,7 @@ export default {
         downloadAnchorNode.setAttribute('download', 'data.json')
         downloadAnchorNode.click()
         downloadAnchorNode.remove()
-        this.$notificarSucesso('Baixando, por favor aguarde...')
+        this.$notificarSucesso('Descargando, espere ...')
       })
     },
     openHelp () {

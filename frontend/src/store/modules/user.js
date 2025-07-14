@@ -63,9 +63,12 @@ const user = {
 
         socket.emit(`${data.tenantId}:setUserActive`)
 
+        // chamada deve ser feita após inserir o token no localstorage
+        // const { data: usuario } = await DadosUsuario(data.userId)
+        // validaapi()
         Notify.create({
           type: 'positive',
-          message: 'Login realizado com sucesso!',
+          message: '¡Inicio de sesión exitoso!',
           position: 'top',
           progress: true
         })
@@ -74,17 +77,12 @@ const user = {
           this.$router.push({
             name: 'home-dashboard'
           })
-        } else if (data.profile === 'super') {
-          this.$router.push({
-            name: 'empresassuper'
-          })
         } else {
           this.$router.push({
             name: 'atendimento'
           })
         }
       } catch (error) {
-        console.error(error, error.data.error === 'ERROR_NO_PERMISSION_API_ADMIN')
       }
     }
   }

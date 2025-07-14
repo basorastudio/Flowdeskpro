@@ -6,8 +6,10 @@ import atendimentoTicket from './modules/atendimentoTicket'
 import notifications from './modules/Notifications'
 import chatFlow from './modules/chatFlow'
 import usersApp from './modules/usersApp'
+import empresa from './modules/empresa'
 import getters from './getters'
 // import example from './module-example'
+import chatInterno from './modules/chatInterno'
 
 Vue.use(Vuex)
 
@@ -30,7 +32,9 @@ export default function (/* { ssrContext } */) {
       atendimentoTicket,
       whatsapp,
       chatFlow,
-      usersApp
+      usersApp,
+      empresa,
+      chatInterno
     },
 
     // enable strict mode (adds overhead!)

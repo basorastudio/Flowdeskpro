@@ -5,12 +5,12 @@ import DatePick from 'src/components/cDatePick'
 import cDateTimePick from 'src/components/cDateTimePick'
 
 import { format, parseISO } from 'date-fns'
-import pt from 'date-fns/locale/pt-BR'
+import es from 'date-fns/locale/es'
 import { UpdateConfiguracoesUsuarios } from 'src/service/user'
 
 const formatarValorMoeda = (num, black = false, intl = {}) => {
   const config = {
-    language: 'pt-br',
+    language: 'es',
     options: {
       // style: 'currency',
       // currency: 'BRL',
@@ -60,7 +60,7 @@ const iniciaisString = nomecompleto => {
 }
 
 const formatarData = (data, formato = 'dd/MM/yyyy') => {
-  return format(parseISO(data), formato, { locale: pt })
+  return format(parseISO(data), formato, { locale: es })
 }
 
 const setConfigsUsuario = ({ isDark }) => {
@@ -85,7 +85,7 @@ const setConfigsUsuario = ({ isDark }) => {
     isDark: Dark.isActive
   }
   UpdateConfiguracoesUsuarios(usuario.userId, data)
-    .then(r => console.log('Configurações do usuário atualizadas'))
+    .then(r => console.log('Configuración actualizada del usuario'))
     .catch(e => console.error)
 
   localStorage.setItem('usuario', JSON.stringify({ ...usuario, configs: data }))

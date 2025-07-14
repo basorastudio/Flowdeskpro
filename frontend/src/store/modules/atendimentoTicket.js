@@ -10,8 +10,8 @@ const orderMessages = (messages) => {
 }
 
 const orderTickets = (tickets) => {
-  const newTickes = orderBy(tickets, (obj) => parseISO(obj.lastMessageAt || obj.updatedAt), ['asc'])
-  return [...newTickes]
+  const newTickets = orderBy(tickets, (obj) => parseISO(obj.lastMessageAt || obj.updatedAt), ['asc'])
+  return [...newTickets]
 }
 
 const checkTicketFilter = (ticket) => {
@@ -29,22 +29,23 @@ const checkTicketFilter = (ticket) => {
   }
 
   const NotViewTicketsChatBot = () => {
-    const configuracoes = JSON.parse(localStorage.getItem('configuracoes'))
-    const conf = configuracoes?.find(c => c.key === 'NotViewTicketsChatBot')
+    const configuraciones = JSON.parse(localStorage.getItem('configuracoes'))
+    const conf = configuraciones?.find(c => c.key === 'NotViewTicketsChatBot')
     return (conf?.value === 'enabled')
   }
 
   const DirectTicketsToWallets = () => {
-    const configuracoes = JSON.parse(localStorage.getItem('configuracoes'))
-    const conf = configuracoes?.find(c => c.key === 'DirectTicketsToWallets')
+    const configuraciones = JSON.parse(localStorage.getItem('configuracoes'))
+    const conf = configuraciones?.find(c => c.key === 'DirectTicketsToWallets')
     return (conf?.value === 'enabled')
   }
 
   const isNotViewAssignedTickets = () => {
-    const configuracoes = JSON.parse(localStorage.getItem('configuracoes'))
-    const conf = configuracoes?.find(c => c.key === 'NotViewAssignedTickets')
+    const configuraciones = JSON.parse(localStorage.getItem('configuracoes'))
+    const conf = configuraciones?.find(c => c.key === 'NotViewAssignedTickets')
     return (conf?.value === 'enabled')
   }
+
   const filtros = JSON.parse(localStorage.getItem('filtrosAtendimento')) || filtroPadrao
   const usuario = JSON.parse(localStorage.getItem('usuario'))
   const UserQueues = JSON.parse(localStorage.getItem('queues'))
@@ -55,41 +56,41 @@ const checkTicketFilter = (ticket) => {
 
   const userId = usuario?.userId || +localStorage.getItem('userId')
 
-  // Verificar se é admin e se está solicitando para mostrar todos
+  // Verificar si es admin y si está solicitando mostrar todos
   if (isAdminShowAll) {
     console.log('isAdminShowAll', isAdminShowAll)
     return true
   }
 
-  // se ticket for um grupo, todos podem verificar.
+  // Si el ticket es un grupo, todos pueden verificar.
   if (ticket.isGroup) {
     console.log('ticket.isGroup', ticket.isGroup)
     return true
   }
 
-  // se status do ticket diferente do staatus filtrado, retornar false
+  // Si el estado del ticket es diferente al estado filtrado, retornar false
   if (filtros.status.length > 0 && !filtros.status.includes(ticket.status)) {
-    console.log('Status ticket', filtros.status, ticket.status)
+    console.log('Estado del ticket', filtros.status, ticket.status)
     return false
   }
 
-  // verificar se já é um ticket do usuário
+  // Verificar si ya es un ticket del usuario
   if (ticket?.userId == userId) {
-    console.log('Ticket do usuário', ticket?.userId, userId)
+    console.log('Ticket del usuario', ticket?.userId, userId)
     return true
   }
 
-  // Não visualizar tickets ainda com o Chatbot
-  // desde que ainda não exista usuário ou fila definida
+  // No visualizar tickets que aún estén con el Chatbot
+  // siempre que aún no exista usuario o fila definida
   if (NotViewTicketsChatBot() && ticket.autoReplyId) {
     if (!ticket?.userId && !ticket.queueId) {
-      console.log('NotViewTicketsChatBot e o ticket está sem usuário e fila definida')
+      console.log('NotViewTicketsChatBot y el ticket no tiene usuario y fila definida')
       return false
     }
   }
 
-  // Se o ticket não possuir fila definida, checar o filtro
-  // permite visualizar tickets sem filas definidas é falso.
+  // Si el ticket no tiene fila definida, verificar el filtro
+  // permite visualizar tickets sin filas definidas es falso.
   // if (isQueuesTenantExists && !ticket.queueId && !filtros.includeNotQueueDefined) {
   //   console.log('filtros.includeNotQueueDefined', ticket.queueId, !filtros.includeNotQueueDefined)
   //   return false
@@ -97,52 +98,52 @@ const checkTicketFilter = (ticket) => {
 
   let isValid = true
 
-  // verificar se o usuário possui fila liberada
+  // Verificar si el usuario tiene la fila permitida
   if (isQueuesTenantExists) {
     const isQueueUser = UserQueues.findIndex(q => ticket.queueId === q.id)
     if (isQueueUser !== -1) {
-      console.log('Fila do ticket liberada para o Usuario', ticket.queueId)
+      console.log('Fila del ticket permitida para el Usuario', ticket.queueId)
       isValid = true
     } else {
-      console.log('Usuario não tem acesso a fila', ticket.queueId)
+      console.log('Usuario no tiene acceso a la fila', ticket.queueId)
       return false
     }
   }
 
-  // verificar se a fila do ticket está filtrada
+  // Verificar si la fila del ticket está filtrada
   if (isQueuesTenantExists && filtros?.queuesIds.length) {
     const isQueue = filtros.queuesIds.findIndex(q => ticket.queueId === q)
     if (isQueue == -1) {
-      console.log('filas filtradas e diferentes da do ticket', ticket.queueId)
+      console.log('Filas filtradas y diferentes a la del ticket', ticket.queueId)
       return false
     }
   }
 
-  // se configuração para carteira ativa: verificar se já é um ticket da carteira do usuário
+  // Si la configuración para cartera está activa: verificar si ya es un ticket de la cartera del usuario
   if (DirectTicketsToWallets() && (ticket?.contact?.wallets?.length || 0) > 0) {
     const idx = ticket?.contact?.wallets.findIndex(w => w.id == userId)
     if (idx !== -1) {
-      console.log('Ticket da carteira do usuário')
+      console.log('Ticket de la cartera del usuario')
       return true
     }
-    console.log('DirectTicketsToWallets: Ticket não pertence à carteira do usuário', ticket)
+    console.log('DirectTicketsToWallets: El ticket no pertenece a la cartera del usuario', ticket)
     return false
   }
 
-  // verificar se o parametro para não permitir visualizar
-  // tickets atribuidos à outros usuários está ativo
+  // Verificar si el parámetro para no permitir visualizar
+  // tickets asignados a otros usuarios está activo
   if (isNotViewAssignedTickets() && (ticket?.userId || userId) !== userId) {
-    console.log('isNotViewAssignedTickets e ticket não é do usuário', ticket?.userId, userId)
-    // se usuário não estiver atribuido, permitir visualizar
+    console.log('isNotViewAssignedTickets y el ticket no es del usuario', ticket?.userId, userId)
+    // Si el usuario no está asignado, permitir visualizar
     if (!ticket?.userId) {
       return true
     }
     return false
   }
 
-  // verificar se filtro somente tickets não assinados (isNotAssingned) ativo
+  // Verificar si el filtro solo tickets no asignados (isNotAssigned) está activo
   if (filtros.isNotAssignedUser) {
-    console.log('isNotAssignedUser ativo para exibir somente tickets não assinados', filtros.isNotAssignedUser, !ticket.userId)
+    console.log('isNotAssignedUser activo para mostrar solo tickets no asignados', filtros.isNotAssignedUser, !ticket.userId)
     return filtros.isNotAssignedUser && !ticket.userId
   }
 
@@ -163,7 +164,8 @@ const atendimentoTicket = {
     },
     hasMore: false,
     contatos: [],
-    mensagens: []
+    mensagens: [],
+    notificacaoTicket: 0
   },
   mutations: {
     // OK
@@ -205,24 +207,24 @@ const atendimentoTicket = {
     UPDATE_TICKET (state, payload) {
       const ticketIndex = state.tickets.findIndex(t => t.id === payload.id)
       if (ticketIndex !== -1) {
-        // atualizar ticket se encontrado
+        // Actualizar ticket si encontrado
         const tickets = [...state.tickets]
         tickets[ticketIndex] = {
           ...tickets[ticketIndex],
           ...payload,
-          // ajustar informações por conta das mudanças no front
+          // Ajustar información debido a los cambios en el front
           username: payload?.user?.name || payload?.username || tickets[ticketIndex].username,
           profilePicUrl: payload?.contact?.profilePicUrl || payload?.profilePicUrl || tickets[ticketIndex].profilePicUrl,
           name: payload?.contact?.name || payload?.name || tickets[ticketIndex].name
         }
         state.tickets = tickets.filter(t => checkTicketFilter(t))
 
-        // atualizar se ticket focado
+        // Actualizar si es el ticket enfocado
         if (state.ticketFocado.id == payload.id) {
           state.ticketFocado = {
             ...state.ticketFocado,
             ...payload
-            // conservar as informações do contato
+            // Mantener la información del contacto
             // contact: state.ticketFocado.contact
           }
         }
@@ -230,7 +232,7 @@ const atendimentoTicket = {
         const tickets = [...state.tickets]
         tickets.unshift({
           ...payload,
-          // ajustar informações por conta das mudanças no front
+          // Ajustar información debido a los cambios en el front
           username: payload?.user?.name || payload?.username,
           profilePicUrl: payload?.contact?.profilePicUrl || payload?.profilePicUrl,
           name: payload?.contact?.name || payload?.name
@@ -312,7 +314,7 @@ const atendimentoTicket = {
     },
     // OK
     UPDATE_MESSAGES (state, payload) {
-      // Se ticket não for o focado, não atualizar.
+      // Si el ticket no es el enfocado, no actualizar.
       if (state.ticketFocado.id === payload.ticket.id) {
         const messageIndex = state.mensagens.findIndex(m => m.id === payload.id)
         const mensagens = [...state.mensagens]
@@ -328,24 +330,30 @@ const atendimentoTicket = {
             state.ticketFocado.scheduledMessages.push(payload)
           }
         }
+      } else {
+        if (!payload.fromMe && payload.ticket.status !== 'closed') {
+          state.notificacaoTicket += 1
+        }
       }
 
       const TicketIndexUpdate = state.tickets.findIndex(t => t.id == payload.ticket.id)
       if (TicketIndexUpdate !== -1) {
-        const tickets = [...state.tickets]
+        let tickets = [...state.tickets]
         const unreadMessages = state.ticketFocado.id == payload.ticket.id ? 0 : payload.ticket.unreadMessages
         tickets[TicketIndexUpdate] = {
           ...state.tickets[TicketIndexUpdate],
           answered: payload.ticket.answered,
           unreadMessages,
-          lastMessage: payload.mediaName || payload.body
+          lastMessage: payload.mediaName || payload.body,
+          lastMessageAt: payload.ticket.lastMessageAt
         }
+        tickets = orderTickets(tickets)
         state.tickets = tickets
       }
     },
     // OK
     UPDATE_MESSAGE_STATUS (state, payload) {
-      // Se ticket não for o focado, não atualizar.
+      // Si el ticket no es el enfocado, no actualizar.
       if (state.ticketFocado.id != payload.ticket.id) {
         return
       }
@@ -356,16 +364,23 @@ const atendimentoTicket = {
         state.mensagens = mensagens
       }
 
-      // Se existir mensagens agendadas no ticket focado,
-      // tratar a atualização das mensagens deletadas.
+      const ticketIndex = state.tickets.findIndex(m => m.id === payload.ticket.id)
+      if (ticketIndex !== -1) {
+        state.tickets[ticketIndex].lastMessage = payload.ticket.lastMessage
+        state.tickets[ticketIndex].lastMessageAt = payload.ticket.lastMessageAt
+        state.tickets[ticketIndex].updatedAt = payload.ticket.updatedAt
+      }
+      state.tickets = orderTickets(state.tickets)
+      // Si existen mensajes programados en el ticket enfocado,
+      // tratar la actualización de los mensajes eliminados.
       if (state.ticketFocado?.scheduledMessages) {
         const scheduledMessages = [...state.ticketFocado.scheduledMessages]
         const scheduled = scheduledMessages.filter(m => m.id != payload.id)
         state.ticketFocado.scheduledMessages = scheduled
       }
     },
-    UPDATE_MESSAGE (state, payload) {
-      // Se ticket não for o focado, não atualizar.
+    UPDATE_MESSAGE(state, payload) {
+      // Si el ticket no es el enfocado, no actualizar.
       if (state.ticketFocado.id != payload.ticketId) {
         return
       }
@@ -421,7 +436,7 @@ const atendimentoTicket = {
 
         await $router.push({ name: 'chat', params, query: { t: new Date().getTime() } })
       } catch (error) {
-        // posteriormente é necessário investigar o motivo de está caindo em erro
+        // posteriormente es necesario investigar el motivo de que caiga en error
         if (!error) return
         const errorMsg = error?.response?.data?.error
         if (errorMsg) {
@@ -434,7 +449,7 @@ const atendimentoTicket = {
         } else {
           Notify.create({
             type: 'negative',
-            message: `Ops... Ocorreu um problema não identificado. ${JSON.stringify(error)}`,
+            message: `Ops... Ocurrió un problema no identificado. ${JSON.stringify(error)}`,
             progress: true,
             position: 'top'
           })

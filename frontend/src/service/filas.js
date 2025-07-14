@@ -1,6 +1,6 @@
 import request from 'src/service/request'
 
-export function CriarFila (data) {
+export function CriarFila(data) {
   return request({
     url: '/queue/',
     method: 'post',
@@ -8,14 +8,21 @@ export function CriarFila (data) {
   })
 }
 
-export function ListarFilas () {
+export function ListarFilas() {
   return request({
     url: '/queue/',
     method: 'get'
   })
 }
 
-export function AlterarFila (data) {
+export function ListarFilasPorUser() {
+  return request({
+    url: '/queue/user',
+    method: 'get'
+  })
+}
+
+export function AlterarFila(data) {
   return request({
     url: `/queue/${data.id}`,
     method: 'put',
@@ -23,7 +30,7 @@ export function AlterarFila (data) {
   })
 }
 
-export function DeletarFila (data) {
+export function DeletarFila(data) {
   return request({
     url: `/queue/${data.id}`,
     method: 'delete'

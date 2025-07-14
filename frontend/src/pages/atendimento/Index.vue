@@ -4,7 +4,6 @@
     :style="style"
   >
     <q-layout
-      class="WAL__layout shadow-3"
       container
       view="lHr LpR lFr"
     >
@@ -19,104 +18,93 @@
         :width="$q.screen.lt.md ? $q.screen.width : 380"
         content-class="hide-scrollbar full-width"
       >
-        <q-toolbar
-          class="q-gutter-xs full-width"
-          style="height: 64px"
-        >
-          <q-btn-dropdown
-            no-caps
-            color="black"
-            class="text-bold btn-rounded"
-            ripple
-          >
-            <template v-slot:label>
-              <div
-                :style="{ maxWidth: $q.screen.lt.sm ? '120px' : '' }"
-                class="ellipsis"
-              >
-                {{ username }}
-              </div>
-            </template>
-            <q-list style="min-width: 100px">
-              <!-- <q-item
-                clickable
-                v-close-popup
-              >
-                <q-item-section>
-                  <q-toggle
-                    color="blue"
-                    :value="$q.dark.isActive"
-                    label="Modo escuro"
-                    @input="$setConfigsUsuario({isDark: !$q.dark.isActive})"
-                  />
-                </q-item-section>
-              </q-item> -->
-              <q-item
-                clickable
-                v-close-popup
-                @click="abrirModalUsuario"
-              >
-                <q-item-section>Perfil</q-item-section>
-              </q-item>
-              <q-item
-                clickable
-                v-close-popup
-                @click="efetuarLogout"
-              >
-                <q-item-section>Sair</q-item-section>
-              </q-item>
-              <q-separator />
-
-            </q-list>
-          </q-btn-dropdown>
-          <q-space />
+        <q-toolbar class="q-pr-none menu-header menu-left q-gutter-xs full-width" style="height: 64px">
           <q-btn
-            color="black"
-            class="btn-rounded"
-            icon="mdi-home"
-            @click="() => $router.push({ name: 'home-dashboard' })"
-          >
-            <q-tooltip content-class="bg-padrao text-grey-9 text-bold">
-              Retornar ao menu
-            </q-tooltip>
+            flat
+            class="chat-button-avatar" size="lg">
+            <q-avatar size="sm">
+              {{ $iniciaisString(username) }}
+            </q-avatar>
+            <q-menu>
+              <q-list style="min-width: 100px">
+                <q-item-label header> ¡Hola! <b> {{ username }} </b> </q-item-label>
+                <cStatusUsuario @update:usuario="actualizarUsuario"
+                  :usuario="usuario" />
+                <q-item clickable
+                  v-close-popup
+                  @click="abrirModalUsuario">
+                  <q-item-section>Perfil</q-item-section>
+                </q-item>
+                <q-item clickable
+                  v-close-popup
+                  @click="efetuarLogout">
+                  <q-item-section>Salir</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+
+            <q-tooltip>Usuario</q-tooltip>
+          </q-btn>
+          <q-space />
+
+          <q-btn flat class="btn-rounded" :class="$q.dark.isActive ? 'text-green bg-black' : ''" :icon="isSilentMode ? 'volume_off' : 'volume_up'" @click="toggleSilentMode" :disable="loadingMount">
+            <q-tooltip content-class="text-bold"> {{ isSilentMode ? 'Modo Silencioso Activado' : 'Modo Silencioso Desactivado' }} </q-tooltip>
+          </q-btn>
+
+          <q-btn flat class="btn-rounded" :class="$q.dark.isActive ? 'text-green bg-black' : ''" icon="eva-message-circle-outline" @click="() => $router.push({ name: 'chat-interno' })" :disable="loadingMount">
+            <q-tooltip content-class="text-bold"> Chat Interno </q-tooltip>
+            <q-badge v-if="this.notificacaoInternaNaoLida > 0"
+              color="red"
+              floating
+              class="badge-left"
+            > {{ this.notificacaoInternaNaoLida }}</q-badge>
+          </q-btn>
+          <q-btn flat class="btn-rounded" :class="$q.dark.isActive ? 'text-green bg-black' : ''" icon="mdi-clipboard-list-outline" @click="tarefaEdicao = {}; modalTarefa = true" :disable="loadingMount">
+            <q-tooltip content-class="text-bold"> Crear Tarea </q-tooltip>
+            <q-badge v-if="(delayed + venceHoje) > 0"
+              color="red"
+              floating
+              class="badge-left"
+              @click="() => $router.push({ name: 'tarefas' })"
+            > {{ delayed + venceHoje }}</q-badge>
+          </q-btn>
+          <q-btn style="margin-right: 5px;" flat class="btn-rounded" :class="$q.dark.isActive ? 'text-green bg-black' : ''" icon="eva-undo-outline" @click="() => $router.push({ name: 'home-dashboard' })" :disable="loadingMount">
+            <q-tooltip content-class="text-bold"> Volver al menú </q-tooltip>
           </q-btn>
         </q-toolbar>
-        <StatusWhatsapp
-          v-if="false"
-          class="q-mx-sm full-width"
+        <q-linear-progress
+          v-if="loadingMount"
+          indeterminate
+          color="primary"
+          class="absolute-top"
+          style="width: 100%;"
         />
-        <q-toolbar
-          v-show="toolbarSearch"
-          class="row q-gutter-sm q-py-sm items-center"
-        >
-          <q-separator class="absolute-top" />
-          <q-btn
-            :icon="!cFiltroSelecionado ? 'mdi-filter-outline' : 'mdi-filter-plus'"
-            class="btn-rounded "
-            :color="cFiltroSelecionado ? 'deep-orange-9' : 'primary'"
-          >
-            <q-menu
-              content-class="shadow-10 no-scroll"
-              square
-            >
-              <div
-                class="row q-pa-sm"
-                style="min-width: 350px; max-width: 350px"
-              >
+        <StatusWhatsapp v-if="false" class="q-mx-sm full-width" />
+        <q-toolbar v-show="toolbarSearch" class="menu-container column q-gutter-sm items-center full-width">
+          <div class="search full-width">
+          <q-input v-model="pesquisaTickets.searchParam" dense outlined rounded type="search" class="full-width" :debounce="700" @input="BuscarTicketFiltro()" >
+            <template v-slot:append>
+              <q-icon name="search" />
+            </template>
+          </q-input>
+        </div>
+          <div class="row-buttons full-width">
+            <q-btn flat class="bg-grey-3 btn-rounded-50" :color="cFiltroSelecionado ? 'deep-orange-9' : 'primary'" style="flex: 1;">
+              Filtro
+            <q-menu content-class="shadow-10 no-scroll container-rounded-10 max-height-none" style="max-height: 100vh !important">
+              <div class="row q-pa-sm" style="min-width: 350px; max-width: 350px">
                 <div class="q-ma-sm">
-                  <div class="text-h6 q-mb-md">Filtros Avançados</div>
+                  <div class="text-h6 q-mb-md font-family-main">Filtros Avanzados</div>
                   <q-toggle
                     v-if="profile === 'admin'"
-                    class="q-ml-lg"
+                    class="full-width"
                     v-model="pesquisaTickets.showAll"
                     label="(Admin) - Visualizar Todos"
                     :class="{ 'q-mb-lg': pesquisaTickets.showAll }"
                     @input="debounce(BuscarTicketFiltro(), 700)"
                   />
-                  <q-separator
-                    class="q-mb-md"
-                    v-if="!pesquisaTickets.showAll"
-                  />
+                  <q-toggle toggle-indeterminate v-model="ordenar" label="Ordenar por fecha de creación" @input="loadOrdenar()" />
+                  <q-separator class="q-mb-md" v-if="!pesquisaTickets.showAll" />
                   <div v-if="!pesquisaTickets.showAll">
                     <q-select
                       :disable="pesquisaTickets.showAll"
@@ -140,199 +128,126 @@
                       input-style="width: 300px; max-width: 300px;"
                     />
 
-                    <q-list
-                      dense
-                      class="q-my-md"
-                    >
-                      <q-item
-                        tag="label"
-                        v-ripple
-                      >
+                    <q-list dense class="q-my-md">
+                      <q-item tag="label" v-ripple>
                         <q-item-section avatar>
-                          <q-checkbox
-                            v-model="pesquisaTickets.status"
-                            val="open"
-                            color="primary"
-                            keep-color
-                            @input="debounce(BuscarTicketFiltro(), 700)"
-                          />
+                          <q-checkbox v-model="pesquisaTickets.status" val="open" color="primary" keep-color @input="debounce(BuscarTicketFiltro(), 700)" />
                         </q-item-section>
                         <q-item-section>
-                          <q-item-label>Abertos</q-item-label>
+                          <q-item-label>Abiertos</q-item-label>
                         </q-item-section>
                       </q-item>
-                      <q-item
-                        tag="label"
-                        v-ripple
-                      >
+                      <q-item tag="label" v-ripple v-if="profile === 'admin'">
                         <q-item-section avatar>
-                          <q-checkbox
-                            v-model="pesquisaTickets.status"
-                            val="pending"
-                            color="negative"
-                            keep-color
-                            @input="debounce(BuscarTicketFiltro(), 700)"
-                          />
+                          <q-checkbox v-model="pesquisaTickets.status" val="pending" color="negative" keep-color @input="debounce(BuscarTicketFiltro(), 700)" />
                         </q-item-section>
                         <q-item-section>
-                          <q-item-label>Pendentes</q-item-label>
+                          <q-item-label>Pendientes</q-item-label>
                         </q-item-section>
                       </q-item>
-                      <q-item
-                        tag="label"
-                        v-ripple
-                      >
+                      <q-item tag="label" v-ripple v-if="profile !== 'admin'">
                         <q-item-section avatar>
-                          <q-checkbox
-                            v-model="pesquisaTickets.status"
-                            val="closed"
-                            color="positive"
-                            keep-color
-                            @input="debounce(BuscarTicketFiltro(), 700)"
-                          />
+                          <q-checkbox v-model="pesquisaTickets.status" val="pending" color="negative" keep-color @input="debounce(BuscarTicketFiltro(), 700)" />
                         </q-item-section>
                         <q-item-section>
-                          <q-item-label>Resolvidos</q-item-label>
+                          <q-item-label>Pendientes</q-item-label>
+                        </q-item-section>
+                      </q-item>
+                      <q-item tag="label" v-ripple>
+                        <q-item-section avatar>
+                          <q-checkbox v-model="pesquisaTickets.status" val="closed" color="positive" keep-color @input="debounce(BuscarTicketFiltro(), 700)" />
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label>Cerrados</q-item-label>
                         </q-item-section>
                       </q-item>
                     </q-list>
                     <q-separator class="q-mb-md" />
-                    <q-toggle
-                      v-model="pesquisaTickets.withUnreadMessages"
-                      label="Somente Tickets com mensagens não lidas"
-                      @input="debounce(BuscarTicketFiltro(), 700)"
-                    />
-                    <q-toggle
-                      v-model="pesquisaTickets.isNotAssignedUser"
-                      label="Somente Tickets não atribuidos (sem usuário definido)"
-                      @input="debounce(BuscarTicketFiltro(), 700)"
-                    />
+                    <q-toggle v-model="pesquisaTickets.withUnreadMessages" label="Solo Tickets con mensajes no leídos" @input="debounce(BuscarTicketFiltro(), 700)" />
+                    <!-- <q-toggle v-model="pesquisaTickets.isNotAssignedUser" label="Solo Tickets no asignados (sin usuario definido)" @input="debounce(BuscarTicketFiltro(), 700)" /> -->
                   </div>
-                  <q-separator
-                    class="q-my-md"
-                    spaced
-                    v-if="!pesquisaTickets.showAll"
-                  />
-                  <q-btn
-                    class="float-right q-my-md"
-                    color="negative"
-                    label="Fechar"
-                    push
-                    rounded
-                    v-close-popup
-                  />
+                  <q-separator class="q-my-md" spaced v-if="!pesquisaTickets.showAll" />
+                  <q-btn class="float-right q-my-md" color="negative" label="Cerrar" push v-close-popup />
                 </div>
               </div>
             </q-menu>
-            <q-tooltip content-class="bg-padrao text-grey-9 text-bold">
-              Filtro Avançado
-            </q-tooltip>
+            <q-tooltip content-class="text-bold"> Filtro Avanzado </q-tooltip>
           </q-btn>
-          <q-input
-            v-model="pesquisaTickets.searchParam"
-            dense
-            outlined
-            rounded
-            type="search"
-            class="col-grow"
-            :debounce="700"
-            @input="BuscarTicketFiltro()"
-          >
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
-          <q-btn
-            color="primary"
-            class="btn-rounded"
-            icon="mdi-book-account-outline"
-            @click="$q.screen.lt.md ? modalNovoTicket = true : $router.push({ name: 'chat-contatos' })"
-          >
-            <q-tooltip content-class="bg-padrao text-grey-9 text-bold">
-              Contatos
-            </q-tooltip>
+          <q-btn flat class="bg-grey-3 btn-rounded-50" :class="$q.dark.isActive ? 'text-green bg-black' : ''" @click="$q.screen.lt.md ? (modalNovoTicket = true) : $router.push({ name: 'chat-contatos' })" style="flex: 1;" v-if="canAccessPageContact">
+            Contactos
+          <q-tooltip :content-class="`${$q.dark.isActive ? 'text-white bg-black' : ''} text-bold`">Contactos</q-tooltip>
           </q-btn>
-          <q-separator class="absolute-bottom" />
+          <q-btn flat class="bg-grey-3 btn-rounded-50" :class="$q.dark.isActive ? 'text-green bg-black' : ''" @click="showNotification()" v-if="hasMoreTickets"  style="flex: 1;">
+            Atenciones
+            <q-tooltip :content-class="`${$q.dark.isActive ? 'text-green bg-black' : ''} text-bold`"> Cargar Más Atenciones </q-tooltip>
+          </q-btn>
+          </div>
+
         </q-toolbar>
 
-        <q-scroll-area
-          ref="scrollAreaTickets"
-          style="height: calc(100% - 180px)"
-          @scroll="onScroll"
-        >
-          <!-- <q-separator /> -->
-          <div>
-            <div class="tab-container">
-              <q-tabs v-model="selectedTab" class="tab-scroll">
-                <q-tab name="open" v-if="openTickets.length > 0">
-                  Abertos
-                  <q-badge v-if="openTickets.length > 0" color="red" textColor="white">{{ openTickets.length }}</q-badge>
-                </q-tab>
-                <q-tab name="pending" v-if="pendingTickets.length > 0">
-                  Pendentes
-                  <q-badge v-if="pendingTickets.length > 0" color="red" textColor="white">{{ pendingTickets.length }}</q-badge>
-                </q-tab>
-                <q-tab name="closed" v-if="closedTickets.length > 0">
-                  Fechados
-                  <q-badge v-if="closedTickets.length > 0" color="red" textColor="white">{{ closedTickets.length }}</q-badge>
-                </q-tab>
-                <q-tab name="group" v-if="groupTickets.length > 0">
-                  Grupos
-                  <q-badge v-if="groupTickets.length > 0" color="red" textColor="white">{{ groupTickets.length }}</q-badge>
-                </q-tab>
-              </q-tabs>
-            </div>
-            <div v-if="selectedTab === 'open'">
-              <ItemTicket
-                v-for="(ticket, key) in openTickets"
-                :key="key"
-                :ticket="ticket"
-                :filas="filas"
-              />
-            </div>
-            <div v-if="selectedTab === 'pending'">
-              <ItemTicket
-                v-for="(ticket, key) in pendingTickets"
-                :key="key"
-                :ticket="ticket"
-                :filas="filas"
-              />
-            </div>
-            <div v-if="selectedTab === 'closed'">
-              <ItemTicket
-                v-for="(ticket, key) in closedTickets"
-                :key="key"
-                :ticket="ticket"
-                :filas="filas"
-              />
-            </div>
-            <div v-if="selectedTab === 'group'">
-              <ItemTicket
-                v-for="(ticket, key) in groupTickets"
-                :key="key"
-                :ticket="ticket"
-                :filas="filas"
-              />
-            </div>
+        <q-toolbar class="padding-person menu-left items-center ">
+          <q-separator class="absolute-top" />
+          <div class="full-width">
+
+            <q-tabs
+              v-model="tabTickets"
+              narrow-indicator
+              dense
+              :active-bg-color="$q.dark.isActive ? 'primary' : 'grey-3'"
+              inline-label
+              align="justify"
+              :class="{
+                'text-green': $q.dark.isActive,
+                'text-black': !$q.dark.isActive
+              }"
+
+              class="btn-rounded"
+
+            >
+            <q-tab
+              :ripple="false"
+              name="private"
+              class="btn-rounded-50"
+              :class="$q.dark.isActive ? 'bg-black text-green' : 'bg-grey-3 btn-rounded-50 q-tab-personalized'"
+              icon="eva-person-outline"
+            >
+
+            <q-badge
+              v-if="contadorUniversal === 'enabled'"
+              color="red"
+              floating
+              class="badge-left"
+            > {{ privateMessages.length }}</q-badge>
+              <q-tooltip content-class="text-bold"> Conversaciones Privadas </q-tooltip>
+
+            </q-tab>
+            <q-tab
+              v-if="grupoAtivo === 'disabled'"
+              :ripple="false"
+              name="groups"
+              class="btn-rounded-50"
+              :class="$q.dark.isActive ? 'bg-black text-green' : 'bg-grey-3 btn-rounded-50 q-tab-personalized'"
+              icon="eva-people-outline"
+            >
+            <q-badge
+              v-if="contadorUniversal === 'enabled'"
+              color="red"
+              floating
+              class="badge-left"
+            > {{ groupMessages.length }}</q-badge>
+            <q-tooltip content-class="text-bold"> Conversaciones en Grupo </q-tooltip>
+            </q-tab>
+
+          <q-btn class="btn-rounded-50" icon="mdi-book-account-outline"
+              :class="$q.dark.isActive ? 'bg-black text-green' : 'bg-grey-3 btn-rounded-50 q-tab-personalized'" @click="loadMoreOpenTickets" :disable="loadingMount">
+            <q-tooltip content-class="text-bold"> Cargar Más Tickets </q-tooltip>
+          </q-btn>
+
+            </q-tabs>
           </div>
-          <div v-if="loading">
-            <div class="row justify-center q-my-md">
-              <q-spinner
-                color="white"
-                size="3em"
-                :thickness="3"
-              />
-            </div>
-            <div class="row col justify-center q-my-sm text-white">
-              Carregando...
-            </div>
-          </div>
-        </q-scroll-area>
-        <!-- <q-separator /> -->
-        <div
-          class="absolute-bottom row justify-between"
-          style="height: 50px"
-        >
+        </q-toolbar>
+
+        <q-toolbar v-show="toolbarSearch" class="row q-gutter-sm q-py-sm items-center" v-if="fixarConexao === 'enabled'">
           <q-toggle
             size="xl"
             keep-color
@@ -345,157 +260,344 @@
             unchecked-icon="mdi-weather-sunny"
             @input="$setConfigsUsuario({ isDark: !$q.dark.isActive })"
           >
-            <q-tooltip content-class="text-body1">
-              {{ $q.dark.isActive ? 'Desativar' : 'Ativar' }} Modo Escuro (Dark Mode)
-            </q-tooltip>
+            <q-tooltip content-class="text-body1"> {{ $q.dark.isActive ? 'Desactivar' : 'Activar' }} Modo Oscuro (Dark Mode) </q-tooltip>
           </q-toggle>
           <div class="flex flex-inline q-pt-xs">
-            <q-scroll-area
-              horizontal
-              style="heigth: 40px; width: 300px;"
-            >
+            <q-scroll-area horizontal style="height: 40px; width: 300px">
               <template v-for="item in whatsapps">
-                <q-btn
-                  rounded
-                  flat
-                  dense
-                  size="18px"
-                  :key="item.id"
-                  class="q-mx-xs q-pa-none"
-                  :style="`opacity: ${item.status === 'CONNECTED' ? 1 : 0.2}`"
-                  :icon="`img:${item.type}-logo.png`"
-                >
-                  <!-- :color="item.status === 'CONNECTED' ? 'positive' : 'negative'"
-                  :icon-right="item.status === 'CONNECTED' ? 'mdi-check-all' : 'mdi-alert-circle-outline'" -->
-                  <q-tooltip
-                    max-height="300px"
-                    content-class="bg-blue-1 text-body1 text-grey-9 hide-scrollbar"
-                  >
-                    <ItemStatusChannel :item="item" />
-                  </q-tooltip>
-                </q-btn>
+                  <q-btn rounded flat dense size="18px" :key="item.id" class="q-mx-xs q-pa-none" :style="`opacity: ${item.status === 'CONNECTED' ? 1 : 0.2}`" :icon="`img:${item.type}-logo.png`">
+                    <q-tooltip max-height="300px" content-class="bg-blue-1 text-body1 text-grey-9 hide-scrollbar">
+                      <ItemStatusChannel :item="item" />
+                    </q-tooltip>
+                  </q-btn>
               </template>
             </q-scroll-area>
+          </div>
+          <q-separator class="absolute-bottom" />
+        </q-toolbar>
 
+        <q-toolbar
+          v-show="tabTickets === 'private'"
+          class="items-center"
+        >
+          <div class="full-width q-py-xs">
+            <q-tabs
+              v-model="tabTicketsStatus"
+              narrow-indicator
+              dense
+              align="justify"
+              :active-bg-color="$q.dark.isActive ? 'primary' : 'grey-2'"
+              class="text-primary btn-rounded"
+            >
+              <q-tab
+                v-if="!hidetab || (hidetab && openTickets.length > 0)"
+                :ripple="false"
+                name="open"
+                icon="eva-message-circle-outline"
+                label="Abiertos"
+                :class="{
+                'text-green': $q.dark.isActive,
+                'tab-item': !$q.dark.isActive
+                }"
+              >
+                <q-badge
+                  color="red"
+                  floating
+                  class="badge-left"
+                > {{ openTickets.length }}</q-badge>
+                <q-tooltip content-class="bg-padrao text-grey-9 text-bold"> Tickets en atención </q-tooltip>
+              </q-tab>
+              <q-tab
+                v-if="!hidetab || (hidetab && pendingTickets.length > 0)"
+                :ripple="false"
+                name="pending"
+                icon="eva-clock-outline"
+                label="Pendientes"
+                :class="{
+                'text-green': $q.dark.isActive,
+                'tab-item': !$q.dark.isActive
+                }"
+              >
+                <q-badge
+                  color="red"
+                  floating
+                  class="badge-left"
+                > {{ pendingTickets.length }}</q-badge>
+                <q-tooltip content-class="bg-padrao text-grey-9 text-bold"> Tickets pendientes </q-tooltip>
+              </q-tab>
+              <q-tab
+                v-if="!hidetab || (hidetab && closedTickets.length > 0)"
+                :ripple="false"
+                name="closed"
+                icon="eva-lock-outline"
+                label="Cerrados"
+                :class="{
+                'text-green': $q.dark.isActive,
+                'tab-item': !$q.dark.isActive
+                }"
+              >
+                <q-badge
+                  color="red"
+                  floating
+                  class="badge-left"
+                > {{ closedTickets.length }}</q-badge>
+                <q-tooltip content-class="bg-padrao text-grey-9 text-bold"> Tickets cerrados </q-tooltip>
+              </q-tab>
+              <q-tab
+                v-if="chatbotLane === 'enabled' && (!hidetab || (hidetab && pendingTicketsChatBot.length > 0))"
+                :ripple="false"
+                name="chatbot"
+                icon="mdi-robot-outline"
+                label="Chatbot"
+                :class="{
+                'text-green': $q.dark.isActive,
+                'tab-item': !$q.dark.isActive
+                }"
+              >
+                <q-badge
+                  color="red"
+                  floating
+                  class="badge-left"
+                > {{ pendingTicketsChatBot.length }}</q-badge>
+                <q-tooltip content-class="bg-padrao text-grey-9 text-bold"> Chatbot </q-tooltip>
+              </q-tab>
+            </q-tabs>
+          </div>
+        </q-toolbar>
+
+        <q-toolbar
+          v-show="tabTickets === 'groups'"
+          class="items-center"
+        >
+          <div class="full-width q-py-xs">
+            <q-tabs
+              v-model="tabTicketsStatus"
+              narrow-indicator
+              dense
+              align="justify"
+              :active-bg-color="$q.dark.isActive ? 'primary' : 'grey-2'"
+              class="text-primary btn-rounded"
+            >
+              <q-tab
+                v-if="!hidetab || (hidetab && openGroupTickets.length > 0)"
+                :ripple="false"
+                name="open"
+                icon="eva-message-circle-outline"
+                label="Abiertos"
+                :class="{
+                'text-green': $q.dark.isActive,
+                'text-black': !$q.dark.isActive
+                }"
+              >
+                <q-badge
+                  color="red"
+                  floating
+                  class="badge-left"
+                > {{ openGroupTickets.length }}</q-badge>
+                <q-tooltip content-class="bg-padrao text-grey-9 text-bold"> Conversaciones Abiertas </q-tooltip>
+              </q-tab>
+              <q-tab
+                v-if="!hidetab || (hidetab && pendingGroupTickets.length > 0)"
+                :ripple="false"
+                name="pending"
+                icon="eva-clock-outline"
+                label="Pendientes"
+                :class="{
+                'text-green': $q.dark.isActive,
+                'text-black': !$q.dark.isActive
+                }"
+              >
+                <q-badge
+                  color="red"
+                  floating
+                  class="badge-left"
+                > {{ pendingGroupTickets.length }}</q-badge>
+                <q-tooltip content-class="bg-padrao text-grey-9 text-bold"> Conversaciones Pendientes </q-tooltip>
+              </q-tab>
+              <q-tab
+                v-if="!hidetab || (hidetab && closedGroupTickets.length > 0)"
+                :ripple="false"
+                name="closed"
+                icon="eva-lock-outline"
+                label="Cerrados"
+                :class="{
+                'text-green': $q.dark.isActive,
+                'text-black': !$q.dark.isActive
+                }"
+              >
+                <q-badge
+                  color="red"
+                  floating
+                  class="badge-left"
+                > {{ closedGroupTickets.length }}</q-badge>
+                <q-tooltip content-class="bg-padrao text-grey-9 text-bold"> Conversaciones Cerradas </q-tooltip>
+              </q-tab>
+            </q-tabs>
+          </div>
+        </q-toolbar>
+
+        <ItemTicket
+          v-show="tabTickets === 'private' && tabTicketsStatus === 'open'"
+          v-for="ticket in openTickets"
+          :key="ticket.id"
+          :ticket="ticket"
+          :filas="filas"
+        />
+
+        <ItemTicket
+          v-show="tabTickets === 'private' && tabTicketsStatus === 'pending'"
+          v-for="ticket in pendingTickets"
+          :key="ticket.id"
+          :ticket="ticket"
+          :filas="filas"
+        />
+
+        <ItemTicket
+          v-show="tabTickets === 'private' && tabTicketsStatus === 'chatbot'"
+          v-for="ticket in pendingTicketsChatBot"
+          :key="ticket.id+'bot'"
+          :ticket="ticket"
+          :filas="filas"
+        />
+
+        <ItemTicket
+          v-show="tabTickets === 'private' && tabTicketsStatus === 'closed'"
+          v-for="ticket in closedTickets"
+          :key="ticket.id"
+          :ticket="ticket"
+          :filas="filas"
+        />
+
+        <ItemTicket
+        v-show="tabTickets === 'groups' && tabTicketsStatus === 'open'"
+          v-for="ticket in openGroupTickets"
+          :key="ticket.id"
+          :ticket="ticket"
+          :filas="filas"
+        />
+
+        <ItemTicket
+        v-show="tabTickets === 'groups' && tabTicketsStatus === 'pending'"
+          v-for="ticket in pendingGroupTickets"
+          :key="ticket.id"
+          :ticket="ticket"
+          :filas="filas"
+        />
+
+        <ItemTicket
+        v-show="tabTickets === 'groups' && tabTicketsStatus === 'closed'"
+          v-for="ticket in closedGroupTickets"
+          :key="ticket.id"
+          :ticket="ticket"
+          :filas="filas"
+        />
+
+        <div class="absolute-bottom row justify-between" style="height: 50px" v-if="fixarConexao === 'disabled'">
+          <q-toggle
+            size="xl"
+            keep-color
+            dense
+            class="text-bold q-ml-md flex flex-block"
+            :icon-color="$q.dark.isActive ? 'black' : 'white'"
+            :value="$q.dark.isActive"
+            :color="$q.dark.isActive ? 'grey-3' : 'black'"
+            checked-icon="mdi-white-balance-sunny"
+            unchecked-icon="mdi-weather-sunny"
+            @input="$setConfigsUsuario({ isDark: !$q.dark.isActive })"
+          >
+            <q-tooltip content-class="text-body1"> {{ $q.dark.isActive ? 'Desactivar' : 'Activar' }} Modo Oscuro (Dark Mode) </q-tooltip>
+          </q-toggle>
+          <div class="flex flex-inline q-pt-xs">
+            <q-scroll-area horizontal style="height: 40px; width: 300px">
+              <template v-for="item in whatsapps">
+                  <q-btn rounded flat dense size="18px" :key="item.id" class="q-mx-xs q-pa-none" :style="`opacity: ${item.status === 'CONNECTED' ? 1 : 0.2}`" :icon="`img:${item.type}-logo.png`">
+                    <q-tooltip max-height="300px" content-class="bg-blue-1 text-body1 text-grey-9 hide-scrollbar">
+                      <ItemStatusChannel :item="item" />
+                    </q-tooltip>
+                  </q-btn>
+              </template>
+            </q-scroll-area>
           </div>
         </div>
       </q-drawer>
 
       <q-page-container>
-        <router-view
-          :mensagensRapidas="mensagensRapidas"
-          :key="ticketFocado.id"
-        ></router-view>
+        <router-view :mensagensRapidas="mensagensRapidas" :key="ticketFocado.id"></router-view>
       </q-page-container>
 
-      <q-drawer
-        v-if="!cRouteContatos && ticketFocado.id"
-        v-model="drawerContact"
-        show-if-above
-        bordered
-        side="right"
-        content-class="bg-grey-1"
-      >
-        <div
-          class="bg-white full-width no-border-radius q-pa-sm"
-          style="height:60px;"
-        >
-          <span class="q-ml-md text-h6">
-            Dados Contato
-          </span>
-        </div>
-        <q-separator />
+      <q-drawer v-if="!cRouteContatos && ticketFocado.id && drawerContact"
+          show-if-above
+          bordered
+          side="right"
+          class="dados-contato"
+          content-class="bg-grey-3">
+    <div class="flex justify-start items-end bg-white full-width no-border-radius q-pa-sm" style="height: 60px">
+        <span class=" text-h6">
+            <q-btn flat class="btn-small" @click="toggleDrawer" label="" icon="mdi-close" :color="$q.dark.isActive ? ('green') : 'primary'"/>
+            Datos Contacto
+        </span>
+    </div>
+
         <q-scroll-area style="height: calc(100vh - 70px)">
-          <div class="q-pa-sm">
-            <q-card
-              class="bg-white btn-rounded"
-              style="width: 100%"
-              bordered
-              flat
-            >
+          <div>
+            <q-card class="bg-white border-radius-none q-mt-sm" style="width: 100%" flat>
               <q-card-section class="text-center">
                 <q-avatar style="border: 1px solid #9e9e9ea1 !important; width: 100px; height: 100px">
-                  <q-icon
-                    name="mdi-account"
-                    style="width: 100px; height: 100px"
-                    size="6em"
-                    color="grey-5"
-                    v-if="!ticketFocado.contact.profilePicUrl"
-                  />
-                  <q-img
-                    :src="ticketFocado.contact.profilePicUrl"
-                    style="width: 100px; height: 100px"
-                  >
+                  <q-icon name="mdi-account" style="width: 100px; height: 100px" size="6em" color="grey-5" v-if="!ticketFocado.contact.profilePicUrl" />
+                  <q-img :src="ticketFocado.contact.profilePicUrl" style="width: 100px; height: 100px">
                     <template v-slot:error>
-                      <q-icon
-                        name="mdi-account"
-                        size="1.5em"
-                        color="grey-5"
-                      />
+                      <q-icon name="mdi-account" size="1.5em" :color="$q.dark.isActive ? ('green') : 'grey-5'" />
                     </template>
                   </q-img>
                 </q-avatar>
-                <div
-                  class="text-caption q-mt-md"
-                  style="font-size: 14px"
-                >
+                <div class="text-caption q-mt-md blur-effect"  style="font-size: 14px">
                   {{ ticketFocado.contact.name || '' }}
                 </div>
-                <div
-                  class="text-caption q-mt-sm"
-                  style="font-size: 14px"
-                  id="number"
-                  @click="copyContent(ticketFocado.contact.number || '')"
-                >
-                  {{ ticketFocado.contact.number || '' }}
+                <div class="text-caption q-mt-sm blur-effect"  style="font-size: 14px" id="number">
+                  <template v-if="ticketFocado.contact.number">
+                    <a :class="$q.dark.isActive ? ('text-green') : ''" :href="getPhoneNumberLink(ticketFocado.contact.number)">
+                      {{ ticketFocado.contact.number }}
+                    </a>
+                  </template>
                 </div>
-                <div
-                  class="text-caption q-mt-md"
-                  style="font-size: 14px"
-                  id="email"
-                  @click="copyContent(ticketFocado.contact.email || '')"
-                >
-                  {{ ticketFocado.contact.email || '' }}
+                <div class="text-caption q-mt-md" style="font-size: 14px" id="email">
+                  <template v-if="ticketFocado.contact.email">
+                    <a :href="'mailto:' + ticketFocado.contact.email">{{ ticketFocado.contact.email }}</a>
+                  </template>
+                  <template v-else>
+                    {{ ticketFocado.contact.email || '' }}
+                  </template>
                 </div>
-                <q-btn
-                  color="primary"
-                  class="q-mt-sm bg-padrao btn-rounded"
-                  flat
-                  icon="edit"
-                  label="Editar Contato"
-                  @click="editContact(ticketFocado.contact.id)"
-                />
+
+                <q-btn flat class="btn-rounded-50 btn-outline btn-small" icon="eva-edit-outline" label="Editar" @click="editContact(ticketFocado.contact.id)" :class="$q.dark.isActive ? ('text-green') : ''"/>
+                <template v-if="cIsExtraInfo">
+                  <q-list>
+                    <q-item v-for="(info, idx) in ticketFocado.contact.extraInfo" :key="idx">
+                      <q-item-section>
+                        <q-item-label>{{ info.value }}</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </template>
               </q-card-section>
             </q-card>
-            <q-card
-              class="bg-white btn-rounded q-mt-sm"
-              style="width: 100%"
-              bordered
-              flat
-            >
-              <q-card-section class="text-bold q-pa-sm ">
-                <q-btn
-                  flat
-                  class="bg-padrao btn-rounded"
-                  :color="!$q.dark.isActive ? 'grey-9' : 'white'"
-                  label="Logs"
-                  icon="mdi-timeline-text-outline"
-                  @click="abrirModalLogs"
-                />
+            <q-card class="bg-white border-radius-none q-mt-sm" style="width: 100%" flat>
+              <q-card-section class="text-bold text-center q-pa-sm">
+                <q-btn flat class="btn-rounded-50 btn-outline btn-small" icon="mdi-timeline-text-outline"
+                :class="$q.dark.isActive ? ('text-green') : ''" @click="abrirModalLogs">
+                  <q-tooltip content-class="bg-primary text-bold">
+                    Logs
+                  </q-tooltip>
+                </q-btn>
               </q-card-section>
             </q-card>
-            <q-card
-              class="bg-white q-mt-sm btn-rounded"
-              style="width: 100%"
-              bordered
-              flat
-              :key="ticketFocado.id + $uuid()"
-            >
-              <q-card-section class="text-bold q-pb-none">
+
+            <q-card class="bg-white q-mt-sm border-radius-none q-pa-sm" style="width: 100%" flat :key="ticketFocado.id + $uuid()">
+              <q-card-section class="text-bold q-pb-none" :class="$q.dark.isActive ? ('text-green') : ''">
                 Etiquetas
                 <q-separator />
               </q-card-section>
-              <q-card-section class="q-pa-none">
+              <q-card-section class="q-pa-none" :class="$q.dark.isActive ? ('text-green') : ''">
                 <q-select
                   square
                   borderless
@@ -509,68 +611,39 @@
                   map-options
                   dropdown-icon="add"
                   @input="tagSelecionada"
+                  :content-class="$q.dark.isActive ? ('text-green') : ''"
                 >
                   <template v-slot:option="{ itemProps, itemEvents, opt, selected, toggleOption }">
-                    <q-item
-                      v-bind="itemProps"
-                      v-on="itemEvents"
-                    >
+                    <q-item v-bind="itemProps" v-on="itemEvents">
                       <q-item-section>
                         <q-item-label v-html="opt.tag"></q-item-label>
                       </q-item-section>
                       <q-item-section side>
-                        <q-checkbox
-                          :value="selected"
-                          @input="toggleOption(opt)"
-                        />
+                        <q-checkbox :value="selected" @input="toggleOption(opt)" />
                       </q-item-section>
                     </q-item>
                   </template>
                   <template v-slot:selected-item="{ opt }">
-                    <q-chip
-                      dense
-                      square
-                      color="white"
-                      text-color="primary"
-                      class="q-ma-xs row col-12 text-body1"
-                    >
-                      <q-icon
-                        :style="`color: ${opt.color}`"
-                        name="mdi-pound-box-outline"
-                        size="28px"
-                        class="q-mr-sm"
-                      />
+                    <q-chip dense square color="white" text-color="primary" class="q-ma-xs row col-12 text-body1">
+                      <q-icon :style="`color: ${opt.color}`" name="mdi-pound-box-outline" size="28px" class="q-mr-sm" />
                       {{ opt.tag }}
                     </q-chip>
                   </template>
                   <template v-slot:no-option="{ itemProps, itemEvents }">
-                    <q-item
-                      v-bind="itemProps"
-                      v-on="itemEvents"
-                    >
+                    <q-item v-bind="itemProps" v-on="itemEvents">
                       <q-item-section>
-                        <q-item-label class="text-negative text-bold">
-                          Ops... Sem etiquetas criadas!
-                        </q-item-label>
-                        <q-item-label caption>
-                          Cadastre novas etiquetas na administração de sistemas.
-                        </q-item-label>
+                        <q-item-label class="text-negative text-bold"> Ops... Sin etiquetas creadas! </q-item-label>
+                        <q-item-label caption> Registra nuevas etiquetas en la administración del sistema. </q-item-label>
                       </q-item-section>
                     </q-item>
                   </template>
-
                 </q-select>
               </q-card-section>
             </q-card>
-            <q-card
-              class="bg-white q-mt-sm btn-rounded"
-              style="width: 100%"
-              bordered
-              flat
-              :key="ticketFocado.id + $uuid()"
-            >
-              <q-card-section class="text-bold q-pb-none">
-                Carteira
+
+            <q-card class="bg-white q-mt-sm border-radius-none q-pa-sm" style="width: 100%" flat :key="ticketFocado.id + $uuid()">
+              <q-card-section class="text-bold q-pb-none" :class="$q.dark.isActive ? ('text-green') : ''">
+                Cartera
                 <q-separator />
               </q-card-section>
               <q-card-section class="q-pa-none">
@@ -590,57 +663,34 @@
                   @input="carteiraDefinida"
                 >
                   <template v-slot:option="{ itemProps, itemEvents, opt, selected, toggleOption }">
-                    <q-item
-                      v-bind="itemProps"
-                      v-on="itemEvents"
-                    >
+                    <q-item v-bind="itemProps" v-on="itemEvents">
                       <q-item-section>
                         <q-item-label v-html="opt.name"></q-item-label>
                       </q-item-section>
                       <q-item-section side>
-                        <q-checkbox
-                          :value="selected"
-                          @input="toggleOption(opt)"
-                        />
+                        <q-checkbox :value="selected" @input="toggleOption(opt)" />
                       </q-item-section>
                     </q-item>
                   </template>
                   <template v-slot:selected-item="{ opt }">
-                    <q-chip
-                      dense
-                      square
-                      color="white"
-                      text-color="primary"
-                      class="q-ma-xs row col-12 text-body1"
-                    >
+                    <q-chip dense square color="white" text-color="primary" class="q-ma-xs row col-12 text-body1">
                       {{ opt.name }}
                     </q-chip>
                   </template>
                   <template v-slot:no-option="{ itemProps, itemEvents }">
-                    <q-item
-                      v-bind="itemProps"
-                      v-on="itemEvents"
-                    >
+                    <q-item v-bind="itemProps" v-on="itemEvents">
                       <q-item-section>
-                        <q-item-label class="text-negative text-bold">
-                          Ops... Sem carteiras disponíveis!!
-                        </q-item-label>
+                        <q-item-label class="text-negative text-bold"> Ops... ¡Sin carteras disponibles! </q-item-label>
                       </q-item-section>
                     </q-item>
                   </template>
-
                 </q-select>
               </q-card-section>
             </q-card>
-            <q-card
-              class="bg-white q-mt-sm btn-rounded"
-              style="width: 100%"
-              bordered
-              flat
-              :key="ticketFocado.id + $uuid()"
-            >
-              <q-card-section class="text-bold q-pb-none">
-                Mensagens Agendadas
+
+            <q-card class="bg-white q-mt-sm border-radius-none q-pa-sm" style="width: 100%; margin-bottom: 2vh" flat :key="ticketFocado.id + $uuid()" v-if="ticketFocado.channel !== 'instagram' && ticketFocado.channel !== 'telegram'">
+              <q-card-section class="text-bold q-pb-none" :class="$q.dark.isActive ? ('text-green') : ''">
+                Mensajes Programados
                 <q-separator />
               </q-card-section>
               <q-card-section class="q-pa-none">
@@ -649,22 +699,21 @@
                     <q-item v-for="(message, idx) in ticketFocado.scheduledMessages.filter((msg) => !msg.isDeleted)" :key="idx" clickable>
                       <q-item-section>
                         <q-item-label caption>
-                          <b>Agendado para:</b> {{ $formatarData(message.scheduleDate, 'dd/MM/yyyy HH:mm') }}
-                          <q-btn
-                            flat
-                            round
-                            dense
-                            icon="mdi-trash-can-outline"
-                            class="absolute-top-right q-mr-sm"
-                            size="sm"
-                            @click="deletarMensagem(message)"
-                          />
+                          <div class="row justify-between items-center no-wrap">
+                            <div>
+                              <strong>Programado para:</strong>
+                              <div>{{ $formatarData(message.scheduleDate, 'dd/MM/yyyy HH:mm') }}</div>
+                            </div>
+
+                            <div>
+                              <div class="row q-gutter-xs no-wrap">
+                                <!-- <q-btn flat round dense icon="edit" size="sm" @click="editarMensagem(message)" /> -->
+                                <q-btn flat round dense icon="mdi-trash-can-outline" size="sm" @click="deletarMensagem(message)" />
+                              </div>
+                            </div>
+                          </div>
                         </q-item-label>
-                        <q-item-label
-                          caption
-                          lines="2"
-                        > <b>Msg:</b> {{ message.mediaName || message.body }}
-                        </q-item-label>
+                        <q-item-label caption lines="2"> <b>Msg:</b> {{ message.mediaName || message.body }} </q-item-label>
                       </q-item-section>
                       <q-tooltip :delay="500">
                         <MensagemChat :mensagens="[message]" />
@@ -672,32 +721,6 @@
                     </q-item>
                   </q-list>
                 </template>
-              </q-card-section>
-            </q-card>
-            <q-card
-              class="bg-white q-mt-sm btn-rounded"
-              style="width: 100%"
-              bordered
-              flat
-              :key="ticketFocado.id + $uuid()"
-            >
-              <q-card-section class="text-bold q-pb-none">
-                Outras Informações
-              </q-card-section>
-              <q-card-section class="q-pa-none">
-                <template v-if="cIsExtraInfo">
-                  <q-list>
-                    <q-item
-                      v-for="(info, idx) in ticketFocado.contact.extraInfo"
-                      :key="idx"
-                    >
-                      <q-item-section>
-                        <q-item-label>{{ info.value }}</q-item-label>
-                      </q-item-section>
-                    </q-item>
-                  </q-list>
-                </template>
-
               </q-card-section>
             </q-card>
           </div>
@@ -710,6 +733,9 @@
         :modalContato.sync="modalContato"
         @contatoModal:contato-editado="contatoEditado"
       />
+      <ModalTarefa
+        :modalTarefa.sync="modalTarefa"
+      />
 
       <ModalUsuario
         :isProfile="true"
@@ -717,54 +743,31 @@
         :usuarioEdicao.sync="usuario"
       />
 
-      <q-dialog
-        v-model="exibirModalLogs"
-        no-backdrop-dismiss
-        full-height
-        position="right"
-        @hide="logsTicket = []"
-      >
+      <q-dialog v-model="exibirModalLogs" no-backdrop-dismiss full-height position="right" @hide="logsTicket = []">
         <q-card style="width: 400px">
           <q-card-section :class="{ 'bg-grey-2': !$q.dark.isActive, 'bg-primary': $q.dark.isActive }">
-            <div class="text-h6">Logs Ticket: {{ ticketFocado.id }}
-              <q-btn
-                icon="close"
-                color="negative"
-                flat
-                class="bg-padrao float-right"
-                round
-                v-close-popup
-              />
+            <div class="text-h6">
+              Historial del Ticket: {{ ticketFocado.id }}
+              <q-btn icon="close" color="negative" flat class="bg-padrao float-right" round v-close-popup />
             </div>
           </q-card-section>
           <q-card-section class="">
-            <q-scroll-area
-              style="height: calc(100vh - 200px);"
-              class="full-width"
-            >
-              <q-timeline
-                color="black"
-                style="width: 360px"
-                class="q-pl-sm "
-                :class="{ 'text-black': !$q.dark.isActive }"
-              >
+            <q-scroll-area style="height: calc(100vh - 200px)" class="full-width">
+              <q-timeline color="black" style="width: 360px" class="q-pl-sm" :class="{ 'text-black': !$q.dark.isActive }">
                 <template v-for="(log, idx) in logsTicket">
-                  <q-timeline-entry
-                    :key="log && log.id || idx"
-                    :subtitle="$formatarData(log.createdAt, 'dd/MM/yyyy HH:mm')"
-                    :color="messagesLog[log.type] && messagesLog[log.type].color || ''"
-                    :icon="messagesLog[log.type] && messagesLog[log.type].icon || ''"
-                  >
-                    <template v-slot:title>
-                      <div
-                        :class="{ 'text-white': $q.dark.isActive }"
-                        style="width: calc(100% - 20px)"
-                      >
-                        <div class="row col text-bold text-body2"> {{ log.user && log.user.name || 'Bot' }}:</div>
-                        <div class="row col"> {{ messagesLog[log.type] && messagesLog[log.type].message }}</div>
-                      </div>
-                    </template>
-                  </q-timeline-entry>
+                    <q-timeline-entry
+                      :key="(log && log.id) || idx"
+                      :subtitle="$formatarData(log.createdAt, 'dd/MM/yyyy HH:mm')"
+                      :color="(messagesLog[log.type] && messagesLog[log.type].color) || ''"
+                      :icon="(messagesLog[log.type] && messagesLog[log.type].icon) || ''"
+                    >
+                      <template v-slot:title>
+                        <div :class="{ 'text-green': $q.dark.isActive }" style="width: calc(100% - 20px)">
+                          <div class="row col text-bold text-body2">{{ (log.user && log.user.name) || 'Bot' }}:</div>
+                          <div class="row col">{{ messagesLog[log.type] && messagesLog[log.type].message }}</div>
+                        </div>
+                      </template>
+                    </q-timeline-entry>
                 </template>
               </q-timeline>
             </q-scroll-area>
@@ -773,12 +776,6 @@
       </q-dialog>
 
     </q-layout>
-    <audio ref="audioNotificationPlay">
-      <source
-        :src="alertSound"
-        type="audio/mp3"
-      >
-    </audio>
   </div>
 </template>
 
@@ -789,15 +786,14 @@ import ItemTicket from './ItemTicket'
 import { ConsultarLogsTicket, ConsultarTickets, DeletarMensagem } from 'src/service/tickets'
 import { mapGetters } from 'vuex'
 import mixinSockets from './mixinSockets'
-import socketInitial from 'src/layouts/socketInitial'
 import ModalNovoTicket from './ModalNovoTicket'
 import { ListarFilas } from 'src/service/filas'
+import { ConsultarResumoTarefas } from 'src/service/tarefas'
 const UserQueues = JSON.parse(localStorage.getItem('queues'))
 const profile = localStorage.getItem('profile')
 const username = localStorage.getItem('username')
 const usuario = JSON.parse(localStorage.getItem('usuario'))
 import StatusWhatsapp from 'src/components/StatusWhatsapp'
-import alertSound from 'src/assets/sound.mp3'
 import { ListarWhatsapps } from 'src/service/sessoesWhatsapp'
 import { debounce } from 'quasar'
 import { format } from 'date-fns'
@@ -807,12 +803,14 @@ import { ListarMensagensRapidas } from 'src/service/mensagensRapidas'
 import { ListarEtiquetas } from 'src/service/etiquetas'
 import { EditarEtiquetasContato, EditarCarteiraContato } from 'src/service/contatos'
 import { RealizarLogout } from 'src/service/login'
-import { ListarUsuarios } from 'src/service/user'
+import { ListarUsuarios, DadosUsuario } from 'src/service/user'
 import MensagemChat from './MensagemChat.vue'
 import { messagesLog } from '../../utils/constants'
+import { listCountUnreadMessage } from 'src/service/chatInterno'
+import ModalTarefa from 'src/pages/tarefas/ModalTarefa'
 export default {
   name: 'IndexAtendimento',
-  mixins: [mixinSockets, socketInitial],
+  mixins: [mixinSockets],
   components: {
     ItemTicket,
     ModalNovoTicket,
@@ -820,14 +818,21 @@ export default {
     ContatoModal,
     ModalUsuario,
     MensagemChat,
-    ItemStatusChannel
+    ItemStatusChannel,
+    ModalTarefa
   },
   data () {
     return {
+      delayed: 0,
+      venceHoje: 0,
+      userProfile: 'user',
+      tarefaEdicao: {},
+      modalTarefa: false,
+      tabTickets: 'private',
+      tabTicketsStatus: 'open',
       messagesLog,
       configuracoes: [],
       debounce,
-      alertSound,
       usuario,
       usuarios: [],
       selectedTab: 'open',
@@ -835,7 +840,6 @@ export default {
       modalUsuario: false,
       toolbarSearch: true,
       drawerTickets: true,
-      drawerContact: true,
       loading: false,
       profile,
       modalNovoTicket: false,
@@ -857,25 +861,33 @@ export default {
         includeNotQueueDefined: true
         // date: new Date(),
       },
+      ordernar: null,
+      filter: false,
       filas: [],
+      filasUser: [],
       etiquetas: [],
       mensagensRapidas: [],
       modalEtiquestas: false,
       exibirModalLogs: false,
-      logsTicket: []
+      logsTicket: [],
+      notificacaoInternaNaoLida: '',
+      drawerContact: false,
+      contadorUniversal: '',
+      ContactAdmin: null,
+      chatbotLane: null,
+      spyticket: null,
+      hidetab: null,
+      pageNumber: 1,
+      hasMore: true
     }
   },
-  watch: {
-    // pesquisaTickets: {
-    //   handler (v) {
-    //     this.$store.commit('SET_FILTER_PARAMS', extend(true, {}, this.pesquisaTickets))
-    //     localStorage.setItem('filtrosAtendimento', JSON.stringify(this.pesquisaTickets))
-    //   },
-    //   deep: true
-    //   // immediate: true
-    // }
-  },
   computed: {
+    currentAlertSound() {
+      return this.isSilentMode ? this.silenceSound : this.alertSound
+    },
+    canAccessPageContact() {
+      return this.ContactAdmin !== 'enabled' || this.userProfile === 'admin'
+    },
     ...mapGetters([
       'tickets',
       'ticketFocado',
@@ -883,16 +895,6 @@ export default {
       'whatsapps'
     ]),
     cUserQueues () {
-      // try {
-      //   const filasUsuario = JSON.parse(UserQueues).map(q => {
-      //     if (q.isActive) {
-      //       return q.id
-      //     }
-      //   })
-      //   return this.filas.filter(f => filasUsuario.includes(f.id)) || []
-      // } catch (error) {
-      //   return []
-      // }
       return UserQueues
     },
     style () {
@@ -916,21 +918,158 @@ export default {
     cIsExtraInfo () {
       return this.ticketFocado?.contact?.extraInfo?.length > 0
     },
-    openTickets () {
-      console.log(this.tickets)
-      return this.tickets.filter(ticket => ticket.status === 'open' && !ticket.isGroup)
+    openTickets() {
+      let filteredTickets = this.tickets.filter(ticket => ticket.status === 'open' && !ticket.isGroup)
+      filteredTickets = this.ordenar ? this.sortTicketsAscending(filteredTickets) : this.sortTicketsDescending(filteredTickets)
+      return Object.values(this.groupTickets(filteredTickets))
     },
-    pendingTickets () {
-      return this.tickets.filter(ticket => ticket.status === 'pending' && !ticket.isGroup)
+    pendingTickets() {
+      let filteredTickets = this.tickets.filter(ticket => ticket.status === 'pending' && !ticket.isGroup)
+      filteredTickets = this.ordenar ? this.sortTicketsAscending(filteredTickets) : this.sortTicketsDescending(filteredTickets)
+      return Object.values(this.groupTickets(filteredTickets))
     },
-    closedTickets () {
-      return this.tickets.filter(ticket => ticket.status === 'closed' && !ticket.isGroup)
+    pendingTicketsChatBot() {
+      let filteredTickets = this.tickets.filter(ticket =>
+        ticket.status === 'pending' &&
+      !ticket.isGroup &&
+      ((ticket.stepAutoReplyId && ticket.autoReplyId) || (ticket.chatFlowId && ticket.stepChatFlow))
+      )
+      filteredTickets = this.ordenar ? this.sortTicketsAscending(filteredTickets) : this.sortTicketsDescending(filteredTickets)
+      return Object.values(this.groupTickets(filteredTickets))
     },
-    groupTickets () {
-      return this.tickets.filter(ticket => ticket.isGroup)
+    closedTickets() {
+      let tickets = this.tickets.filter(ticket => ticket.status === 'closed' && !ticket.isGroup)
+      tickets = this.ordenar ? this.sortTicketsAscending(tickets) : this.sortTicketsDescending(tickets)
+      return tickets
+    },
+    closedGroupTickets() {
+      let tickets = this.tickets.filter(ticket => ticket.status === 'closed' && ticket.isGroup)
+      tickets = this.ordenar ? this.sortTicketsAscending(tickets) : this.sortTicketsDescending(tickets)
+      return tickets
+    },
+    openGroupTickets() {
+      let filteredTickets = this.tickets.filter(ticket => ticket.status === 'open' && ticket.isGroup)
+      filteredTickets = this.ordenar ? this.sortTicketsAscending(filteredTickets) : this.sortTicketsDescending(filteredTickets)
+      return Object.values(this.groupTickets(filteredTickets))
+    },
+    pendingGroupTickets() {
+      let filteredTickets = this.tickets.filter(ticket => ticket.status === 'pending' && ticket.isGroup)
+      filteredTickets = this.ordenar ? this.sortTicketsAscending(filteredTickets) : this.sortTicketsDescending(filteredTickets)
+      return Object.values(this.groupTickets(filteredTickets))
+    },
+    privateMessages() {
+      let tickets = this.tickets.filter(ticket => ticket.unreadMessages && !ticket.isGroup)
+      tickets = this.ordenar ? this.sortTicketsAscending(tickets) : this.sortTicketsDescending(tickets)
+      return tickets
+    },
+    groupMessages() {
+      let tickets = this.tickets.filter(ticket => ticket.unreadMessages && ticket.isGroup)
+      tickets = this.ordenar ? this.sortTicketsAscending(tickets) : this.sortTicketsDescending(tickets)
+      return tickets
     }
   },
   methods: {
+    toggleSilentMode() {
+      this.isSilentMode = !this.isSilentMode
+      localStorage.setItem('silentMode', this.isSilentMode)
+      window.location.reload()
+    },
+    sortTicketsAscending(tickets) {
+      return tickets.sort((a, b) => new Date(a.updatedAt) - new Date(b.updatedAt))
+    },
+    sortTicketsDescending(tickets) {
+      return tickets.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    },
+    groupTickets(tickets) {
+      return tickets.reduce((acc, ticket) => {
+        const key = `${ticket.whatsappId}_${ticket.userId}_${ticket.status}_${ticket.contactId}`
+        if (!acc[key] || acc[key].id > ticket.id) {
+          acc[key] = ticket
+        }
+        return acc
+      }, {})
+    },
+    async getTaskSummary() {
+      const owner = localStorage.getItem('username')
+      try {
+        const response = await ConsultarResumoTarefas({ owner })
+        this.delayed = response.data.delayed
+        this.venceHoje = response.data.venceHoje
+      } catch (error) {
+        console.error('Error al consultar el resumen de tareas:', error)
+      }
+    },
+    async loadOrdenar() {
+      try {
+        this.$store.commit('RESET_TICKETS')
+        this.loading = true
+        switch (this.ordenar) {
+          case false:
+            this.ordenar = null
+            break
+          case true:
+            this.ordenar = false
+            break
+          case null:
+            this.ordenar = true
+            break
+        }
+        this.consultarTicketsOrdenados()
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async actualizarUsuario() {
+      try {
+        const { data } = await DadosUsuario(this.usuario.userId)
+        this.filasUser = data.queues
+      } catch (error) {
+        console.error(error)
+        this.$notificarErro('Problema al cargar usuario', error)
+      }
+    },
+    async loadMoreOpenTickets() {
+      this.$q.notify({
+        type: 'warning',
+        message: 'Atenciones cargados en las pestañas abierto, pendiente y cerrado!',
+        position: 'top'
+      })
+      try {
+        this.loading = true
+        this.pesquisaTickets.pageNumber++
+        await this.consultarTickets()
+        this.loading = false
+      } catch (error) {
+        this.loading = false
+      }
+    },
+    showNotification() {
+      this.$q.notify({
+        type: 'warning',
+        message: 'Atenciones cargados en las pestañas abierto, pendiente y cerrado!',
+        position: 'top'
+      })
+      this.loadMoreOpenTickets()
+    },
+    toggleDrawer() {
+      this.drawerContact = false
+    },
+    getPhoneNumberLink(number) {
+      if ((number.startsWith('55')) && (number.charAt(4) > 5)) {
+        return `tel:${number.slice(0, 4)}9${number.slice(-8)}`
+      } else {
+        return `tel:${number}`
+      }
+    },
+    async listarMensagens() {
+      try {
+        const { data } = await listCountUnreadMessage(this.usuario.userId)
+        this.notificacaoInternaNaoLida = data.count
+      } catch (e) {
+
+      }
+    },
+
     handlerNotifications (data) {
       const options = {
         body: `${data.body} - ${format(new Date(), 'HH:mm')}`,
@@ -940,7 +1079,7 @@ export default {
       }
 
       const notification = new Notification(
-        `Mensagem de ${data.ticket.contact.name}`,
+        `Mensaje de ${data.ticket.contact.name}`,
         options
       )
 
@@ -953,17 +1092,23 @@ export default {
         window.focus()
         this.$store.dispatch('AbrirChatMensagens', data.ticket)
         this.$router.push({ name: 'atendimento' })
-        // history.push(`/tickets/${ticket.id}`);
       }
-
-      this.$nextTick(() => {
-        // utilizar refs do layout
-        this.$refs.audioNotificationPlay.play()
-      })
     },
     async listarConfiguracoes () {
       const { data } = await ListarConfiguracoes()
       localStorage.setItem('configuracoes', JSON.stringify(data))
+      const ignoreGroupMsg = data.find(config => config.key === 'ignoreGroupMsg')
+      this.grupoAtivo = ignoreGroupMsg.value
+      const universalCounter = data.find(config => config.key === 'universalCounter')
+      this.contadorUniversal = universalCounter.value
+      const ContactAdmin = data.find(config => config.key === 'ContactAdmin')
+      this.ContactAdmin = ContactAdmin.value
+      const chatbotLane = data.find(config => config.key === 'chatbotLane')
+      this.chatbotLane = chatbotLane.value
+      const spyticket = data.find(config => config.key === 'spyticket')
+      this.spyticket = spyticket.value
+      const hidetabConfig = data.find(config => config.key === 'hidetab')
+      this.hidetab = hidetabConfig ? hidetabConfig.value === 'enabled' : false
     },
     onScroll (info) {
       if (info.verticalPercentage <= 0.85) return
@@ -983,14 +1128,64 @@ export default {
       }
       try {
         const { data } = await ConsultarTickets(params)
-        this.countTickets = data.count // count total de tickets no status
+        this.countTickets = data.count
         this.$store.commit('LOAD_TICKETS', data.tickets)
         this.$store.commit('SET_HAS_MORE', data.hasMore)
       } catch (err) {
-        this.$notificarErro('Algum problema', err)
+        this.$notificarErro('Algún problema', err)
         console.error(err)
       }
-      // return () => clearTimeout(delayDebounceFn)
+    },
+    async consultarTicketsOrdenados (paramsInit = {}) {
+      const params = {
+        ...this.pesquisaTickets,
+        ...paramsInit
+      }
+      try {
+        const { data } = await ConsultarTickets(params)
+        this.countTickets = data.count
+
+        const tickets = data.tickets
+
+        if (this.ordenar == true) {
+          tickets.sort((a, b) => {
+            const data1 = new Date(a.updatedAt)
+            const data2 = new Date(b.updatedAt)
+            if (data1.getTime() > data2.getTime()) {
+              return 1
+            }
+            if (data1.getTime() < data2.getTime()) {
+              return -1
+            }
+            return 0
+          })
+          this.$store.commit('LOAD_TICKETS', tickets)
+        }
+        if (this.ordenar == false) {
+          tickets.sort((a, b) => {
+            const data1 = new Date(a.updatedAt)
+            const data2 = new Date(b.updatedAt)
+            if (data1.getTime() > data2.getTime()) {
+              return 1
+            }
+            if (data1.getTime() < data2.getTime()) {
+              return -1
+            }
+            return 0
+          })
+          this.$store.commit('LOAD_TICKETS', tickets)
+        }
+        if (this.ordenar == null) {
+          this.$store.commit('LOAD_TICKETS', tickets)
+        }
+
+        this.$store.commit('SET_HAS_MORE', data.hasMore)
+
+        console.log(tickets)
+      } catch (err) {
+        this.$notificarErro('Algún problema', err)
+        console.error(err)
+      }
     },
     async BuscarTicketFiltro () {
       this.$store.commit('RESET_TICKETS')
@@ -1031,15 +1226,9 @@ export default {
       this.etiquetas = data
     },
     async abrirModalUsuario () {
-      // if (!usuario.id) {
-      //   await this.dadosUsuario()
-      // }
-      // const { data } = await DadosUsuario(userId)
-      // this.usuario = data
       this.modalUsuario = true
     },
     async efetuarLogout () {
-      console.log('logout - index atendimento')
       try {
         await RealizarLogout(usuario)
         localStorage.removeItem('token')
@@ -1053,7 +1242,7 @@ export default {
         this.$router.go({ name: 'login', replace: true })
       } catch (error) {
         this.$notificarErro(
-          'Não foi possível realizar logout',
+          'No fue posible realizar el logout',
           error
         )
       }
@@ -1061,26 +1250,23 @@ export default {
     copyContent (content) {
       navigator.clipboard.writeText(content)
         .then(() => {
-          // Copiado com sucesso
-          console.log('Conteúdo copiado: ', content)
         })
         .catch((error) => {
-          // Ocorreu um erro ao copiar
-          console.error('Erro ao copiar o conteúdo: ', error)
+          console.error('Error al copiar el contenido: ', error)
         })
     },
     deletarMensagem (mensagem) {
       const data = { ...mensagem }
       this.$q.dialog({
-        title: 'Atenção!! Deseja realmente deletar a mensagem? ',
-        message: 'Mensagens antigas não serão apagadas no cliente.',
+        title: '¡Atención! ¿Desea realmente eliminar el mensaje? ',
+        message: 'Los mensajes antiguos no se eliminarán en el cliente.',
         cancel: {
-          label: 'Não',
+          label: 'No',
           color: 'primary',
           push: true
         },
         ok: {
-          label: 'Sim',
+          label: 'Sí',
           color: 'negative',
           push: true
         },
@@ -1088,14 +1274,14 @@ export default {
       }).onOk(() => {
         this.loading = true
         DeletarMensagem(data)
-          .then((res) => {
+          .then(res => {
             this.loading = false
             mensagem.isDeleted = true
           })
           .catch(error => {
             this.loading = false
             console.error(error)
-            this.$notificarErro('Não foi possível apagar a mensagem', error)
+            this.$notificarErro('No fue posible eliminar el mensaje', error)
           })
       }).onCancel(() => {
       })
@@ -1110,11 +1296,17 @@ export default {
     },
     async listarUsuarios () {
       try {
-        const { data } = await ListarUsuarios()
-        this.usuarios = data.users
+        const { data } = await await ListarUsuarios({ pageNumber: this.pageNumber })
+        this.usuarios = [...this.usuarios, ...data.users]
+        this.hasMore = data.hasMore
+
+        if (this.hasMore) {
+          this.pageNumber += 1
+          this.listarUsuarios()
+        }
       } catch (error) {
         console.error(error)
-        this.$notificarErro('Problema ao carregar usuários', error)
+        this.$notificarErro('Problema al cargar usuarios', error)
       }
     },
     setValueMenu () {
@@ -1130,6 +1322,7 @@ export default {
     }
   },
   beforeMount () {
+    this.$store.commit('RESET_TICKETS')
     this.listarFilas()
     this.listarEtiquetas()
     this.listarConfiguracoes()
@@ -1139,53 +1332,102 @@ export default {
     }
   },
   async mounted () {
-    this.$root.$on('infor-cabecalo-chat:acao-menu', this.setValueMenu)
-    this.$root.$on('update-ticket:info-contato', this.setValueMenuContact)
-    this.socketTicketList()
-    this.pesquisaTickets = JSON.parse(localStorage.getItem('filtrosAtendimento'))
-    this.$root.$on('handlerNotifications', this.handlerNotifications)
-    await this.listarWhatsapps()
-    await this.consultarTickets()
-    await this.listarUsuarios()
-    const { data } = await ListarMensagensRapidas()
-    this.mensagensRapidas = data
-    if (!('Notification' in window)) {
-    } else {
-      Notification.requestPermission()
-    }
-    this.userProfile = localStorage.getItem('profile')
-    // this.socketInitial()
+    this.getTaskSummary()
+    this.loadingMount = true
 
-    // se existir ticket na url, abrir o ticket.
-    if (this.$route?.params?.ticketId) {
-      const ticketId = this.$route?.params?.ticketId
-      if (ticketId && this.tickets.length > 0) {
-        const ticket = this.tickets.find(t => t.id === +ticketId)
-        if (!ticket) return
-        // caso esteja em um tamanho mobile, fechar a drawer dos contatos
-        if (this.$q.screen.lt.md && ticket.status !== 'pending') {
-          this.$root.$emit('infor-cabecalo-chat:acao-menu')
-        }
-        console.log('before - AbrirChatMensagens', ticket)
-        this.$store.commit('SET_HAS_MORE', true)
-        this.$store.dispatch('AbrirChatMensagens', ticket)
-      }
+    this.notify = this.$q.notify({
+      position: 'top',
+      type: 'positive',
+      message: 'Espere mientras se cargan los tickets...',
+      progress: true,
+      actions: [{ icon: 'close', round: true, color: 'white' }]
+    })
+
+    if (!localStorage.getItem('reloaded')) {
+      localStorage.setItem('reloaded', 'true')
+      window.location.reload()
     } else {
-      console.log('chat-empty')
-      this.$router.push({ name: 'chat-empty' })
+      localStorage.removeItem('reloaded')
+    }
+
+    try {
+      this.$root.$on('infor-cabecalo-chat:acao-menu', this.setValueMenu)
+      this.$root.$on('update-ticket:info-contato', this.setValueMenuContact)
+      await this.actualizarUsuario()
+      await this.listarMensagens()
+      this.$store.commit('UPDATE_SHOW_MENU', this.showMenu)
+      this.socketTicketList()
+      this.pesquisaTickets = JSON.parse(localStorage.getItem('filtrosAtendimento'))
+      this.$root.$on('handlerNotifications', this.handlerNotifications)
+      await this.listarWhatsapps()
+      await this.consultarTickets()
+      await this.listarUsuarios()
+      try {
+        await this.actualizarUsuario()
+        await this.listarMensagens()
+        await this.loadMoreOpenTickets()
+      } catch (e) {
+        console.log(e)
+      }
+      const { data } = await ListarMensagensRapidas()
+      this.mensagensRapidas = data
+
+      const savedSilentMode = localStorage.getItem('silentMode')
+      if (savedSilentMode !== null) {
+        this.isSilentMode = JSON.parse(savedSilentMode)
+      }
+
+      if ('Notification' in window) {
+        Notification.requestPermission()
+      }
+      this.userProfile = localStorage.getItem('profile')
+
+      if (this.$route?.params?.ticketId) {
+        const ticketId = this.$route.params.ticketId
+        if (ticketId && this.tickets.length > 0) {
+          const ticket = this.tickets.find((t) => t.id === +ticketId)
+          if (ticket) {
+            if (this.$q.screen.lt.md && ticket.status !== 'pending') {
+              this.$root.$emit('infor-cabecalo-chat:acao-menu')
+            }
+            this.$store.commit('SET_HAS_MORE', true)
+            this.$store.dispatch('AbrirChatMensagens', ticket)
+          }
+        }
+      } else {
+        this.$router.push({ name: 'chat-empty' })
+      }
+    } catch (error) {
+      console.error('Error al montar el componente:', error)
+    } finally {
+      this.isMounted = true
+      this.loadingMount = false
+      if (this.notify) {
+        this.notify()
+      }
     }
   },
-  destroyed () {
+  beforeRouteLeave(to, from, next) {
+    if (!this.isMounted) {
+      next(false)
+    } else {
+      next()
+    }
+  },
+  destroyed() {
+    this.$store.commit('RESET_TICKETS')
     this.$root.$off('handlerNotifications', this.handlerNotifications)
     this.$root.$off('infor-cabecalo-chat:acao-menu', this.setValueMenu)
     this.$root.$on('update-ticket:info-contato', this.setValueMenuContact)
-    // this.socketDisconnect()
     this.$store.commit('TICKET_FOCADO', {})
   }
 }
 </script>
 
 <style lang="sass">
+absolute-top
+  position: absolute
+  top: 0
 .upload-btn-wrapper
   position: relative
   overflow: hidden
@@ -1247,4 +1489,16 @@ export default {
 
 .tab-scroll
   white-space: nowrap
+
+.badge-left
+  border-radius: 50%
+
+.black-icon
+  color: black !important
+
+.q-tabs__indicator
+  background: transparent !important
+
+.blur-effect
+  filter: blur(0px)
 </style>

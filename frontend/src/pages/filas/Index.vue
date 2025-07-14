@@ -1,63 +1,87 @@
 <template>
   <div v-if="userProfile === 'admin'">
-    <q-table
-      flat
+    <q-table flat
       bordered
       square
       hide-bottom
-      class="my-sticky-dynamic q-ma-lg"
-      title="Filas"
+      class="contact-table container-rounded-10 my-sticky-dynamic q-ma-lg"
       :data="filas"
       :columns="columns"
       :loading="loading"
       row-key="id"
       :pagination.sync="pagination"
-      :rows-per-page-options="[0]"
-    >
-      <template v-slot:top-right>
-        <q-btn
-          color="primary"
+      :rows-per-page-options="[0]">
+      <template v-slot:top-left>
+        <div>
+          <h2  :class="$q.dark.isActive ? ('text-green') : ''">
+            <q-icon name="mdi-arrow-decision-outline q-pr-sm" />
+            Filas
+          </h2>
+          <q-btn class="generate-button btn-rounded-50"
+          icon="eva-plus-outline"
           label="Adicionar"
-          rounded
-          @click="filaEdicao = {}; modalFila = true"
-        />
+          @click="filaEdicao = {}; modalFila = true" />
+        </div>
       </template>
-      <template v-slot:body-cell-isActive="props">
+
+      <template v-slot:body-cell-color="props">
         <q-td class="text-center">
-          <q-icon
-            size="24px"
-            :name="props.value ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'"
-            :color="props.value ? 'positive' : 'negative'"
-          />
+          <div
+            class="q-pa-sm rounded-borders"
+            :style="`background: ${props.row.color}`"
+          >
+            {{ props.row.color }}
+          </div>
         </q-td>
       </template>
+
+      <template v-slot:body-cell-isActive="props">
+        <q-td class="text-center">
+          <q-icon size="24px"
+            :name="props.value ? 'mdi-check-circle-outline' : 'mdi-close-circle-outline'"
+            :color="props.value ? 'positive' : 'negative'" />
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-from_ia="props">
+        <q-td class="text-center">
+          <q-icon size="24px"
+            :name="props.row.from_ia ? 'mdi-brain' : 'mdi-brain-off'"
+            :color="props.row.from_ia ? 'positive' : 'negative'" />
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-integrationId="props">
+        <q-td :props="props">
+          {{ formatIntegracao(props.row.integrationId) }}
+        </q-td>
+      </template>
+
       <template v-slot:body-cell-acoes="props">
         <q-td class="text-center">
-          <q-btn
-            flat
+          <q-btn flat
             round
-            icon="edit"
-            @click="editarFila(props.row)"
-          />
-          <q-btn
-            flat
+            :class="$q.dark.isActive ? ('text-green') : ''"
+            icon="eva-edit-outline"
+            @click="editarFila(props.row)" />
+          <q-btn flat
             round
-            icon="mdi-delete"
-            @click="deletarFila(props.row)"
-          />
+            :class="$q.dark.isActive ? ('text-green') : ''"
+            icon="eva-trash-outline"
+            @click="deletarFila(props.row)" />
         </q-td>
       </template>
     </q-table>
-    <ModalFila
-      :modalFila.sync="modalFila"
+
+    <ModalFila :modalFila.sync="modalFila"
       :filaEdicao.sync="filaEdicao"
       @modal-fila:criada="filaCriada"
-      @modal-fila:editada="filaEditada"
-    />
+      @modal-fila:editada="filaEditada" />
   </div>
 </template>
 
 <script>
+import { ListarIntegracoes } from 'src/service/integracoes'
 import { DeletarFila, ListarFilas } from 'src/service/filas'
 import ModalFila from './ModalFila'
 export default {
@@ -71,6 +95,7 @@ export default {
       filaEdicao: {},
       modalFila: false,
       filas: [],
+      integracoes: [],
       pagination: {
         rowsPerPage: 40,
         rowsNumber: 0,
@@ -80,12 +105,23 @@ export default {
       columns: [
         { name: 'id', label: '#', field: 'id', align: 'left' },
         { name: 'queue', label: 'Fila', field: 'queue', align: 'left' },
-        { name: 'isActive', label: 'Ativo', field: 'isActive', align: 'center' },
-        { name: 'acoes', label: 'Ações', field: 'acoes', align: 'center' }
+        { name: 'color', label: 'Color', field: 'color', align: 'center' },
+        { name: 'isActive', label: 'Activo', field: 'isActive', align: 'center' },
+        { name: 'integrationId', label: 'Integración', field: 'integrationId', align: 'center', format: (val) => this.formatIntegracao(val) },
+        { name: 'from_ia', label: 'Flujo IA', field: 'from_ia', align: 'center' }, // Nueva columna para from_ia
+        { name: 'acoes', label: 'Acciones', field: 'acoes', align: 'center' }
       ]
     }
   },
   methods: {
+    async listarIntegracoes () {
+      const { data } = await ListarIntegracoes()
+      this.integracoes = data
+    },
+    formatIntegracao(integracaoId) {
+      const integracao = this.integracoes.find(integracao => integracao.id === integracaoId)
+      return integracao ? integracao.name : ''
+    },
     async listarFilas () {
       const { data } = await ListarFilas()
       this.filas = data
@@ -109,15 +145,15 @@ export default {
     },
     deletarFila (fila) {
       this.$q.dialog({
-        title: 'Atenção!!',
-        message: `Deseja realmente deletar a Fila "${fila.queue}"?`,
+        title: '¡¡Atención!!',
+        message: `¿Realmente quieres eliminar la fila "${fila.queue}"?`,
         cancel: {
-          label: 'Não',
+          label: 'No',
           color: 'primary',
           push: true
         },
         ok: {
-          label: 'Sim',
+          label: 'Si',
           color: 'negative',
           push: true
         },
@@ -134,7 +170,7 @@ export default {
               type: 'positive',
               progress: true,
               position: 'top',
-              message: `Fila ${fila.queue} deletada!`,
+              message: `¡Fila ${fila.queue} eliminada!`,
               actions: [{
                 icon: 'close',
                 round: true,
@@ -148,8 +184,9 @@ export default {
 
   },
   mounted () {
-    this.userProfile = localStorage.getItem('profile')
+    this.listarIntegracoes()
     this.listarFilas()
+    this.userProfile = localStorage.getItem('profile')
   }
 }
 </script>

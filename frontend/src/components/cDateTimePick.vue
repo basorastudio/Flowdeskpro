@@ -15,7 +15,7 @@
       v-on="$listeners"
       :error="cError"
       :error-message="cErrorMessage"
-      :ruler="[val => dateIsValid(val) || 'Data inválida!' ]"
+      :ruler="[val => dateIsValid(val) || '¡Fecha inválida!' ]"
     >
       <template v-slot:prepend>
         <q-icon

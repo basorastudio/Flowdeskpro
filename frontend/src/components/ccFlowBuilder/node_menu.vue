@@ -67,13 +67,13 @@ export default {
             {
               id: '11',
               type: 'timer',
-              name: 'Acesso de dados',
+              name: 'Acceso a datos',
               ico: 'mdi-clock-outline',
               style: {}
             }, {
               id: '12',
               type: 'task',
-              name: 'Chamada de interface',
+              name: 'Llamada de interfaz',
               ico: 'mdi-speedometer-medium',
               style: {}
             }
@@ -89,13 +89,13 @@ export default {
             {
               id: '21',
               type: 'end',
-              name: 'Fim do processo',
+              name: 'Final del proceso',
               ico: 'mdi-arrow-right',
               style: {}
             }, {
               id: '22',
               type: 'over',
-              name: 'Limpeza de dados',
+              name: 'Limpieza de datos',
               ico: 'mdi-close',
               style: {}
             }

@@ -7,9 +7,6 @@
       v-bind="$attrs"
       :label="label"
       :class="classAtrrs"
-      dense
-      outlined
-      rounded
       :value="value"
       v-on="$listeners"
       :error="cError"
@@ -64,6 +61,10 @@ export default {
     errorMessage: {
       type: [String, Boolean, Number],
       default: '' // Não Informada
+    },
+    dense: {
+      type: Boolean,
+      default: true
     },
     icon: {
       type: Object,

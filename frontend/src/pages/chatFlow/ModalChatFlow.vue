@@ -5,66 +5,61 @@
     @show="abrirModal"
     persistent
   >
-    <q-card
-      style="width: 500px"
-      class="q-pa-lg"
-    >
+    <q-card class="q-pa-lg modal-container container-rounded-10">
+      <q-card-actions align="right" class="q-mt-md">
+        <q-btn color="negative" v-close-popup icon="eva-close" flat />
+      </q-card-actions>
       <q-card-section>
-        <div class="text-h6">{{ chatFlow.isDuplicate ? 'Duplicar' : chatFlowEdicao.id ? 'Editar': 'Criar' }} Fluxo <span v-if="chatFlow.isDuplicate"> (Nome: {{ chatFlowEdicao.name }}) </span></div>
-        <div
-          v-if="chatFlow.isDuplicate"
-          class="text-subtitle1"
-        > Nome: {{ chatFlowEdicao.name }} </div>
+        <div class="text-h6 text-center font-family-main">
+          {{ chatFlow.isDuplicate ? 'Duplicar' : chatFlowEdicao.id ? 'Editar' : 'Crear' }} Flujo
+          <span v-if="chatFlow.isDuplicate"> (Nombre: {{ chatFlowEdicao.name }}) </span>
+        </div>
       </q-card-section>
-      <q-card-section>
+      <q-card-section class="q-pa-lg container-border container-rounded-10">
+        <div class="text-h6 font-family-main q-mb-sm">
+          Información
+        </div>
         <q-input
+          rounded
           class="row col"
           outlined
-          rounded
-          dense
           v-model="chatFlow.name"
-          label="Descrição"
+          label="Descripción"
         />
+        <div class="row col q-mt-md">
+          <q-checkbox
+            v-model="chatFlow.isActive"
+            label="Activo"
+          />
+        </div>
         <div class="row col q-mt-md">
           <q-input
             clearable
             class="full-width"
             rounded
-            dense
             outlined
             v-model="chatFlow.celularTeste"
-            label="Número para Teste"
-            hint="Deixe limpo para que a Auto resposta funcione. Caso contrário, irá funcionar somente para o número informado aqui."
-          />
-        </div>
-        <div class="row col q-mt-md">
-          <q-checkbox
-            v-model="chatFlow.isActive"
-            label="Ativo"
+            label="Número de prueba"
+            hint="Déjalo limpio para que la Auto respuesta funcione. De lo contrario, solo funcionará para el número informado aquí."
           />
         </div>
       </q-card-section>
-      <q-card-actions
-        align="right"
-        class="q-mt-md"
-      >
+      <q-card-actions align="right" class="q-mt-md">
+        <q-btn label="Cancelar" color="negative" v-close-popup class="q-mr-md btn-rounded-50" />
         <q-btn
-          rounded
-          label="Cancelar"
-          color="negative"
-          v-close-popup
-          class="q-mr-md"
-        />
-        <q-btn
-          rounded
           label="Salvar"
-          color="positive"
           @click="handleAutoresposta"
+          :class="{
+            'generate-button': true,
+            'btn-rounded-50': true,
+            'generate-button-dark': $q.dark.isActive,
+            'generate-button-light': !$q.dark.isActive
+          }"
+          icon="eva-save-outline"
         />
       </q-card-actions>
     </q-card>
   </q-dialog>
-
 </template>
 
 <script>
@@ -94,10 +89,6 @@ export default {
         celularTeste: null,
         isActive: true
       }
-      // options: [
-      //   { value: 0, label: 'Entrada (Criação do Ticket)' },
-      //   { value: 1, label: 'Encerramento (Resolução Ticket)' }
-      // ]
     }
   },
   methods: {
@@ -129,15 +120,15 @@ export default {
       this.$emit('update:modalChatFlow', false)
     },
     async handleAutoresposta () {
+      const flow = { ...getDefaultFlow(), ...this.chatFlow, id: null }
+
       if (this.chatFlow.id && !this.chatFlow?.isDuplicate) {
         const { data } = await UpdateChatFlow(this.chatFlow)
-        this.$notificarSucesso('Fluxo editado.')
+        this.$notificarSucesso('Flujo editado.')
         this.$emit('chatFlow:editado', data)
-      } else {
-        // setar id = null para rotina de duplicação de fluxo
-        const flow = { ...getDefaultFlow(), ...this.chatFlow, id: null }
+      } else if (!this.chatFlow.id && !this.chatFlow?.isDuplicate) {
         const { data } = await CriarChatFlow(flow)
-        this.$notificarSucesso('Novo fluxo criado.')
+        this.$notificarSucesso('Nuevo flujo creado.')
         this.$emit('chatFlow:criada', data)
       }
       this.fecharModal()
@@ -146,5 +137,52 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
+.file-input {
+  display: none;
+}
+
+.file-button {
+  font-size: 14px;
+  line-height: 1.715em;
+  color: inherit;
+  font-weight: 500;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-button-dark {
+  background-color: #4caf50; /* Cor para o modo escuro */
+  color: white;
+}
+
+.file-button-light {
+  background-color: #ff7103; /* Cor para o modo claro */
+  color: white;
+}
+
+.file-button .q-icon {
+  font-size: 1.2em; /* Ajuste o tamanho do ícone conforme necessário */
+}
+
+.generate-button-dark {
+  background-color: #4caf50; /* Cor para o modo escuro */
+  color: white;
+}
+
+.generate-button-light {
+  background-color: #ff7103; /* Cor para o modo claro */
+  color: white;
+}
+
+.generate-button .q-icon {
+  font-size: 1.2em; /* Ajuste o tamanho do ícone conforme necessário */
+}
 </style>

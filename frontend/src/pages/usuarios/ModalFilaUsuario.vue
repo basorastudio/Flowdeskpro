@@ -5,17 +5,17 @@
     @hide="fecharModal"
     @show="abrirModal"
   >
-    <q-card style="width: 400px">
+    <q-card class="q-pa-lg container-rounded-10">
       <q-card-section class="q-pa-none">
-        <div class="full-width text-h6 row col bg-grey-4 q-pa-sm">Filas Usuário</div>
+        <div class="full-width text-h6 row col font-family-main q-pa-sm">Filas Usuario</div>
         <div
           style="font-size: 1em"
           class="text-caption text-bold row col q-px-sm q-pt-sm"
-        >Nome: {{ usuarioSelecionado.name }}</div>
+        >Nombre: {{ usuarioSelecionado.name }}</div>
         <div
           style="font-size: 1em"
           class="text-caption text-bold row col q-px-sm"
-        >Email: {{ usuarioSelecionado.email }}</div>
+        >Correo electrónico: {{ usuarioSelecionado.email }}</div>
         <q-separator spaced />
       </q-card-section>
       <q-card-section>
@@ -27,7 +27,7 @@
             <q-checkbox
               :disable="!fila.isActive"
               v-model="filasUsuario"
-              :label="`${fila.queue} ${!fila.isActive ? '(Inativo)' : ''}`"
+              :label="`${fila.queue} ${!fila.isActive ? '(Inactivo)' : ''}`"
               :val="fila.id"
             />
           </div>
@@ -35,17 +35,15 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn
-          label="Sair"
-          class="q-px-md q-mr-sm"
+          label="Cancelar"
+          class="q-px-md q-mr-sm btn-rounded-50"
           color="negative"
-          rounded
           v-close-popup
         />
         <q-btn
           label="Salvar"
-          class="q-px-md"
-          color="primary"
-          rounded
+          class="btn-rounded-50 generate-button"
+          icon="eva-save-outline"
           @click="handleFilaUsuario"
         />
       </q-card-actions>
@@ -97,7 +95,7 @@ export default {
         type: 'positive',
         progress: true,
         position: 'top',
-        message: 'Filas do usuário editadas com sucesso!',
+        message: '¡Las filas de usuario editadas con éxito!',
         actions: [{
           icon: 'close',
           round: true,

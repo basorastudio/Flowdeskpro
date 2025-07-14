@@ -30,9 +30,9 @@
                 <VEmojiPicker
                   style="width: 40vw"
                   :showSearch="false"
-                  :emojisByRow="20"
+                  :emojisByRow="calculateEmojisByRow()"
                   labelSearch="Localizar..."
-                  lang="pt-BR"
+                  lang="es"
                   @select="onInsertSelectEmoji"
                 />
               </q-menu>
@@ -42,7 +42,7 @@
             ref="inputEnvioMensagem"
             style="min-height: 10vh; max-height: 15vh; flex: auto"
             class="q-pa-sm bg-white"
-            placeholder="Digite a mensagem"
+            placeholder="Ingrese el mensaje"
             autogrow
             dense
             outlined
@@ -62,10 +62,10 @@
             input-debounce="0"
             new-value-mode="add-unique"
             class="full-width"
-            label="Opções"
+            label="Opción"
             filled
             dense
-            hint="Opções serão tratados como Lista/Botões ou texto simples dependendo do suporte do canal de destino."
+            hint="Las opciones se tratarán como Lista/Botones o texto simple dependiendo del soporte del canal de destino."
           />
 
         </div>
@@ -81,6 +81,19 @@ export default {
   name: 'MessageField',
   components: { VEmojiPicker },
   methods: {
+    onResize() {
+      this.$forceUpdate()
+    },
+    calculateEmojisByRow() {
+      const screenWidth = window.innerWidth
+      if (screenWidth < 600) {
+        return 5
+      } else if (screenWidth >= 600 && screenWidth < 1200) {
+        return 10
+      } else {
+        return 20
+      }
+    },
     onInsertSelectEmoji (emoji) {
       const self = this
       var tArea = this.$refs.inputEnvioMensagem
@@ -102,9 +115,26 @@ export default {
         tArea.selectionStart = tArea.selectionEnd = cursorPos + emoji.data.length
       }, 10)
     }
+  },
+  mounted() {
+    window.addEventListener('resize', this.onResize)
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.onResize)
   }
 }
 </script>
 
 <style lang="scss" scoped>
+
+.emoji-picker {
+  width: 100%;
+}
+
+@media (min-width: 600px) {
+  .emoji-picker {
+    width: 50vw;
+  }
+}
+
 </style>
