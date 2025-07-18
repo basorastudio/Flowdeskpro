@@ -2,17 +2,17 @@
   <div v-if="userProfile === 'admin'">
     <q-card bordered>
       <q-card-section>
-        <div class=text-h6 q-px-sm  :class="$q.dark.isActive ? ('text-green') : ''">
-          Informe Resumen de Atenciones por Usuario</div>
+        <div class="text-h6 q-px-sm"> Relatório Resumo Atendimentos Usuários </div>
       </q-card-section>
       <q-card-section class="q-pt-none">
-        <fieldset>
-          <legend class="q-px-sm">Filtros (Fecha de Atenciones)</legend>
+        <fieldset class="rounded-all">
+          <legend class="q-px-sm">Filtros (Data Atendimentos)</legend>
           <div class="row q-gutter-md items-end">
             <div class="col-grow">
-              <label>Inicio</label>
+              <label>Início</label>
               <DatePick
                 dense
+                rounded
                 v-model="pesquisa.startDate"
               />
             </div>
@@ -20,27 +20,31 @@
               <label>Final</label>
               <DatePick
                 dense
+                rounded
                 v-model="pesquisa.endDate"
               />
             </div>
             <div class="col-grow text-center">
               <q-btn
                 class="q-mr-sm"
-                color="info"
-                label="Generar"
+                color="primary"
+                label="Gerar"
                 icon="refresh"
+                rounded
                 @click="gerarRelatorio"
               />
               <q-btn
                 class="q-mr-sm"
                 color="black"
+                rounded
                 icon="print"
                 label="Imprimir"
                 @click="printReport('tRelatorioResumoAtendimentosUsuarios')"
               />
               <q-btn
-                color="green"
+                color="warning"
                 label="Excel"
+                rounded
                 @click="exportTable('tRelatorioResumoAtendimentosUsuarios')"
               />
             </div>
@@ -95,7 +99,7 @@
     <ccPrintModelLandscape
       id="slotTableRelatorioResumoAtendimentosUsuarios"
       :imprimirRelatorio="imprimir"
-      title="Informe de Resumen de Atenciones de Usuarios"
+      title="Relatório de Resumo Atendimentos Usuários"
       :styleP="`
       table { width: 100%; font-size: 10px; border-spacing: 1; border-collapse: collapse;  }
       #tableReport tr td { border:1px solid #DDD; padding-left: 10px; padding-right: 10px;  }
@@ -165,15 +169,15 @@ export default {
       bl_sintetico: false,
       dadosResumo: [],
       columns: [
-        { name: 'name', label: 'Nombre', field: 'name', align: 'left', style: 'width: 300px', format: v => !v ? 'No informado' : v },
-        { name: 'email', label: 'Correo electrónico', field: 'email', align: 'left', style: 'width: 300px', format: v => !v ? 'No informado' : v },
-        { name: 'qtd_pendentes', label: 'Pendiente', field: 'qtd_pendentes', align: 'center', style: 'width: 300px; text-align: center;' },
-        { name: 'qtd_em_atendimento', label: 'En Atención', field: 'qtd_em_atendimento', align: 'center', style: 'width: 300px; text-align: center;' },
-        { name: 'qtd_resolvidos', label: 'Resuelto', field: 'qtd_resolvidos', align: 'center', style: 'width: 300px; text-align: center;' },
+        { name: 'name', label: 'Nome', field: 'name', align: 'left', style: 'width: 300px', format: v => !v ? 'Não Informado' : v },
+        { name: 'email', label: 'E-Mail', field: 'email', align: 'left', style: 'width: 300px', format: v => !v ? 'Não Informado' : v },
+        { name: 'qtd_pendentes', label: 'Pendentes', field: 'qtd_pendentes', align: 'center', style: 'width: 300px; text-align: center;' },
+        { name: 'qtd_em_atendimento', label: 'Em Atendimento', field: 'qtd_em_atendimento', align: 'center', style: 'width: 300px; text-align: center;' },
+        { name: 'qtd_resolvidos', label: 'Resolvidos', field: 'qtd_resolvidos', align: 'center', style: 'width: 300px; text-align: center;' },
         { name: 'qtd_por_usuario', label: 'Total', field: 'qtd_por_usuario', align: 'center', style: 'width: 300px; text-align: center;' },
-        { name: 'menor_tempo_por_usuario', label: 'Menor Tiempo (Min)', field: 'menor_tempo_por_usuario', align: 'center', style: 'width: 300px; text-align: center;', format: v => this.$formatarValorMoeda(v, 0) },
-        { name: 'maior_tempo_por_usuario', label: 'Mayor Tiempo (Min)', field: 'maior_tempo_por_usuario', align: 'center', style: 'width: 300px; text-align: center;', format: v => this.$formatarValorMoeda(v, 0) },
-        { name: 'tempo_medio_por_usuario', label: 'Tiempo Medio (Min)', field: 'tempo_medio_por_usuario', style: 'width: 300px; text-align: center;', align: 'left', format: v => this.$formatarValorMoeda(v, 0) }
+        { name: 'menor_tempo_por_usuario', label: 'Menor Tempo (Min)', field: 'menor_tempo_por_usuario', align: 'center', style: 'width: 300px; text-align: center;', format: v => this.$formatarValorMoeda(v, 0) },
+        { name: 'maior_tempo_por_usuario', label: 'Maior Tempo (Min)', field: 'maior_tempo_por_usuario', align: 'center', style: 'width: 300px; text-align: center;', format: v => this.$formatarValorMoeda(v, 0) },
+        { name: 'tempo_medio_por_usuario', label: 'Tempo Médio (Min)', field: 'tempo_medio_por_usuario', style: 'width: 300px; text-align: center;', align: 'left', format: v => this.$formatarValorMoeda(v, 0) }
       ],
       pesquisa: {
         startDate: format(sub(new Date(), { days: 30 }), 'yyyy-MM-dd'),
@@ -207,8 +211,8 @@ export default {
         }
       }
       const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, json, 'Informe de Atenciones')
-      XLSX.writeFile(wb, 'informe-resumen-atención.xlsx')
+      XLSX.utils.book_append_sheet(wb, json, 'Relatório Atendimentos')
+      XLSX.writeFile(wb, 'Resumo Atendimentos.xlsx')
     },
     async gerarRelatorio () {
       const { data } = await RelatorioResumoAtendimentosUsuarios(this.pesquisa)

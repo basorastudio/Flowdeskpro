@@ -1,61 +1,83 @@
 <template>
   <div>
-    <q-card flat
-      class="q-pa-sm q-pb-md">
+    <q-card
+      flat
+      class="q-pa-sm q-pb-md"
+    >
       <q-card-section class="q-pa-none">
         <div class="flex flex-inline full-width items-center">
-          <div class="flex flex-inline text-left"
-            style="width: 40px">
-            <q-btn round
+          <div
+            class="flex flex-inline text-left"
+            style="width: 40px"
+          >
+            <q-btn
+              round
               flat
-              dense>
-              <q-icon size="2em"
-                name="mdi-emoticon-happy-outline" />
+              dense
+            >
+              <q-icon
+                size="2em"
+                name="mdi-emoticon-happy-outline"
+              />
               <q-tooltip>
                 Emoji
               </q-tooltip>
-              <q-menu anchor="top right"
+              <q-menu
+                anchor="top right"
                 self="bottom middle"
-                :offset="[5, 40]">
-                <VEmojiPicker style="width: 40vw"
+                :offset="[5, 40]"
+              >
+                <VEmojiPicker
+                  style="width: 40vw"
                   :showSearch="false"
                   :emojisByRow="20"
                   labelSearch="Localizar..."
                   lang="es"
-                  @select="onInsertSelectEmoji" />
+                  @select="onInsertSelectEmoji"
+                />
               </q-menu>
             </q-btn>
-            <q-btn round
+            <q-btn
+              round
               flat
-              dense>
-              <q-icon size="2em"
-                name="mdi-variable" />
+              dense
+            >
+              <q-icon
+                size="2em"
+                name="mdi-variable"
+              />
               <q-tooltip>
-                Variables
+                Variáveis
               </q-tooltip>
               <q-menu touch-position>
-                <q-list dense
-                  style="min-width: 100px">
-                  <q-item v-for="variavel in variaveis"
+                <q-list
+                  dense
+                  style="min-width: 100px"
+                >
+                  <q-item
+                    v-for="variavel in variaveis"
                     :key="variavel.label"
                     clickable
                     @click="onInsertSelectVariable(variavel.value)"
-                    v-close-popup>
+                    v-close-popup
+                  >
                     <q-item-section>{{ variavel.label }}</q-item-section>
                   </q-item>
                 </q-list>
               </q-menu>
             </q-btn>
           </div>
-          <textarea ref="inputEnvioMensagem"
+          <textarea
+            ref="inputEnvioMensagem"
             style="min-height: 10vh; max-height: 30vh; flex: auto"
-            class="q-pa-sm bg-white"
-            placeholder="Escribe el mensaje"
+            class="q-pa-sm bg-white rounded-all"
+            placeholder="Digite a mensagem"
             autogrow
             dense
             outlined
             @input="(v) => $attrs.element.data.message = v.target.value"
-            :value="$attrs.element.data.message">
+            :value="$attrs.element.data.message"
+          >
           </textarea>
         </div>
       </q-card-section>
@@ -72,18 +94,9 @@ export default {
   data () {
     return {
       variaveis: [
-        { label: 'Nombre Completo', value: '{{name}}' },
-        { label: 'Nombre', value: '{{firstName}}' },
-        { label: 'Saludo', value: '{{greeting}}' },
-        { label: 'Protocolo', value: '{{protocol}}' },
-        { label: 'Teléfono', value: '{{phoneNumber}}' },
-        { label: 'Email de Contacto', value: '{{email}}' },
-        { label: 'Número de Ticket', value: '{{ticket_id}}' },
-        { label: 'Hora', value: '{{hour}}' },
-        { label: 'Fecha', value: '{{date}}' },
-        { label: 'Fila', value: '{{fila}}' },
-        { label: 'Nombre del agente', value: '{{user}}' },
-        { label: 'Email del agente', value: '{{userEmail}}' }
+        { label: 'Nome', value: '{{name}}' },
+        { label: 'Saudação', value: '{{greeting}}' },
+        { label: 'Protocolo', value: '{{protocol}}' }
       ]
     }
   },
@@ -91,20 +104,20 @@ export default {
     onInsertSelectEmoji (emoji) {
       const self = this
       var tArea = this.$refs.inputEnvioMensagem
-      // obtener la posición del cursor:
+      // get cursor's position:
       var startPos = tArea.selectionStart,
         endPos = tArea.selectionEnd,
         cursorPos = startPos,
         tmpStr = tArea.value
-      // filtro:
+      // filter:
       if (!emoji.data) {
         return
       }
-      // insertar:
+      // insert:
       self.txtContent = this.$attrs.element.data.message
       self.txtContent = tmpStr.substring(0, startPos) + emoji.data + tmpStr.substring(endPos, tmpStr.length)
       this.$attrs.element.data.message = self.txtContent
-      // mover cursor:
+      // move cursor:
       setTimeout(() => {
         tArea.selectionStart = tArea.selectionEnd = cursorPos + emoji.data.length
       }, 10)
@@ -113,20 +126,20 @@ export default {
       console.log('onInsertSelectVariable', variable)
       const self = this
       var tArea = this.$refs.inputEnvioMensagem
-      // obtener la posición del cursor:
+      // get cursor's position:
       var startPos = tArea.selectionStart,
         endPos = tArea.selectionEnd,
         cursorPos = startPos,
         tmpStr = tArea.value
-      // filtro:
+      // filter:
       if (!variable) {
         return
       }
-      // insertar:
+      // insert:
       self.txtContent = this.$attrs.element.data.message
       self.txtContent = tmpStr.substring(0, startPos) + variable + tmpStr.substring(endPos, tmpStr.length)
       this.$attrs.element.data.message = self.txtContent
-      // mover cursor:
+      // move cursor:
       setTimeout(() => {
         tArea.selectionStart = tArea.selectionEnd = cursorPos + 1
       }, 10)
@@ -136,5 +149,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 </style>

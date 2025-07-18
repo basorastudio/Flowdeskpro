@@ -29,7 +29,7 @@
           <div class="blob blue"></div>
           <div class="blob blue"></div>
           <div class="blob blue"></div>
-        </div> Leer más
+        </div> Ler mais
       </q-btn>
 
       <q-btn

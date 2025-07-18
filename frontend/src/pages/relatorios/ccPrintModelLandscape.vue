@@ -7,6 +7,7 @@
           <div class="row">
             <div class="column left">
               <div class="container-header">
+                <!-- <div class="row text-left negrita h3">{{dadosUnidadeNegocioSelecionada.st_nome_unidade}}</div> -->
                 <div
                   class="row text-center"
                   style="font-weight: bold; font-size: 18px;"
@@ -24,17 +25,33 @@
 
                 <hr
                   class="row"
-                  style="margin-top: 20px; margin: 0 auto; width: 90%;"
+                  style="margin-top: 10px; margin-left: -10px; width: 85%"
                 >
               </div>
             </div>
+
+            <!-- <div class="column right column-rigth-header">
+              <div style="background: black; margin-top: -4px; width: 110px; height: 80px;">
+                <img
+                  class="logo"
+                  src="https://agenciabrave.com.br/wp-content/uploads/2016/03/logomarca-clinica.jpg"
+                  alt="logo"
+                  width="110"
+                  height="80"
+                >
+                <div class="row text-center h3">&nbsp;</div>
+              </div>
+            </div> -->
           </div>
         </div>
 
         <div class="page-footer">
           <div style="text-align: center">
-            <!-- Footer content -->
+            <!-- <hr style="width: 40%; margin-right: 2cm !important;"> -->
+            <!-- <p style="margin-top: -10px; margin-right: 2cm !important;">{{dadosUsuario.st_nome_profissional}}</p>
+            <p style="margin-top: -15px; margin-right: 2cm !important;  padding: none;">{{dadosUsuario.cd_conselho}} {{dadosUsuario.nr_conselho}}</p> -->
           </div>
+
         </div>
 
         <table>
@@ -48,6 +65,17 @@
           </thead>
 
           <tbody id="tableReport">
+            <!-- <tr>
+              <td>
+                <div class="page word-wrap">
+                  <div
+                    style="word-wrap: normal !important; white-space: normal !important; "
+                    class="word-wrap customWrap"
+                    v-html="corpo"
+                  ></div>
+                </div>
+              </td>
+            </tr> -->
             <slot name="body"></slot>
           </tbody>
 
@@ -66,7 +94,6 @@
 
   </div>
 </template>
-
 <script>
 const cssText = `
   .marginsPage {
@@ -75,9 +102,11 @@ const cssText = `
   }
   .page-header {
     height: 120px !important;
+    // margin-left: 0.5cm !important;
   }
   .page-header-space {
     height: 90px !important;
+    // margin-left: 0.5cm !important;
   }
   .page-header {
     position: fixed !important;
@@ -87,12 +116,20 @@ const cssText = `
   .container-header {
     padding-top: 30px;
   }
+  .column-rigth-header {
+    position: fixed;
+    width: 250px;
+    height: 80px;
+    top: 0px;
+    padding-top: 10px;
+    right: 0px;
+  }
   header {
     display: none;
     position: fixed;
     top: 0;
   }
-
+  
   .page-footer,
   .page-footer-space {
     height: 0px !important;
@@ -119,12 +156,13 @@ const cssText = `
   .h4 {
     font-size: 9px;
   }
-
+  
   .p {
+    margin-top: 5px;
     margin-top: 5px;
     line-height: 50px;
   }
-
+  
   .row {
     left: 0;
     right: 0;
@@ -147,9 +185,12 @@ const cssText = `
       word-wrap: normal !important;
       white-space: normal !important;
       overflow-wrap: break-word;
+      overflow-wrap: break-word;
       word-wrap: break-word;
       -ms-word-break: break-all;
+      /* This is the dangerous one in WebKit, as it breaks things wherever */
       word-break: break-all;
+      /* Instead use this non-standard one: */
       word-break: break-word;
     }
 
@@ -164,12 +205,19 @@ const cssText = `
       right: 0px;
       top: 0px;
     }
+   
+    img.logo {
+      width: 110px;
+      height: 80px;
+      object-fit: fill;
+    }
 
     body {
       top: 0px !important;
       margin: 0px !important;
       left: 0px;
       width: 297mm;
+      // retirar 35px do footer
       height: calc(209mm - 35px); 
     }
     thead {
@@ -214,6 +262,7 @@ export default {
   computed: {
     conteudoTexto () {
       const data = this.corpo
+      // data = data.replace(/<p>/g, this.styleP)
       return data
     }
   },
@@ -250,9 +299,9 @@ export default {
   }
 }
 </script>
-
 <style lang="scss" scoped>
 #pageInit {
+  // margin: 0px;
   display: none;
 }
 </style>

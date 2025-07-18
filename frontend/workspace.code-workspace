@@ -7,7 +7,6 @@
 	"settings": {
 		"vetur.validation.template": false,
 		"vetur.format.enable": false,
-		"vetur.experimental.templateInterpolationService": true,
-		"maximumFileSizeToCacheInBytes": 5000000
+		"vetur.experimental.templateInterpolationService": true
 	}
 }

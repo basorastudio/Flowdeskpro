@@ -24,14 +24,6 @@ export function RelatorioResumoAtendimentosUsuarios (params) {
   })
 }
 
-export function ulizacaoVps (params) {
-  return request({
-    url: '/status',
-    method: 'get',
-    params
-  })
-}
-
 export function GetDashTicketsAndTimes (params) {
   return request({
     url: '/statistics-tickets-times',

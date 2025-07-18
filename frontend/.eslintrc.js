@@ -55,7 +55,6 @@ module.exports = {
     'arrow-parens': 'off',
     'one-var': 'off',
     'eqeqeq': 0,
-    'space-before-function-paren': "off",
     'camelcase': "off",
     'import/first': 'off',
     'import/named': 'error',
@@ -66,7 +65,6 @@ module.exports = {
     'import/no-unresolved': 'off',
     'import/no-extraneous-dependencies': 'off',
     'prefer-promise-reject-errors': 'off',
-    'space-before-function-paren' : 'off',
     "no-use-v-if-with-v-for": 0,
     "vue/no-use-v-if-with-v-for": [
       "error",

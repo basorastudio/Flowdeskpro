@@ -54,8 +54,8 @@ export default {
     return {
       status: {},
       statusOptions: [
-        { label: 'Conectado', value: 'online', icon: 'mdi-account-check', color: 'positive' },
-        { label: 'Desconectado', value: 'offline', icon: 'mdi-account-off', color: 'negative' }
+        { label: 'Online', value: 'online', icon: 'mdi-account-check', color: 'positive' },
+        { label: 'Offline', value: 'offline', icon: 'mdi-account-off', color: 'negative' }
       ]
     }
   },

@@ -4326,7 +4326,7 @@ copyright 2016 jsPlumb
       Endpoint: "Dot",
       EndpointOverlays: [],
       Endpoints: [null, null],
-      EndpointStyle: { fill: "#ff7103" },
+      EndpointStyle: { fill: "#456" },
       EndpointStyles: [null, null],
       EndpointHoverStyle: null,
       EndpointHoverStyles: [null, null],
@@ -4335,7 +4335,7 @@ copyright 2016 jsPlumb
       LogEnabled: false,
       Overlays: [],
       MaxConnections: 1,
-      PaintStyle: { "stroke-width": 4, stroke: "#ff7103" },
+      PaintStyle: { "stroke-width": 4, stroke: "#456" },
       ReattachConnections: false,
       RenderMode: "svg",
       Scope: "jsPlumb_DefaultScope"

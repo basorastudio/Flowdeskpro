@@ -9,7 +9,7 @@
         class="text-h2 text-white"
         style="opacity:.4"
       >
-        Oooooops ... nada aquí ...
+        Oooooops... Nada por aqui...
       </div>
 
       <q-btn

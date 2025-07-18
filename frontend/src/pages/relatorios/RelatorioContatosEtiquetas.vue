@@ -2,17 +2,16 @@
   <div v-if="userProfile === 'admin'">
     <q-card bordered>
       <q-card-section>
-        <div class=text-h6 q-px-sm  :class="$q.dark.isActive ? ('text-green') : ''">
-          Informe de contacto </div>
+        <div class="text-h6 q-px-sm"> Relatório de Contatos por Etiquetas </div>
       </q-card-section>
       <q-card-section class="q-pt-none">
-        <fieldset>
+        <fieldset class="rounded-all">
           <legend class="q-px-sm">Filtros</legend>
           <div class="row q-gutter-md items-end">
             <div class="col-xs-12 col-sm-7 grow text-center">
               <q-select
-                square
                 outlined
+                rounded
                 v-model="pesquisa.tags"
                 multiple
                 :options="etiquetas"
@@ -42,7 +41,7 @@
                 <template v-slot:selected-item="{opt}">
                   <q-chip
                     dense
-                    square
+                    rounded
                     color="white"
                     text-color="primary"
                     class="q-ma-xs text-body1"
@@ -61,8 +60,9 @@
             <div class="col-grow text-center">
               <q-btn
                 class="q-mr-sm"
-                color="info"
-                label="Generar"
+                color="primary"
+                rounded
+                label="Gerar"
                 icon="refresh"
                 @click="gerarRelatorio"
               />
@@ -70,12 +70,14 @@
                 class="q-mr-sm"
                 color="black"
                 icon="print"
+                rounded
                 label="Imprimir"
                 @click="printReport('tRelatorioContatosEtiquetas')"
               />
               <q-btn
-                color="green"
+                color="warning"
                 label="Excel"
+                rounded
                 @click="exportTable('tRelatorioContatosEtiquetas')"
               />
             </div>
@@ -130,7 +132,7 @@
     <ccPrintModelLandscape
       id="slotTableRelatorioContatos"
       :imprimirRelatorio="imprimir"
-      title="Informe de Contactos por Etiquetas"
+      title="Relatório de Contatos por Etiquetas"
       :styleP="`
       table { width: 100%; font-size: 10px; border-spacing: 1; border-collapse: collapse;  }
       #tableReport tr td { border:1px solid #DDD; padding-left: 10px; padding-right: 10px;  }
@@ -201,9 +203,9 @@ export default {
       contatos: [],
       etiquetas: [],
       columns: [
-        { name: 'name', label: 'Nombre', field: 'name', align: 'left', style: 'width: 300px', format: v => this.replaceEmojis(v) },
+        { name: 'name', label: 'Nome', field: 'name', align: 'left', style: 'width: 300px', format: v => this.replaceEmojis(v) },
         { name: 'number', label: 'WhatsApp', field: 'number', align: 'center', style: 'width: 300px' },
-        { name: 'email', label: 'Correo electrónico', field: 'email', style: 'width: 500px', align: 'left' },
+        { name: 'email', label: 'Email', field: 'email', style: 'width: 500px', align: 'left' },
         {
           name: 'tags',
           label: 'Etiquetas',
@@ -261,8 +263,8 @@ export default {
         }
       }
       const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, json, 'Informe de Atenciones')
-      XLSX.writeFile(wb, 'informe-contactos-etiquetas.xlsx')
+      XLSX.utils.book_append_sheet(wb, json, 'Relatório Atendimentos')
+      XLSX.writeFile(wb, 'Atendimentos-TESTE.xlsx')
     },
     async listarEtiquetas () {
       const { data } = await ListarEtiquetas(true)
@@ -270,7 +272,7 @@ export default {
     },
     async gerarRelatorio () {
       if (!this.pesquisa.tags.length) {
-        this.$notificarErro('Ops... Para generar el informe, es necesario seleccionar al menos una etiqueta.')
+        this.$notificarErro('Ops... Para gerar o relatório, é necessário selecionar pelo menos uma etiqueta.')
         return
       }
       const { data } = await RelatorioContatos(this.pesquisa)

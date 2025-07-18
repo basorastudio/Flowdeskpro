@@ -1,9 +1,9 @@
 const data = {
-  name: 'Flujo inicial',
+  name: 'Fluxo Inicial',
   nodeList: [
     {
       id: 'start',
-      name: 'Inicio',
+      name: 'Início',
       type: 'start',
       left: '26px',
       top: '100px',
@@ -18,7 +18,7 @@ const data = {
     },
     {
       id: 'configurations',
-      name: 'Configuraciones',
+      name: 'Configurações',
       type: 'configurations',
       left: '340px',
       top: '100px',
@@ -32,8 +32,7 @@ const data = {
         notResponseMessage: {
           time: 10,
           type: 1, // '1' - Fila | '2' - Usuario
-          destiny: '',
-          message: ''
+          destiny: ''
         },
         welcomeMessage: {
           message: ''
@@ -42,16 +41,12 @@ const data = {
           number: 3,
           type: 1,
           destiny: ''
-        },
-        outOpenHours: {
-          type: 3,
-          destiny: null
         }
       }
     },
     {
       id: 'nodeC',
-      name: '¡Bienvenido!',
+      name: 'Boas vindas!',
       type: 'node',
       left: '26px',
       top: '301px',
@@ -68,7 +63,7 @@ const data = {
     // connector: 'Straight',
     // connector: 'Flowchart',
     // anchors: ['Top', 'Bottom'],
-    paintStyle: { strokeWidth: 3, stroke: '#ff7103' }
+    paintStyle: { strokeWidth: 3, stroke: '#8db1dd' }
   }]
 }
 

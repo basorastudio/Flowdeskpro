@@ -2,20 +2,19 @@
   <div v-if="userProfile === 'admin'">
     <q-card bordered>
       <q-card-section>
-        <div class=text-h6 q-px-sm  :class="$q.dark.isActive ? ('text-green') : ''">
-          Informe de Contactos por Estado</div>
+        <div class="text-h6 q-px-sm"> Relatório de Contatos por Estado </div>
       </q-card-section>
       <q-card-section class="q-pt-none">
-        <fieldset>
+        <fieldset class="rounded-all">
           <legend class="q-px-sm">Filtros</legend>
           <div class="row q-gutter-md items-end">
             <div class="col-xs-12 col-sm-7 grow text-center">
               <q-select
-                square
+                rounded
                 outlined
                 v-model="pesquisa.ddds"
                 multiple
-                :options="estadosBR"
+                :options="estadosDO"
                 use-chips
                 option-value="sigla"
                 option-label="nome"
@@ -42,11 +41,11 @@
                 <template v-slot:selected-item="{opt}">
                   <q-badge
                     dense
-                    square
+                    rounded
                     color="grey-3"
                     text-color="primary"
                     class="q-ma-xs text-body1"
-                    :label="opt.nome "
+                    :label="opt.nome"
                   >
                   </q-badge>
                 </template>
@@ -55,20 +54,23 @@
             <div class="col-grow text-center">
               <q-btn
                 class="q-mr-sm"
-                color="info"
-                label="Generar"
+                color="primary"
+                rounded
+                label="Gerar"
                 icon="refresh"
                 @click="gerarRelatorio"
               />
               <q-btn
                 class="q-mr-sm"
                 color="black"
+                rounded
                 icon="print"
                 label="Imprimir"
                 @click="printReport('tRelatorioContatosEtiquetas')"
               />
               <q-btn
-                color="green"
+                color="warning"
+                rounded
                 label="Excel"
                 @click="exportTable('tRelatorioContatosEtiquetas')"
               />
@@ -124,7 +126,7 @@
     <ccPrintModelLandscape
       id="slotTableRelatorioContatos"
       :imprimirRelatorio="imprimir"
-      title="Informe de Contactos por Etiquetas"
+      title="Relatório de Contatos por Etiquetas"
       :styleP="`
       table { width: 100%; font-size: 10px; border-spacing: 1; border-collapse: collapse;  }
       #tableReport tr td { border:1px solid #DDD; padding-left: 10px; padding-right: 10px;  }
@@ -177,7 +179,7 @@ import ccPrintModelLandscape from './ccPrintModelLandscape'
 import XLSX from 'xlsx'
 import { RelatorioContatos } from 'src/service/estatisticas'
 import { ListarEtiquetas } from 'src/service/etiquetas'
-import { estadoPorDdd, estadosBR } from 'src/utils/constants'
+import { estadoPorDdd, estadosDO } from 'src/utils/constants'
 
 export default {
   name: 'RelatorioContatosEtiquetas',
@@ -194,13 +196,13 @@ export default {
       data: null,
       bl_sintetico: false,
       estadoPorDdd,
-      estadosBR,
+      estadosDO,
       contatos: [],
       etiquetas: [],
       columns: [
-        { name: 'name', label: 'Nombre', field: 'name', align: 'left', style: 'width: 300px', format: v => this.replaceEmojis(v) },
+        { name: 'name', label: 'Nome', field: 'name', align: 'left', style: 'width: 300px', format: v => this.replaceEmojis(v) },
         { name: 'number', label: 'WhatsApp', field: 'number', align: 'center', style: 'width: 300px' },
-        { name: 'email', label: 'Correo electrónico', field: 'email', style: 'width: 500px', align: 'left' },
+        { name: 'email', label: 'Email', field: 'email', style: 'width: 500px', align: 'left' },
         { name: 'estado', label: 'Estado', field: 'number', style: 'width: 500px', align: 'left', format: v => this.definirEstadoNumero(v) }
       ],
       pesquisa: {
@@ -245,8 +247,8 @@ export default {
         }
       }
       const wb = XLSX.utils.book_new()
-      XLSX.utils.book_append_sheet(wb, json, 'Informe de Atenciones')
-      XLSX.writeFile(wb, 'relatorio-contatos-estado.xlsx')
+      XLSX.utils.book_append_sheet(wb, json, 'Relatório Atendimentos')
+      XLSX.writeFile(wb, 'Atendimentos-TESTE.xlsx')
     },
     async listarEtiquetas () {
       const { data } = await ListarEtiquetas(true)
@@ -254,12 +256,12 @@ export default {
     },
     definirEstadoNumero (numero) {
       const ddd = numero.substring(2, 4)
-      return estadosBR.find(e => e.sigla === estadoPorDdd[ddd])?.nome || ''
+      return estadosDO.find(e => e.sigla === estadoPorDdd[ddd])?.nome || ''
     },
     async gerarRelatorio () {
       if (!this.pesquisa.ddds.length) {
         this.$q.notify({
-          message: 'Ops... Para generar el informe, es necesario seleccionar al menos un Estado.',
+          message: 'Ops... Para gerar o relatório, é necessário selecionar pelo menos um Estado.',
           type: 'negative',
           progress: true,
           position: 'top',

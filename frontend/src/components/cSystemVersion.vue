@@ -1,8 +1,9 @@
 <template>
-  <div class="text-caption text-center q-pa-sm">
+  <div class="text-caption text-center bg-grey-1 q-pa-sm">
+    Versão Sistema:
     <q-badge align="middle"
       color="primary">
-      Versión: {{ cVersion }}
+     <a target="_blank" :href="github"> v{{ cVersion }} </a>
     </q-badge>
   </div>
 </template>
@@ -13,6 +14,9 @@ export default {
   computed: {
     cVersion () {
       return packageEnv.version
+    },
+    github () {
+      return packageEnv.github
     }
   }
 }

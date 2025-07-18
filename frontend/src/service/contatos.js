@@ -41,12 +41,10 @@ export function ExportarArquivoContato (data) {
   })
 }
 
-export function SyncronizarContatos (channelId) {
-  console.log(channelId)
+export function SyncronizarContatos () {
   return request({
     url: '/contacts/sync',
-    method: 'post',
-    data: { whatsappId: channelId }
+    method: 'post'
   })
 }
 

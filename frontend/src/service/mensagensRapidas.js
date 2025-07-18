@@ -15,12 +15,9 @@ export function ListarMensagensRapidas () {
   })
 }
 
-export function AlterarMensagemRapida(id, data) {
-  if (!id) {
-    return
-  }
+export function AlterarMensagemRapida (data) {
   return request({
-    url: `/fastreply/${id}`,
+    url: `/fastreply/${data.id}`,
     method: 'put',
     data
   })

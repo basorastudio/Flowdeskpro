@@ -6,42 +6,29 @@
     @show="abrirModal"
   >
     <q-card
-      class="q-pa-lg container-rounded-10 modal-container"
+      style="width: 500px"
+      class="q-pa-lg"
     >
-    <q-card-actions
-        align="right"
-        class="q-mt-md"
-      >
-        <q-btn
-          flat
-          icon="eva-close"
-          color="negative"
-          v-close-popup
-        />
-      </q-card-actions>
+      <div class="text-h6">{{ etiquetaEdicao.id ? 'Editar': 'Criar' }} Etiqueta</div>
       <q-card-section>
-        <div class="text-h6 font-family-main text-center">{{ etiquetaEdicao.id ? 'Editar': 'Crear' }} Etiqueta</div>
-      </q-card-section>
-      <q-card-section class="container-rounded-10 container-border q-pa-lg">
-        <div class="text-h6 font-family-main q-mb-md">
-          Información
-        </div>
         <q-input
           class="row col"
           rounded
+          dense
           outlined
           v-model="etiqueta.tag"
-          label="Nombre de la etiqueta"
+          label="Nome da Etiqueta"
         />
         <q-input
-          filled
+          rounded
+          outlined
+          dense
           hide-bottom-space
-          :style="`background: ${etiqueta.color} `"
+          :style="`background: ${etiqueta.color}; border-radius: 20px `"
           v-model="etiqueta.color"
           :rules="['anyColor']"
           class="q-my-md"
           :dark="false"
-          rounded
         >
           <template v-slot:preappend>
           </template>
@@ -56,7 +43,7 @@
               >
                 <q-color
                   format-model="hex"
-                  rounded
+                  square
                   default-view="palette"
                   no-header
                   bordered
@@ -68,7 +55,7 @@
         </q-input>
         <q-checkbox
           v-model="etiqueta.isActive"
-          label="Activo"
+          label="Ativo"
         />
       </q-card-section>
       <q-card-actions
@@ -76,15 +63,16 @@
         class="q-mt-md"
       >
         <q-btn
+          rounded
           label="Cancelar"
           color="negative"
           v-close-popup
-          class="q-mr-md btn-rounded-50"
+          class="q-mr-md"
         />
         <q-btn
+          rounded
           label="Salvar"
-          icon="eva-save-outline"
-          class="btn-rounded-50 generate-button"
+          color="positive"
           @click="handleEtiqueta"
         />
       </q-card-actions>
@@ -151,7 +139,7 @@ export default {
             progress: true,
             position: 'top',
             textColor: 'black',
-            message: '¡Etiqueta editada!',
+            message: 'Etiqueta editada!',
             actions: [{
               icon: 'close',
               round: true,
@@ -165,7 +153,7 @@ export default {
             type: 'positive',
             progress: true,
             position: 'top',
-            message: '¡Etiqueta creada!',
+            message: 'Etiqueta criada!',
             actions: [{
               icon: 'close',
               round: true,
@@ -177,7 +165,7 @@ export default {
         this.fecharModal()
       } catch (error) {
         console.error(error)
-        this.$notificarErro('Se produjo un error al crear la etiqueta', error)
+        this.$notificarErro('Ocorreu um erro ao criar a etiqueta', error)
       }
     }
   }

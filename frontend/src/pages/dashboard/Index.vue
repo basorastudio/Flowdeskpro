@@ -1,14 +1,11 @@
 <template>
-  <div class="q-pa-sm"
-  :class="{'bg-grey-9' : $q.dark.isActive}">
- <vencimento />
-    <q-card class="dashboard-header ">
+  <div class="q-pa-sm">
+    <q-card class="q-my-md">
       <q-card-section class="row justify-between items-center">
-        <div class="dashboard-title col-xs-12 col-md-3 text-h4 text-bold text-md-left"
-        :class="{'text-green' : $q.dark.isActive}">
-          Panel de control
+        <div class="col-xs-12 col-md-3 text-h4 text-bold text-center text-md-left">
+          Painel de Controle
         </div>
-        <div class="dashboard-header-inputs col-xs-12 col-md-9 justify-end flex q-gutter-sm text-center text-md-right q-my-md rdsPainelDate">
+        <div class="col-xs-12 col-md-9 justify-end flex q-gutter-sm text-center text-md-right q-my-md rdsPainelDate">
           <div class="q-mb-sm">
             <q-datetime-picker
               style="width: 200px"
@@ -17,7 +14,7 @@
               outlined
               stack-label
               bottom-slots
-              label="Fecha/Hora de programación"
+              label="Data/Hora Agendamento"
               mode="date"
               color="primary"
               format24h
@@ -32,19 +29,61 @@
               outlined
               stack-label
               bottom-slots
-              label="Fecha/Hora de programación"
+              label="Data/Hora Agendamento"
               mode="date"
               color="primary"
               format24h
               v-model="params.endDate"
             />
           </div>
+          <!-- <div class="q-mb-sm">
+            <q-select
+              style="width: 300px"
+              dense
+              outlined
+              hide-bottom-space
+              emit-value
+              map-options
+              multiple
+              options-dense
+              use-chips
+              label="SETORES"
+              color="primary"
+              v-model="params.queuesIds"
+              :options="filas"
+              :input-debounce="700"
+              option-value="id"
+              option-label="queue"
+              input-style="width: 280px; max-width: 280px;"
+            />
+          </div>
+          <div class="q-mb-sm">
+            <q-select
+              style="width: 300px"
+              dense
+              outlined
+              hide-bottom-space
+              emit-value
+              map-options
+              multiple
+              options-dense
+              use-chips
+              label="USUÁRIOS"
+              color="primary"
+              v-model="params.userIds"
+              :options="usuarios"
+              :input-debounce="700"
+              option-value="id"
+              option-label="name"
+              input-style="width: 280px; max-width: 280px;"
+            />
+          </div> -->
           <q-btn
-            class="generate-button q-mb-sm"
-            :class="{'generate-button-dark' : $q.dark.isActive}"
+            class="bg-padrao q-mb-sm"
             flat
+            color="primary"
             icon="refresh"
-            label="Refrescar"
+            label="Gerar"
             @click="getDashData"
           />
           <q-toggle
@@ -64,30 +103,20 @@
 
       </q-card-section>
     </q-card>
-    <q-card class="q-my-md" style="box-shadow: none !important; background-color: transparent" v-if="toggleValue === false">
-      <q-card class="dashboard-container-cards">
-      <q-card-section class="dashboard-cards q-pa-md q-mb-sm">
-        <div class="row justify-center ">
+    <q-card class="q-my-md q-pa-sm">
+      <q-card-section class="q-pa-md">
+        <div class="row q-gutter-md justify-center">
           <div class="col-xs-12 col-sm-shrink">
             <q-card
               flat
               bordered
-              :class="{'bg-dark text-green' : $q.dark.isActive}"
               class="my-card full-height"
-
+              style="min-width: 200px; background-color: #05d69e; color: white"
             >
-              <q-card-section class="text-center">
-                <p class="my-card-text text-caption my-card-content">Total de Atenciones</p>
-                <div class="row items-center">
-                  <div class="col">
-                    <p class="my-card-number my-card-content text-h4 text-bold text-center">
-                      {{ ticketsAndTimes.qtd_total_atendimentos }}
-                    </p>
-                  </div>
-                  <div class="col">
-                    <q-icon name="mdi-account-multiple" size="xl" color="#2f2f2f" class="my-card-content" />
-                  </div>
-                </div>
+              <q-card-section class="text-center ">
+                <p class="text-h4 text-bold text-center"> {{ ticketsAndTimes.qtd_total_atendimentos }} </p>
+                <q-icon name="verified" size="lg" color="white" class="text-white" />
+                Total Atendimentos
               </q-card-section>
             </q-card>
           </div>
@@ -96,20 +125,12 @@
               flat
               bordered
               class="my-card full-height"
-              :class="{'bg-dark text-green' : $q.dark.isActive}"
+              style="min-width: 200px; background-color: #faad42; color: white"
             >
               <q-card-section class="text-center">
-                <p class="my-card-text text-caption my-card-content">Activo</p>
-                <div class="row items-center">
-                  <div class="col">
-                    <p class="my-card-number my-card-content text-h4 text-bold text-center">
-                      {{ ticketsAndTimes.qtd_demanda_ativa }}
-                    </p>
-                  </div>
-                  <div class="col">
-                    <q-icon name="mdi-account-check" size="xl" color="#2f2f2f" class="my-card-content" />
-                  </div>
-                </div>
+                <p class="text-h4 text-bold text-center"> {{ ticketsAndTimes.qtd_demanda_ativa }} </p>
+                <q-icon name="mdi-comment-processing-outline" size="lg" color="white" class="text-white" />
+                Ativo
               </q-card-section>
             </q-card>
           </div>
@@ -118,21 +139,12 @@
               flat
               bordered
               class="my-card full-height"
-              :class="{'bg-dark text-green' : $q.dark.isActive}"
+              style="min-width: 200px; background-color: #0398e2; color: white"
             >
               <q-card-section class="text-center">
-                <p class="my-card-text text-caption my-card-content">Receptivo</p>
-                <div class="row items-center">
-                  <div class="col">
-                    <p class="my-card-number text-h4 text-bold text-center my-card-content">
-                      {{ ticketsAndTimes.qtd_demanda_receptiva }}
-
-                    </p>
-                  </div>
-                  <div class="col">
-                    <q-icon name="mdi-phone-incoming" size="xl" color="#2f2f2f" class="my-card-content" />
-                  </div>
-                </div>
+                <p class="text-h4 text-bold text-center"> {{ ticketsAndTimes.qtd_demanda_receptiva }} </p>
+                <q-icon name="mdi-arrow-left-bold" size="lg" color="white" class="text-white" />
+                Receptivo
               </q-card-section>
             </q-card>
           </div>
@@ -141,65 +153,41 @@
               flat
               bordered
               class="my-card full-height"
-              :class="{'bg-dark text-green' : $q.dark.isActive}"
+              style="min-width: 200px; background-color: #0398e2; color: white"
             >
               <q-card-section class="text-center">
-                <p class="my-card-text text-caption my-card-content">Nuevos contactos</p>
-                <div class="row items-center">
-                  <div class="col">
-                    <p class="my-card-number text-h4 text-bold text-center my-card-content">
-                      {{ ticketsAndTimes.new_contacts }}
-                    </p>
-                  </div>
-                  <div class="col">
-                    <q-icon name="mdi-account-plus" size="xl" color="#2f2f2f" class="my-card-content" />
-                  </div>
-                </div>
+                <p class="text-h4 text-bold text-center"> {{ ticketsAndTimes.new_contacts }} </p>
+                <q-icon name="mdi-contacts-outline" size="lg" color="white" class="text-white" />
+                Novos Contatos
               </q-card-section>
             </q-card>
           </div>
-          <div class="col-xs-12 col-sm-shrink">
-            <q-card flat bordered class="my-card full-height"
-            :class="{'bg-dark text-green' : $q.dark.isActive}">
+          <div class="col-xs-12 col-sm-4 col-md-3 col-lg-2">
+            <q-card flat bordered class="my-card full-height" style="background-color: #ffa880; color: white">
               <q-card-section class="text-center">
-                <p class="my-card-text text-caption my-card-content">Tiempo Medio de Atención</p>
-                <div class="row items-center">
-                  <div class="col">
-                    <p class="my-card-number text-h5 text-bold text-center my-card-content">
-                      {{ cTmaFormat }}
-                    </p>
-                  </div>
-                  <div class="col">
-                    <q-icon name="mdi-clock-outline" size="xl" color="#2f2f2f" class="my-card-content" />
-                  </div>
-                </div>
+                <p class="text-h5 text-bold text-center">
+                  <q-icon name="mdi-clock-outline" size="lg" color="white" class="text-white" />
+                  {{ cTmaFormat }}
+                </p>
+                Tempo Médio de Atendimento (TMA)
               </q-card-section>
             </q-card>
           </div>
-          <div class="col-xs-12 col-sm-shrink">
-
-            <q-card flat bordered class="my-card full-height"
-            :class="{'bg-dark text-green' : $q.dark.isActive}">
+          <div class="col-xs-12 col-sm-4 col-md-3 col-lg-2">
+            <q-card flat bordered class="my-card full-height" style="background-color: #fc5881ff; color: white">
               <q-card-section class="text-center">
-                <p class="my-card-text text-caption my-card-content">T.M. 1ra. Respuesta</p>
-                <div class="row items-center">
-                  <div class="col">
-                    <p class="my-card-number text-h5 text-bold text-center">
+                <p class="text-h5 text-bold text-center">
+                  <q-icon name="mdi-timer-sand" size="lg" color="white" class="text-white" />
                   {{ cTmeFormat }}
-                  </p>
-                  </div>
-                  <div class="col">
-                    <q-icon name="mdi-timer-sand" size="xl" color="#2f2f2f" class="my-card-content" />
-                  </div>
-                </div>
+                Tempo Médio 1º Resposta
               </q-card-section>
             </q-card>
           </div>
         </div>
       </q-card-section>
     </q-card>
-    </q-card>
-    <div class="row">
+
+    <div class="row q-col-gutter-md">
       <div class="col-xs-12 col-sm-6">
         <q-card>
           <q-card-section class="q-pa-md">
@@ -252,49 +240,38 @@
         />
       </q-card-section>
     </q-card>
-  <q-card class="q-my-md q-pa-sm" v-if="toggleValue === false">
-    <q-card-section class="q-pa-md">
-      <q-table
-        title="Rendimiento del equipo"
-        :data="ticketsPerUsersDetail"
-        :columns="TicketsPerUsersDetailColumn"
-        row-key="email"
-        :pagination.sync="paginationTableUser"
-        :rows-per-page-options="[0]"
-        bordered
-        flat
-        hide-bottom
-      >
-        <template v-slot:body-cell-name="props">
-          <q-td :props="props">
-            <div class="row col text-bold"> {{ props.row.name || 'No informado' }} </div>
-            <div class="row col text-caption">{{ props.row.email }} </div>
-          </q-td>
-        </template>
-<template v-slot:body-cell-avaliacao="props">
-  <q-td :props="props">
-    <star-rating
-      :rating="props.row.avaliacao"
-      :star-size="20"
-      :max-rating="3"
-      :increment="0.01"
-      :show-rating="false"
-      active-color="yellow"
-      inactive-color="grey"
-      :round-start-rating="false"
-    />
-  </q-td>
-</template>
-      </q-table>
-    </q-card-section>
-  </q-card>
+
+    <q-card class="q-my-md q-pa-sm">
+      <q-card-section class="q-pa-md">
+        <q-table
+          title="Performance Usuários"
+          :data="ticketsPerUsersDetail"
+          :columns="TicketsPerUsersDetailColumn"
+          row-key="email"
+          :pagination.sync="paginationTableUser"
+          :rows-per-page-options="[0]"
+          bordered
+          flat
+          hide-bottom
+        >
+          <template v-slot:body-cell-name="props">
+            <q-td :props="props">
+              <div class="row col text-bold"> {{ props.row.name || 'Não informado' }} </div>
+              <div class="row col text-caption">{{ props.row.email }} </div>
+            </q-td>
+          </template>
+        </q-table>
+
+      </q-card-section>
+
+    </q-card>
+
   </div>
 </template>
 
 <script>
 import { groupBy } from 'lodash'
 import { ListarFilas } from 'src/service/filas'
-import { ListarUsuarios } from 'src/service/user'
 import {
   GetDashTicketsAndTimes,
   GetDashTicketsChannels,
@@ -303,30 +280,22 @@ import {
   GetDashTicketsEvolutionByPeriod,
   GetDashTicketsPerUsersDetail
 } from 'src/service/estatisticas'
-import { ListarConfiguracoes } from 'src/service/configuracoes'
 import { subDays, format, formatDuration, differenceInDays } from 'date-fns'
 import ApexChart from 'vue-apexcharts'
-import { QIcon } from 'quasar'
-import StarRating from 'vue-star-rating'
-import vencimento from '../../components/vencimentodash.vue'
 
 export default {
   name: 'IndexDashboard',
-  components: { ApexChart, QIcon, vencimento, StarRating },
+  components: { ApexChart },
   data () {
     return {
       confiWidth: {
         horizontal: false,
         width: this.$q.screen.width
       },
-      toggleValue: false,
-      grupoAtivo: 'disabled',
       params: {
         startDate: format(subDays(new Date(), 6), 'yyyy-MM-dd'),
         endDate: format(new Date(), 'yyyy-MM-dd'),
-        queuesIds: [],
-        userIds: [],
-        isGroup: false
+        queuesIds: []
       },
       paginationTableUser: {
         rowsPerPage: 40,
@@ -334,10 +303,9 @@ export default {
         lastIndex: 0
       },
       filas: [],
-      usuarios: [],
       ticketsChannels: [],
       ticketsChannelsOptions: {
-        // colors: ['#00E396', '#ff2a00','#FEB019'],
+        // colors: ['#008FFB', '#00E396', '#FEB019'],
         animations: {
           enabled: true,
           easing: 'easeinout',
@@ -364,10 +332,10 @@ export default {
           position: 'bottom'
         },
         title: {
-          text: 'Atención por canal'
+          text: 'Atendimento por canal'
         },
         noData: {
-          text: '¡Sin datos aquí!',
+          text: 'Sem dados aqui!',
           align: 'center',
           verticalAlign: 'middle',
           offsetX: 0,
@@ -404,7 +372,7 @@ export default {
       },
       ticketsQueue: [],
       ticketsQueueOptions: {
-        colors: ['#008FFB', '#00E396', '#FEB019'],
+        // colors: ['#008FFB', '#00E396', '#FEB019'],
         animations: {
           enabled: true,
           easing: 'easeinout',
@@ -427,14 +395,25 @@ export default {
             show: true
           }
         },
+        // responsive: [{
+        //   breakpoint: 480,
+        //   options: {
+        //     chart: {
+        //       width: 250
+        //     },
+        //     legend: {
+        //       position: 'bottom'
+        //     }
+        //   }
+        // }],
         legend: {
           position: 'bottom'
         },
         title: {
-          text: 'Atención por fila'
+          text: 'Atendimento por fila'
         },
         noData: {
-          text: '¡Sin datos aquí!',
+          text: 'Sem dados aqui!',
           align: 'center',
           verticalAlign: 'middle',
           offsetX: 0,
@@ -471,6 +450,7 @@ export default {
       },
       ticketsEvolutionChannels: [],
       ticketsEvolutionChannelsOptions: {
+        // colors: ['#008FFB', '#00E396', '#FEB019'],
         animations: {
           enabled: true,
           easing: 'easeinout',
@@ -478,6 +458,7 @@ export default {
         },
         chart: {
           type: 'bar',
+          // height: 300,
           stacked: true,
           stackType: '100%',
           toolbar: {
@@ -517,20 +498,45 @@ export default {
           enabled: true
         },
         title: {
-          text: 'Evolución por canal',
+          text: 'Evolução por canal',
           align: 'left'
         },
         stroke: {
           width: 0
         },
+        // responsive: [{
+        //   breakpoint: 480,
+        //   options: {
+        //     chart: {
+        //       width: 250
+        //     },
+        //     legend: {
+        //       position: 'bottom'
+        //     }
+        //   }
+        // }],
         xaxis: {
           type: 'category',
           categories: [],
           tickPlacement: 'on'
+          // labels: {
+          //   formatter: function (value, timestamp, opts) {
+          //     return format(new Date(timestamp), 'dd/MM')
+          //     // return opts.dateFormatter().format('dd MMM')
+          //   }
+          // }
+          // type: 'datetime'
+          // format: 'dd/MM'
+          // datetimeFormatter: {
+          //   // year: 'yyyy',
+          //   month: 'MM',
+          //   day: 'DD'
+          //   // hour: 'HH:mm',
+          // }
         },
         yaxis: {
           title: {
-            text: 'Atenciones',
+            text: 'Atendimentos',
             style: {
               color: '#FFF'
             }
@@ -595,7 +601,7 @@ export default {
           }
         },
         title: {
-          text: 'Evolución de atenciones',
+          text: 'Evolução atendimentos',
           align: 'left'
         },
         dataLabels: {
@@ -607,7 +613,7 @@ export default {
         },
         yaxis: {
           title: {
-            text: 'Atenciones'
+            text: 'Atendimentos'
           }
         },
         tooltip: {
@@ -636,22 +642,22 @@ export default {
       TicketsPerUsersDetailColumn: [
         {
           name: 'name',
-          label: 'Usuario',
+          label: 'Usuário',
           field: 'name',
           align: 'left',
           style: 'width: 300px;',
           format: (v, r) => {
-            return v ? `${r.name} | ${r.email}` : 'No informado'
+            return v ? `${r.name} | ${r.email}` : 'Não informado'
           }
         },
         {
           name: 'qtd_pendentes',
-          label: 'Pendiente',
+          label: 'Pendentes',
           field: 'qtd_pendentes'
         },
         {
           name: 'qtd_em_atendimento',
-          label: 'Asistiendo',
+          label: 'Atendendo',
           field: 'qtd_em_atendimento'
         },
         {
@@ -683,13 +689,6 @@ export default {
           format: v => {
             return formatDuration(v) || ''
           }
-        },
-        {
-          name: 'avaliacao',
-          label: 'Evaluación',
-          field: 'avaliacao',
-          align: 'center',
-          headerStyle: 'text-align: center !important'
         }
       ]
     }
@@ -718,35 +717,6 @@ export default {
     async listarFilas () {
       const { data } = await ListarFilas()
       this.filas = data
-    },
-    async listarUsuarios () {
-      const { data } = await ListarUsuarios()
-      this.usuarios = data
-    },
-    async listarConfiguracoes() {
-      const { data } = await ListarConfiguracoes()
-      localStorage.setItem('configuracoes', JSON.stringify(data))
-      const ignoreGroupMsg = data.find(config => config.key === 'ignoreGroupMsg')
-      this.grupoAtivo = ignoreGroupMsg.value
-    },
-    handleGroups() {
-      if (this.toggleValue) {
-        this.params.isGroup = true
-        this.$q.notify({
-          type: 'positive',
-          message: '¡Filtrar estadísticas para grupos!',
-          progress: true,
-          actions: [{ icon: 'close', round: true, color: 'white' }]
-        })
-      } else {
-        this.params.isGroup = false
-        this.$q.notify({
-          type: 'positive',
-          message: '¡Filtrar estadísticas para conversaciones privadas!',
-          progress: true,
-          actions: [{ icon: 'close', round: true, color: 'white' }]
-        })
-      }
     },
     setConfigWidth () {
       const diffDays = differenceInDays(new Date(this.params.endDate), new Date(this.params.startDate))
@@ -784,18 +754,13 @@ export default {
         })
     },
     getDashTicketsChannels () {
-      const statusMapping = {
-        whatsapp: 'WhatsApp',
-        telegram: 'Telegram',
-        instagram: 'Instagram'
-      }
       GetDashTicketsChannels(this.params).then(res => {
         this.ticketsChannels = res.data
         const series = []
         const labels = []
         this.ticketsChannels.forEach(e => {
           series.push(+e.qtd)
-          labels.push(statusMapping[e.label])
+          labels.push(e.label)
         })
         this.ticketsChannelsOptions.series = series
         this.ticketsChannelsOptions.labels = labels
@@ -842,7 +807,7 @@ export default {
         .then(res => {
           this.ticketsEvolutionByPeriod = res.data
           const series = [{
-            name: 'Atenciones',
+            name: 'Atendimentos',
             type: 'column',
             data: []
           }, {
@@ -865,16 +830,14 @@ export default {
           console.error(error)
         })
     },
-    async getDashTicketsPerUsersDetail() {
-      try {
-        const { data } = await GetDashTicketsPerUsersDetail(this.params)
-        this.ticketsPerUsersDetail = data.map(user => ({
-          ...user,
-          avaliacao: user.average_rating || 0 // Ajuste para refletir o nome correto
-        }))
-      } catch (err) {
-        console.error(err)
-      }
+    getDashTicketsPerUsersDetail () {
+      GetDashTicketsPerUsersDetail(this.params)
+        .then(res => {
+          this.ticketsPerUsersDetail = res.data
+        })
+        .catch(error => {
+          console.error(error)
+        })
     },
     getDashData () {
       this.setConfigWidth()
@@ -888,15 +851,13 @@ export default {
 
   },
   beforeMount () {
-    this.$store.commit('UPDATE_SHOW_MENU', this.showMenu)
-    this.listarConfiguracoes()
     const mode = this.$q.dark.isActive ? 'dark' : 'light'
     const theme = {
       mode,
       palette: 'palette1',
       monochrome: {
         enabled: true,
-        color: '#ff7103',
+        color: '#0288d1',
         shadeTo: mode,
         shadeIntensity: 0.95
       }
@@ -908,7 +869,6 @@ export default {
     this.ticketsEvolutionByPeriodOptions = { ...this.ticketsEvolutionByPeriodOptions, theme }
   },
   mounted () {
-    this.listarUsuarios()
     this.listarFilas()
     this.getDashData()
   }
@@ -916,27 +876,7 @@ export default {
 </script>
 
 <style lang="scss" >
-.rating-stars {
-  display: flex;
-  align-items: center;
-}
-.rating-stars .q-icon {
-  color: yellow;
-}
-.text-branco{
-  color: white;
-}
 .apexcharts-theme-dark svg {
   background: none !important;
-}
-.bg-vermelho {
-  background-color: #f44336;
-}
-.bg-amarelo{
-  background-color: #fec107;
-}
-.rdsPainelDate{
-  display: flex;
-  justify-content: space-around !important;
 }
 </style>

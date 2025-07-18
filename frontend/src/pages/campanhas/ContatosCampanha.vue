@@ -1,30 +1,29 @@
 <template>
   <div v-if="userProfile === 'admin'">
     <q-card
-      bordered
       flat
       class="q-ma-sm"
-      style="border-bottom: 4px solid black"
     >
       <q-card-section>
         <div class="row text-h6">
-          Campaña: {{ $route.params.campanha.name }}
+          Campanha: {{ $route.params.campanha.name }}
         </div>
         <div class="row text-caption">
-          Comenzar: {{ formatDate($route.params.campanha.start) }} - Estado: {{ $route.params.campanha.status }}
+          Início: {{ formatDate($route.params.campanha.start) }} - Status: {{ $route.params.campanha.status }}
         </div>
         <q-btn
+          rounded
           class="absolute-top-right q-ma-md"
           icon="mdi-arrow-left"
-          text-color="primary"
-          label="Listar Campañas"
+          label="Listar Campanhas"
+          color="black"
           @click="$router.push({ name: 'campanhas' })"
         />
       </q-card-section>
     </q-card>
     <q-table
       class="my-sticky-dynamic q-ma-sm"
-      title="Contactos"
+      title="Contatos"
       id="tabela-contatos-campanha"
       :data="contatosCampanha"
       :columns="columns"
@@ -36,26 +35,27 @@
     >
       <template v-slot:top>
         <div class="row col-4 q-table__title items-center ">
-          Contactos
-          <q-btn
-            class="q-ml-md"
-            color="primary"
-            icon="refresh"
-            outline
-            @click="listarContatosCampanha"
-          >
-            <q-tooltip>
-              Actualizar Listado
-            </q-tooltip>
-          </q-btn>
+          Contatos
         </div>
         <q-space />
+        <q-btn
+          rounded
+          class="q-ml-md"
+          color="black"
+          icon="refresh"
+          @click="listarContatosCampanha"
+        >
+          <q-tooltip>
+            Atualizar Listagem
+          </q-tooltip>
+        </q-btn>
         <q-btn
           class="q-ml-md"
           color="negative"
           icon="close"
           outline
-          label="Limpiar Campaña"
+          rounded
+          label="Limpar Campanha"
           @click="deletarTodosContatosCampanha"
           v-if="$route.params.campanha.status === 'pending' ||
             $route.params.campanha.status === 'canceled'"
@@ -63,8 +63,9 @@
         <q-btn
           class="q-ml-md"
           color="primary"
-          label="Incluir Contactos"
+          label="Incluir Contatos"
           icon="add"
+          rounded
           v-if="$route.params.campanha.status === 'pending' ||
             $route.params.campanha.status === 'canceled'"
           @click="modalAddContatosCampanha = !modalAddContatosCampanha"
@@ -116,13 +117,14 @@
     >
       <q-card style="min-width: 80vw; width: 80vw">
         <q-card-section class="q-pt-none q-pt-md">
-          <fieldset>
-            <legend class="q-px-sm">Filtros (fecha de creación de contacto)</legend>
+          <fieldset class="rounded-all">
+            <legend class="q-px-sm">Filtros (Data criação do contato)</legend>
             <div class="row q-gutter-md items-end">
               <div class="col-grow">
-                <label>Inicio</label>
+                <label>Início</label>
                 <DatePick
                   dense
+                  rounded
                   v-model="pesquisa.startDate"
                 />
               </div>
@@ -130,19 +132,19 @@
                 <label>Final</label>
                 <DatePick
                   dense
+                  rounded
                   v-model="pesquisa.endDate"
                 />
               </div>
-              <!-- Aquí comienza el bloque comentado -->
-              <!--
               <div class="col-xs-12 col-sm-4 grow text-center">
                 <q-select
-                  label="Estado(s)"
+                  label="Estado (s)"
                   dense
+                  rounded
                   outlined
                   v-model="pesquisa.ddds"
                   multiple
-                  :options="estadosBR"
+                  :options="estadosDO"
                   use-chips
                   option-value="sigla"
                   option-label="nome"
@@ -169,6 +171,7 @@
                   <template v-slot:selected-item="{ opt }">
                     <q-badge
                       dense
+                      rounded
                       color="grey-3"
                       text-color="primary"
                       class="q-ma-xs text-body1"
@@ -178,13 +181,12 @@
                   </template>
                 </q-select>
               </div>
-              -->
-              <!-- Aquí termina el bloque comentado -->
               <div class="col-xs-12 col-sm-4 grow text-center">
                 <q-select
                   outlined
                   label="Etiqueta (a)"
                   dense
+                  rounded
                   v-model="pesquisa.tags"
                   multiple
                   :options="etiquetas"
@@ -214,6 +216,7 @@
                   <template v-slot:selected-item="{ opt }">
                     <q-chip
                       dense
+                      rounded
                       color="white"
                       text-color="primary"
                       class="q-ma-xs text-body1"
@@ -232,7 +235,8 @@
               <div class="col-xs-12 col-sm-4 grow text-center">
                 <q-select
                   outlined
-                  label="Cartera"
+                  rounded
+                  label="Carteira"
                   dense
                   v-model="pesquisa.wallets"
                   multiple
@@ -267,9 +271,10 @@
                   style="width: 300px"
                   outlined
                   dense
+                  rounded
                   v-model="pesquisa.searchParam"
                   clearable
-                  placeholder="Nombre o teléfono del filtro"
+                  placeholder="Filtrar Nome ou Telefone"
                 >
                   <template v-slot:prepend>
                     <q-icon name="search" />
@@ -280,7 +285,8 @@
                 <q-btn
                   class="q-mr-sm"
                   color="primary"
-                  label="Generar"
+                  rounded
+                  label="Gerar"
                   icon="refresh"
                   @click="listarAddContatos"
                 />
@@ -290,9 +296,9 @@
         </q-card-section>
         <q-card-section>
           <q-table
-            class="my-sticky-dynamic q-ma-sm blur-effect"
+            class="my-sticky-dynamic q-ma-sm"
             style="height: 50vh"
-            title="Contactos"
+            title="Contatos"
             id="tabela-contatos-campanha"
             :data="contatosAdd"
             :columns="columnsAdd"
@@ -306,18 +312,20 @@
           >
             <template v-slot:top>
               <div class="row col-4 q-table__title items-center ">
-                Seleccionar contactos
+                Selecionar Contatos
               </div>
               <q-space />
               <q-btn
+                rounded
                 class="q-ml-md"
                 color="negative"
                 label="Cancelar"
                 @click="modalAddContatosCampanha = false"
               />
               <q-btn
+                rounded
                 class="q-ml-md"
-                color="primary"
+                color="positive"
                 icon="save"
                 label="Adicionar"
                 @click="addContatosCampanha"
@@ -357,7 +365,7 @@
 
 <script>
 import { ListarEtiquetas } from 'src/service/etiquetas'
-import { estadoPorDdd, estadosBR } from 'src/utils/constants'
+import { estadoPorDdd, estadosDO } from 'src/utils/constants'
 import { RelatorioContatos } from 'src/service/estatisticas'
 import { AdicionarContatosCampanha, DeletarTodosContatosCampanha, ListarContatosCampanha, DeletarContatoCampanha } from 'src/service/campanhas'
 import { format, parseISO, sub } from 'date-fns'
@@ -380,7 +388,7 @@ export default {
         searchParam: ''
       },
       estadoPorDdd,
-      estadosBR,
+      estadosDO,
       contatosCampanha: [],
       filter: null,
       pagination: {
@@ -390,20 +398,20 @@ export default {
       },
       ACK: { // Se ACK == 3 ou 4 entao color green
         '-1': 'Error',
-        0: 'Envío Pendiente',
-        1: 'Entrega Pendiente',
-        2: 'Recibida',
-        3: 'Leída',
-        4: 'Reproducida'
+        0: 'Envio Pendente',
+        1: 'Entrega Pendente',
+        2: 'Recebida',
+        3: 'Lida',
+        4: 'Reproduzido'
       },
       loading: false,
       columns: [
         { name: 'profilePicUrl', label: '', field: 'profilePicUrl', style: 'width: 50px', align: 'center' },
-        { name: 'name', label: 'Nombre', field: 'name', align: 'left', style: 'width: 300px' },
+        { name: 'name', label: 'Nome', field: 'name', align: 'left', style: 'width: 300px' },
         { name: 'number', label: 'WhatsApp', field: 'number', align: 'center', style: 'width: 300px' },
         {
           name: 'campaignContacts',
-          label: 'Estado',
+          label: 'Status',
           field: 'campaignContacts',
           align: 'center',
           style: 'width: 200px',
@@ -426,11 +434,11 @@ export default {
           }
         },
         { name: 'estado', label: 'Estado', field: 'number', style: 'width: 500px', align: 'left', format: v => this.definirEstadoNumero(v) },
-        { name: 'acoes', label: 'Acciones', field: 'acoes', align: 'center' }
+        { name: 'acoes', label: 'Ações', field: 'acoes', align: 'center' }
       ],
       columnsAdd: [
         { name: 'profilePicUrl', label: '', field: 'profilePicUrl', style: 'width: 50px', align: 'center' },
-        { name: 'name', label: 'Nombre', field: 'name', align: 'left', style: 'width: 300px' },
+        { name: 'name', label: 'Nome', field: 'name', align: 'left', style: 'width: 300px' },
         { name: 'number', label: 'WhatsApp', field: 'number', align: 'center', style: 'width: 300px' },
         {
           name: 'tags',
@@ -446,7 +454,7 @@ export default {
             return ''
           }
         },
-//        { name: 'estado', label: 'Estado', field: 'number', style: 'width: 500px', align: 'left', format: v => this.definirEstadoNumero(v) }
+        { name: 'estado', label: 'Estado', field: 'number', style: 'width: 500px', align: 'left', format: v => this.definirEstadoNumero(v) }
 
       ],
       contatosAdd: [],
@@ -459,9 +467,15 @@ export default {
     },
     async listarAddContatos () {
       console.log(this.pesquisa)
-      this.pesquisa.campaign = true
       const { data } = await RelatorioContatos(this.pesquisa)
-      this.contatosAdd = data.contacts
+      if (this.pesquisa.tags.length > 0) {
+        // Filtrar contatos que possuem todas as tags selecionadas
+        this.contatosAdd = data.contacts.filter(contact =>
+          this.pesquisa.tags.every(tag => contact.tags.map(contactTag => contactTag.id).includes(tag))
+        )
+      } else {
+        this.contatosAdd = data.contacts
+      }
     },
     async listarEtiquetas () {
       const { data } = await ListarEtiquetas(true)
@@ -473,9 +487,16 @@ export default {
     },
     definirEstadoNumero (numero) {
       const ddd = numero.substring(2, 4)
-      return estadosBR.find(e => e.sigla === estadoPorDdd[ddd])?.nome || ''
+      return estadosDO.find(e => e.sigla === estadoPorDdd[ddd])?.nome || ''
     },
     async addContatosCampanha () {
+      if (this.selected.length > 300) {
+        this.$q.notify({
+          type: 'negative',
+          message: 'O número máximo de contatos é 300'
+        })
+        return
+      }
       try {
         await AdicionarContatosCampanha(this.selected, this.$route.params.campanhaId)
         this.listarContatosCampanha()
@@ -484,7 +505,7 @@ export default {
           type: 'positive',
           progress: true,
           position: 'top',
-          message: 'Contactos agregados.',
+          message: 'Contatos adicionados.',
           actions: [{
             icon: 'close',
             round: true,
@@ -493,7 +514,7 @@ export default {
         })
       } catch (error) {
         console.error(error)
-        this.$notificarErro('¡Se produjo un error!', error)
+        this.$notificarErro('Ocorreu um erro!', error)
       }
     },
     async listarUsuarios () {
@@ -502,7 +523,7 @@ export default {
         this.usuarios = data.users
       } catch (error) {
         console.error(error)
-        this.$notificarErro('Problema al cargar usuarios', error)
+        this.$notificarErro('Problema ao carregar usuários', error)
       }
     },
     deletarContatoCampanha (contato) {
@@ -513,7 +534,7 @@ export default {
             type: 'positive',
             progress: true,
             position: 'top',
-            message: 'Contacto excluído de esta campaña',
+            message: 'Contato excluído desta campanha',
             actions: [{
               icon: 'close',
               round: true,
@@ -523,20 +544,20 @@ export default {
         })
         .catch(error => {
           console.error(error)
-          this.$notificarErro('Verifique los errores ...', error)
+          this.$notificarErro('Verifique os erros...', error)
         })
     },
     deletarTodosContatosCampanha () {
       this.$q.dialog({
-        title: '¡¡Atención!! ¿Realmente quieres eliminar todos los contactos de esta campaña? ',
+        title: 'Atenção!! Deseja realmente retirar todos os contatos desta campanha? ',
         // message: 'Mensagens antigas não serão apagadas no whatsapp.',
         cancel: {
-          label: 'No',
+          label: 'Não',
           color: 'primary',
           push: true
         },
         ok: {
-          label: 'Si',
+          label: 'Sim',
           color: 'negative',
           push: true
         },
@@ -545,11 +566,11 @@ export default {
         DeletarTodosContatosCampanha(this.$route.params.campanhaId)
           .then(res => {
             this.contatosCampanha = []
-            this.$notificarSucesso('Contacto excluído de esta campaña')
+            this.$notificarSucesso('Contato excluído desta campanha')
           })
           .catch(error => {
             console.error(error)
-            this.$notificarErro('No fue posible eliminar el contacto de la campaña.', error)
+            this.$notificarErro('Não foi possível excluir o contato da campanha', error)
           })
       })
     }
@@ -559,13 +580,13 @@ export default {
     this.listarUsuarios()
   },
   mounted () {
+    this.userProfile = localStorage.getItem('profile')
     const campanhaParams = this.$route.params.campanha
     if (!campanhaParams) {
       this.$router.push({ name: 'campanhas' })
       return
     }
     this.listarContatosCampanha()
-    this.userProfile = localStorage.getItem('profile')
   }
 }
 </script>
@@ -573,7 +594,7 @@ export default {
 <style lang="sass">
 .my-sticky-dynamic
   /* height or max-height is important */
-  height: 85vh
+  height: 75vh
 
   .q-table__top,
   .q-table__bottom,
@@ -599,7 +620,4 @@ export default {
   thead
     th
       height: 55px
-
-.blur-effect
-  filter: blur(0px)
 </style>

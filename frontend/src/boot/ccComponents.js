@@ -10,10 +10,10 @@ import { UpdateConfiguracoesUsuarios } from 'src/service/user'
 
 const formatarValorMoeda = (num, black = false, intl = {}) => {
   const config = {
-    language: 'es',
+    language: 'es-DO',
     options: {
       // style: 'currency',
-      // currency: 'BRL',
+      // currency: 'DOP',
       // currencyDisplay: 'symbol',
       minimumFractionDigits: 2,
       maximumFractionDigits: 3
@@ -85,7 +85,7 @@ const setConfigsUsuario = ({ isDark }) => {
     isDark: Dark.isActive
   }
   UpdateConfiguracoesUsuarios(usuario.userId, data)
-    .then(r => console.log('Configuración actualizada del usuario'))
+    .then(r => console.log('Configurações do usuário atualizadas'))
     .catch(e => console.error)
 
   localStorage.setItem('usuario', JSON.stringify({ ...usuario, configs: data }))

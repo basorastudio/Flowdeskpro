@@ -10,45 +10,43 @@
       style="min-width: 70vw;"
     >
       <q-card-section class="q-pa-none q-px-md">
-        <div class="text-h6 text-bold">{{ campanhaEdicao.id ? 'Editar' : 'Crear' }} Campaña</div>
+        <div class="text-h6 text-bold">{{ campanhaEdicao.id ? 'Editar' : 'Criar' }} Campanha</div>
         <div class="row">
-          Los mensajes siempre se enviarán durante el horario comercial y los días hábiles.
+          As mensagens sempre serão enviadas em horário comercial e dias úteis.
         </div>
       </q-card-section>
       <q-card-section class="q-pb-none">
         <div class="row q-gutter-sm">
           <q-input
-            class="required"
             outlined
             dense
             rounded
             style="width: 500px"
             v-model="campanha.name"
-            label="Nombre de la campaña"
+            label="Nome da Campanha"
             @blur="$v.campanha.name.$touch"
             :error="$v.campanha.name.$error"
-            error-message="Obligatorio"
+            error-message="Obrigatório"
           />
           <q-datetime-picker
-          rounded
             style="width: 200px"
             dense
+            rounded
             hide-bottom-space
             outlined
             stack-label
             bottom-slots
-            label="Fecha/Hora de inicio"
+            label="Data/Hora início"
             mode="datetime"
             color="primary"
             format24h
             v-model="campanha.start"
             @blur="$v.campanha.start.$touch"
             :error="$v.campanha.start.$error"
-            error-message="No puede ser más bajo que el día actual"
+            error-message="Não pode ser inferior ao dia atual"
           />
           <q-select
             rounded
-            class="required"
             dense
             outlined
             emit-value
@@ -63,12 +61,11 @@
             input-style="width: 280px; max-width: 280px;"
             @blur="$v.campanha.sessionId.$touch"
             :error="$v.campanha.sessionId.$error"
-            error-message="Obligatorio"
+            error-message="Obrigatório"
             style="width: 250px"
           />
           <q-input
             rounded
-            class="required"
             outlined
             dense
             style="width: 160px"
@@ -76,13 +73,14 @@
             input-class="text-right"
             suffix="segundos"
             label="Delay"
-            error-message="Obligatorio"
+            error-message="Obrigatório"
           />
           <q-file
             dense
+            rounded
             v-if="!campanha.mediaUrl"
             :loading="loading"
-            label="Composición de mensajes de medios"
+            label="Mídia composição mensagem"
             ref="PickerFileMessage"
             v-model="arquivos"
             class="col-grow"
@@ -94,8 +92,8 @@
             append
             :max-files="1"
             counter
-            :max-file-size="52428800"
-            :max-total-size="52428800"
+            :max-file-size="10485760"
+            :max-total-size="30485760"
             accept=".jpg, .png, image/jpeg, .pdf, .doc, .docx, .mp4, .xls, .xlsx, .jpeg, .zip, .ppt, .pptx, image/*"
             @rejected="onRejectedFiles"
             style="width: 350px"
@@ -103,7 +101,8 @@
           <q-input
             v-if="campanha.mediaUrl"
             readonly
-            label="Composición de mensajes de medios"
+            rounded
+            label="Mídia composição mensagem"
             :value="cArquivoName"
             class=" col-grow "
             bg-color="blue-grey-1"
@@ -129,7 +128,7 @@
       <q-card-section class="row q-pt-sm q-gutter-sm justify-center">
         <div style="min-width: 400px;">
           <div class="row items-center q-pt-none">
-            <label class="text-heading text-bold">1ª Mensaje</label>
+            <label class="text-heading text-bold">1ª Mensagem</label>
             <div class="col-xs-3 col-sm-2 col-md-1">
               <q-btn
                 round
@@ -163,12 +162,12 @@
               <textarea
                 ref="message1"
                 style="min-height: 12.5vh; max-height: 12.5vh;"
-                class="q-pa-sm bg-white full-width rounded-borders"
+                class="q-pa-sm bg-white full-width rounded-all"
                 :class="{
                   'bg-red-1': $v.campanha.message1.$error
                 }"
                 @blur="$v.campanha.message1.$touch"
-                placeholder="Ingrese el mensaje"
+                placeholder="Digite a mensagem"
                 autogrow
                 dense
                 outlined
@@ -181,7 +180,7 @@
                 <q-icon size="2em"
                   name="mdi-variable" />
                 <q-tooltip>
-                  Variables
+                  Variáveis
                 </q-tooltip>
                 <q-menu touch-position>
                   <q-list dense
@@ -200,7 +199,7 @@
             </div>
           </div>
           <div class="row items-center q-pt-none">
-            <label class="text-heading text-bold">2ª Mensaje</label>
+            <label class="text-heading text-bold">2ª Mensagem</label>
             <div class="col-xs-3 col-sm-2 col-md-1">
               <q-btn
                 round
@@ -234,8 +233,8 @@
               <textarea
                 ref="message2"
                 style="min-height: 12.5vh; max-height: 12.5vh;"
-                class="q-pa-sm bg-white full-width rounded-borders"
-                placeholder="Ingrese el mensaje"
+                class="q-pa-sm bg-white full-width rounded-all"
+                placeholder="Digite a mensagem"
                 autogrow
                 dense
                 outlined
@@ -252,7 +251,7 @@
                 <q-icon size="2em"
                   name="mdi-variable" />
                 <q-tooltip>
-                  Variables
+                  Variáveis
                 </q-tooltip>
                 <q-menu touch-position>
                   <q-list dense
@@ -271,7 +270,7 @@
             </div>
           </div>
           <div class="row items-center q-pt-none">
-            <label class="text-heading text-bold">3ª Mensaje</label>
+            <label class="text-heading text-bold">3ª Mensagem</label>
             <div class="col-xs-3 col-sm-2 col-md-1">
               <q-btn
                 round
@@ -305,8 +304,8 @@
               <textarea
                 ref="message3"
                 style="min-height: 12.5vh; max-height: 12.5vh;"
-                class="q-pa-sm bg-white full-width rounded-borders"
-                placeholder="Ingrese el mensaje"
+                class="q-pa-sm bg-white full-width rounded-all"
+                placeholder="Digite a mensagem"
                 autogrow
                 dense
                 outlined
@@ -323,7 +322,7 @@
                 <q-icon size="2em"
                   name="mdi-variable" />
                 <q-tooltip>
-                  Variables
+                  Variáveis
                 </q-tooltip>
                 <q-menu touch-position>
                   <q-list dense
@@ -348,7 +347,7 @@
             class="full-width"
           >
             <div class="text-body1 text-bold q-pa-sm full-width text-center bg-grey-3">
-              Visualización
+              Visualização
             </div>
             <q-card-section class="row justify-center">
               <q-option-group
@@ -366,7 +365,7 @@
                 <MensagemChat
                   :isLineDate="false"
                   size="8"
-                  class="full-width"
+                  class="full-width rounded-all"
                   :mensagens="cMessages"
                 />
               </cMolduraCelular>
@@ -375,18 +374,19 @@
         </div>
 
       </q-card-section>
-
-      <q-card-section class="q-mb-md">
-        <div class="float-right q-mb-md">
+      <q-card-section>
+        <div class="row justify-center">
           <q-btn
             label="Cancelar"
             color="negative"
             v-close-popup
-            class="q-mr-md btn-rounded-50"
+            class="q-mr-md"
+            rounded
           />
           <q-btn
+            rounded
             label="Salvar"
-            class="generate-button btn-rounded-50"
+            color="positive"
             icon="save"
             @click="handleCampanha"
           />
@@ -436,10 +436,8 @@ export default {
   data () {
     return {
       variaveis: [
-        { label: 'Nombre', value: '{{name}}' },
-        { label: 'Saludo', value: '{{greeting}}' },
-        { label: 'Correo electrónico de contacto', value: '{{email}}' },
-        { label: 'Teléfono', value: '{{phoneNumber}}' }
+        { label: 'Nome', value: '{{name}}' },
+        { label: 'Saudação', value: '{{greeting}}' }
       ],
       optRadio: [
         { label: 'Msg.1', value: 'message1' },
@@ -458,7 +456,7 @@ export default {
         message2: null,
         message3: null,
         sessionId: null,
-        delay: 20
+        delay: 61
       },
       messageTemplate: {
         mediaUrl: null,
@@ -472,7 +470,7 @@ export default {
         createdAt: '2021-02-20T20:09:04.736Z',
         updatedAt: '2021-02-20T23:26:24.311Z',
         quotedMsgId: null,
-        delay: 20,
+        delay: 61,
         ticketId: 0,
         contactId: null,
         userId: null,
@@ -541,7 +539,7 @@ export default {
     }
   },
   methods: {
-    onInsertSelectVariable(variable, ref, messageField) {
+    onInsertSelectVariable (variable, ref, messageField) {
       var tArea = this.$refs[ref]
       if (!tArea) {
         return
@@ -591,7 +589,7 @@ export default {
         message4: null,
         mediaUrl: null,
         userId: null,
-        delay: 20,
+        delay: 61,
         sessionId: null
       }
     },
@@ -610,10 +608,10 @@ export default {
     onRejectedFiles (rejectedEntries) {
       this.$q.notify({
         html: true,
-        message: `Ups ... ¡ocurrió un error! <br>
+        message: `Ops... Ocorreu um erro! <br>
         <ul>
-          <li>Verifique el tamaño del archivo.</li>
-          <li>En caso de múltiples archivos, el tamaño total (suma de todos) debe ser de hasta 50MB.</li>
+          <li>Arquivo deve ter no máximo 10MB.</li>
+          <li>Priorize o envio de imagem ou vídeo.</li>
         </ul>`,
         type: 'negative',
         progress: true,
@@ -637,7 +635,7 @@ export default {
         this.urlMedia = url
         this.abrirModalImagem = true
       } catch (error) {
-        this.$notificarErro('Algún problema al cargar la imagen', error)
+        this.$notificarErro('Algum problema ao carregar a imagem', error)
       }
       this.loading = false
     },
@@ -645,14 +643,14 @@ export default {
       if (this.campanha.message1 === this.campanha.message2 || this.campanha.message1 === this.campanha.message3 || this.campanha.message2 === this.campanha.message3) {
         this.$q.notify({
           type: 'negative',
-          message: 'Los mensajes no pueden ser iguales'
+          message: 'As mensagens não podem ser iguais'
         })
         return
       }
-      if (this.campanha.delay < 20) {
+      if (this.campanha.delay < 61) {
         this.$q.notify({
           type: 'negative',
-          message: 'El campo de retraso debe ser al menos 20'
+          message: 'O campo delay deve ser no mínimo 61'
         })
         return
       }
@@ -660,7 +658,7 @@ export default {
       if (this.$v.campanha.$error) {
         this.$q.notify({
           type: 'negative',
-          message: 'Verifique que se llenen todos los campos obligatorios '
+          message: 'Verifique se todas os campos obrigatórios estão preenchidos '
         })
         return
       }
@@ -674,15 +672,13 @@ export default {
         medias.append('medias', this.arquivos)
         if (this.campanha.id) {
           const { data } = await AlterarCampanha(medias, campanha.id)
-          console.log(this.campanha)
-          console.log(data)
           this.$emit('modal-campanha:editada', data)
           this.$q.notify({
             type: 'info',
             progress: true,
             position: 'top',
             textColor: 'black',
-            message: '¡Campaña editada!',
+            message: 'Campanha editada!',
             actions: [{
               icon: 'close',
               round: true,
@@ -691,13 +687,12 @@ export default {
           })
         } else {
           const { data } = await CriarCampanha(medias)
-          console.log(data)
           this.$emit('modal-campanha:criada', data)
           this.$q.notify({
             type: 'positive',
             progress: true,
             position: 'top',
-            message: '¡Campaña creada!',
+            message: 'Campanha criada!',
             actions: [{
               icon: 'close',
               round: true,
@@ -709,7 +704,7 @@ export default {
         this.fecharModal()
       } catch (error) {
         console.error(error)
-        this.$notificarErro('Algún problema al crear campaña', error)
+        this.$notificarErro('Algum problema ao criar campanha', error)
       }
     }
   }

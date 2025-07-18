@@ -5,7 +5,8 @@
       bordered
       square
       hide-bottom
-      class="contact-table container-rounded-10 my-sticky-dynamic q-ma-lg"
+      class="my-sticky-dynamic q-ma-lg"
+      title="Etiquetas"
       :data="etiquetas"
       :columns="columns"
       :loading="loading"
@@ -13,20 +14,13 @@
       :pagination.sync="pagination"
       :rows-per-page-options="[0]"
     >
-      <template v-slot:top-left>
-        <div>
-          <h2 :class="$q.dark.isActive ? ('text-green') : ''">
-          <q-icon name="mdi-tag-outline" ></q-icon>
-          Etiquetas
-        </h2>
+      <template v-slot:top-right>
         <q-btn
-          class="generate-button btn-rounded-50"
-          icon="eva-plus-outline"
+          color="primary"
           label="Adicionar"
+          rounded
           @click="etiquetaEdicao = {}; modalEtiqueta = true"
         />
-        </div>
-
       </template>
       <template v-slot:body-cell-color="props">
         <q-td class="text-center">
@@ -52,15 +46,13 @@
           <q-btn
             flat
             round
-             :class="$q.dark.isActive ? ('text-green') : ''"
-            icon="eva-edit-outline"
+            icon="edit"
             @click="editarEtiqueta(props.row)"
           />
           <q-btn
             flat
             round
-             :class="$q.dark.isActive ? ('text-green') : ''"
-            icon="eva-trash-outline"
+            icon="mdi-delete"
             @click="deletarEtiqueta(props.row)"
           />
         </q-td>
@@ -98,9 +90,9 @@ export default {
       columns: [
         { name: 'id', label: '#', field: 'id', align: 'left' },
         { name: 'tag', label: 'Etiqueta', field: 'tag', align: 'left' },
-        { name: 'color', label: 'Color', field: 'color', align: 'center' },
-        { name: 'isActive', label: 'Activo', field: 'isActive', align: 'center' },
-        { name: 'acoes', label: 'Acciones', field: 'acoes', align: 'center' }
+        { name: 'color', label: 'Cor', field: 'color', align: 'center' },
+        { name: 'isActive', label: 'Ativo', field: 'isActive', align: 'center' },
+        { name: 'acoes', label: 'Ações', field: 'acoes', align: 'center' }
       ]
     }
   },
@@ -128,15 +120,15 @@ export default {
     },
     deletarEtiqueta (etiqueta) {
       this.$q.dialog({
-        title: '¡¡Atención!!',
-        message: `¿Realmente quieres eliminar la etiqueta "${etiqueta.tag}"?`,
+        title: 'Atenção!!',
+        message: `Deseja realmente deletar a Etiqueta "${etiqueta.tag}"?`,
         cancel: {
-          label: 'No',
+          label: 'Não',
           color: 'primary',
           push: true
         },
         ok: {
-          label: 'Si',
+          label: 'Sim',
           color: 'negative',
           push: true
         },
@@ -153,7 +145,7 @@ export default {
               type: 'positive',
               progress: true,
               position: 'top',
-              message: `¡Etiqueta ${etiqueta.tag} eliminada!`,
+              message: `Etiqueta ${etiqueta.tag} deletada!`,
               actions: [{
                 icon: 'close',
                 round: true,
@@ -167,8 +159,8 @@ export default {
 
   },
   mounted () {
-    this.listarEtiquetas()
     this.userProfile = localStorage.getItem('profile')
+    this.listarEtiquetas()
   }
 }
 </script>

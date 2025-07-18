@@ -1,20 +1,12 @@
 <template>
-  <div v-if="userProfile === 'admin'">
+  <div>
     <router-view />
   </div>
 </template>
 
 <script>
 export default {
-  name: 'IndexChatFlow',
-  data () {
-    return {
-      userProfile: 'user'
-    }
-  },
-  mounted () {
-    this.userProfile = localStorage.getItem('profile')
-  }
+  name: 'IndexChatFlow'
 }
 </script>
 

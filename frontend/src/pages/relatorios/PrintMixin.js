@@ -15,11 +15,11 @@ export default {
       // Excluir todos os filhos da div
       node.innerHTML = ''
       if (mostrarFiltros) {
-        const filtros = document.getElementById(id)
+        let filtros = document.getElementById(id)
         // filtros.removeChild(filtros.getElementsByTagName('button'))
 
         const canvas = await html2canvas(filtros)
-        const img = document.createElement('img')
+        let img = document.createElement('img')
         img.src = canvas.toDataURL()
         img.height = canvas.height
         img.width = canvas.width

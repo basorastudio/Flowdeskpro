@@ -1,173 +1,90 @@
-
 export const estadoPorDdd = {
-  11: 'SP',
-  12: 'SP',
-  13: 'SP',
-  14: 'SP',
-  15: 'SP',
-  16: 'SP',
-  17: 'SP',
-  18: 'SP',
-  19: 'SP',
-  21: 'RJ',
-  22: 'RJ',
-  24: 'RJ',
-  27: 'ES',
-  28: 'ES',
-  31: 'MG',
-  32: 'MG',
-  33: 'MG',
-  34: 'MG',
-  35: 'MG',
-  37: 'MG',
-  38: 'MG',
-  41: 'PR',
-  42: 'PR',
-  43: 'PR',
-  44: 'PR',
-  45: 'PR',
-  46: 'PR',
-  47: 'SC',
-  48: 'SC',
-  49: 'SC',
-  51: 'RS',
-  53: 'RS',
-  54: 'RS',
-  55: 'RS',
-  61: 'DF',
-  62: 'GO',
-  63: 'TO',
-  64: 'GO',
-  65: 'MT',
-  66: 'MT',
-  67: 'MS',
-  68: 'AC',
-  69: 'RO',
-  71: 'BA',
-  73: 'BA',
-  74: 'BA',
-  75: 'BA',
-  77: 'BA',
-  79: 'SE',
-  81: 'PE',
-  82: 'AL',
-  83: 'PB',
-  84: 'RN',
-  85: 'CE',
-  86: 'PI',
-  87: 'PE',
-  88: 'CE',
-  89: 'PI',
-  91: 'PA',
-  92: 'AM',
-  93: 'PA',
-  94: 'PA',
-  95: 'RR',
-  96: 'AP',
-  97: 'AM',
-  98: 'MA',
-  99: 'MA'
+  // Códigos de área para República Dominicana
+  809: 'DO',
+  829: 'DO',
+  849: 'DO'
 }
 
 export const dddsPorEstado = {
-  AC: ['68'],
-  AL: ['82'],
-  AM: ['92', '97'],
-  AP: ['96'],
-  BA: ['71', '73', '74', '75', '77'],
-  CE: ['85', '88'],
-  DF: ['61'],
-  ES: ['27', '28'],
-  GO: ['62', '64'],
-  MA: ['98', '99'],
-  MG: ['31', '32', '33', '34', '35', '37', '38'],
-  MS: ['67'],
-  MT: ['65', '66'],
-  PA: ['91', '93', '94'],
-  PB: ['83'],
-  PE: ['81', '87'],
-  PI: ['86', '89'],
-  PR: ['41', '42', '43', '44', '45', '46'],
-  RJ: ['21', '22', '24'],
-  RN: ['84'],
-  RO: ['69'],
-  RR: ['95'],
-  RS: ['51', '53', '54', '55'],
-  SC: ['47', '48', '49'],
-  SE: ['79'],
-  SP: ['11', '12', '13', '14', '15', '16', '17', '18', '19'],
-  TO: ['63']
+  DO: ['809', '829', '849']
 }
 
-export const estadosBR = [
-  { nome: 'Acre', sigla: 'AC' },
-  { nome: 'Alagoas', sigla: 'AL' },
-  { nome: 'Amapá', sigla: 'AP' },
-  { nome: 'Amazonas', sigla: 'AM' },
-  { nome: 'Bahia', sigla: 'BA' },
-  { nome: 'Ceará', sigla: 'CE' },
-  { nome: 'Distrito Federal', sigla: 'DF' },
-  { nome: 'Espírito Santo', sigla: 'ES' },
-  { nome: 'Goiás', sigla: 'GO' },
-  { nome: 'Maranhão', sigla: 'MA' },
-  { nome: 'Mato Grosso', sigla: 'MT' },
-  { nome: 'Mato Grosso do Sul', sigla: 'MS' },
-  { nome: 'Minas Gerais', sigla: 'MG' },
-  { nome: 'Pará', sigla: 'PA' },
-  { nome: 'Paraíba', sigla: 'PB' },
-  { nome: 'Paraná', sigla: 'PR' },
-  { nome: 'Pernambuco', sigla: 'PE' },
-  { nome: 'Piauí', sigla: 'PI' },
-  { nome: 'Rio de Janeiro', sigla: 'RJ' },
-  { nome: 'Rio Grande do Norte', sigla: 'RN' },
-  { nome: 'Rio Grande do Sul', sigla: 'RS' },
-  { nome: 'Rondônia', sigla: 'RO' },
-  { nome: 'Roraima', sigla: 'RR' },
-  { nome: 'Santa Catarina', sigla: 'SC' },
-  { nome: 'São Paulo', sigla: 'SP' },
-  { nome: 'Sergipe', sigla: 'SE' },
-  { nome: 'Tocantins', sigla: 'TO' }
-
+export const estadosDO = [
+  { nome: 'Azua', sigla: 'AZ' },
+  { nome: 'Baoruco', sigla: 'BC' },
+  { nome: 'Barahona', sigla: 'BR' },
+  { nome: 'Dajabón', sigla: 'DJ' },
+  { nome: 'Distrito Nacional', sigla: 'DN' },
+  { nome: 'Duarte', sigla: 'DU' },
+  { nome: 'Elías Piña', sigla: 'EP' },
+  { nome: 'El Seibo', sigla: 'ES' },
+  { nome: 'Espaillat', sigla: 'ESP' },
+  { nome: 'Hato Mayor', sigla: 'HM' },
+  { nome: 'Hermanas Mirabal', sigla: 'HMI' },
+  { nome: 'Independencia', sigla: 'IN' },
+  { nome: 'La Altagracia', sigla: 'LA' },
+  { nome: 'La Romana', sigla: 'LR' },
+  { nome: 'La Vega', sigla: 'LV' },
+  { nome: 'María Trinidad Sánchez', sigla: 'MTS' },
+  { nome: 'Monseñor Nouel', sigla: 'MN' },
+  { nome: 'Monte Cristi', sigla: 'MC' },
+  { nome: 'Monte Plata', sigla: 'MP' },
+  { nome: 'Pedernales', sigla: 'PD' },
+  { nome: 'Peravia', sigla: 'PV' },
+  { nome: 'Puerto Plata', sigla: 'PP' },
+  { nome: 'Samaná', sigla: 'SM' },
+  { nome: 'San Cristóbal', sigla: 'SC' },
+  { nome: 'San José de Ocoa', sigla: 'SJO' },
+  { nome: 'San Juan', sigla: 'SJ' },
+  { nome: 'San Pedro de Macorís', sigla: 'SPM' },
+  { nome: 'Sánchez Ramírez', sigla: 'SR' },
+  { nome: 'Santiago', sigla: 'ST' },
+  { nome: 'Santiago Rodríguez', sigla: 'STR' },
+  { nome: 'Santo Domingo', sigla: 'SD' },
+  { nome: 'Valverde', sigla: 'VV' }
 ]
+
+// Alias para compatibilidad con archivos que esperan estadosBR
+export const estadosBR = estadosDO
 
 export const messagesLog = {
   access: {
-    message: 'Accedió al ticket',
+    message: 'Acessou o ticket',
     color: 'grey-8',
     icon: 'mdi-eye'
   },
   closed: {
-    message: 'Resolvió el ticket',
+    message: 'Resolveu o ticket',
     color: 'positive',
     icon: 'mdi-check-circle-outline'
   },
   create: {
-    message: 'Ticket creado',
+    message: 'Ticket criado',
     color: 'green-6',
     icon: 'mdi-plus-circle'
   },
   delete: {
-    message: 'Eliminó el Ticket',
+    message: 'Deletou o Ticket',
     color: 'negative',
     icon: 'mdi-delete'
   },
   open: {
-    message: 'Inició la atención',
+    message: 'Iniciou o atendimento',
     color: 'primary',
     icon: 'mdi-play-circle-outline'
   },
   pending: {
-    message: 'Devolvió la atención a la fila de pendientes',
+    message: 'Retornou atendimento para fila de pendentes',
     color: 'amber',
     icon: 'mdi-account-convert'
   },
   transfered: {
-    message: 'Transferió la atención',
+    message: 'Transferiu o atendimento',
     color: 'teal-3',
     icon: 'mdi-account-arrow-right'
   },
   receivedTransfer: {
-    message: 'Recibió la atención por transferencia',
+    message: 'Recebeu o atendimento por transferência',
     color: 'teal-5',
     icon: 'mdi-account-arrow-left'
   },
@@ -177,17 +94,17 @@ export const messagesLog = {
     icon: 'mdi-arrow-decision'
   },
   userDefine: {
-    message: 'Bot: Usuario definido',
+    message: 'Bot: Usuário definido',
     color: 'cyan-2',
     icon: 'mdi-account-check'
   },
   retriesLimitQueue: {
-    message: 'Bot: Fila definida (Límite de intentos)',
+    message: 'Bot: Fila definida (Limite de tentativas)',
     color: 'green-2',
     icon: 'mdi-arrow-decision'
   },
   retriesLimitUserDefine: {
-    message: 'Bot: Usuario definido (Límite de intentos)',
+    message: 'Bot: Usuário definido (Limite de tentativas)',
     color: 'cyan-2',
     icon: 'mdi-account-check'
   },
@@ -197,7 +114,7 @@ export const messagesLog = {
     icon: 'mdi-robot'
   },
   autoClose: {
-    message: 'Bot: Atención cerrada automáticamente',
+    message: 'Bot: Atendimento fechado pelo cliente',
     color: 'blue-8',
     icon: 'mdi-check-circle-outline'
   }

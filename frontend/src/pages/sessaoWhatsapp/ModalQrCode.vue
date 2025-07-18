@@ -2,37 +2,37 @@
   <q-dialog :value="abrirModalQR"
     @hide="fecharModalQrModal"
     persistent>
-    <q-card class="container-rounded-10">
+    <q-card style="bg-white">
       <q-card-section>
-        <div class="text-h6 font-family-main text-center">
-          Lea el Código QR para iniciar la sesión
+        <div class="text-h6 text-primary">
+          Leia o QrCode para iniciar a sessão
           <q-btn round
-          flat
-            class="q-ml-md float-right"
+            class="q-ml-md"
             color="negative"
-            icon="eva-close"
+            icon="mdi-close"
             @click="fecharModalQrModal" />
         </div>
       </q-card-section>
-      <q-card-section class="text-center q-ma-lg container-rounded-10 container-border"
+      <q-card-section class="text-center"
         :style="$q.dark.isActive ? 'background: white !important' : ''">
         <QrcodeVue v-if="cQrcode"
           :value="cQrcode"
           :size="300"
           level="H" />
         <span v-else>
-        <span style="font-size: 10px">
-          Esperando la lectura del Código QR ...
+          Aguardando o Qr Code
         </span>
       </q-card-section>
       <q-card-section>
-        <div class="text-center q-mb-lg" style="font-size: 14px">Si tiene un problema con la lectura, solicite un nuevo Código QR </div>
+        <div class="row">Caso tenha problema com a leitura, solicite um novo Qr Code </div>
         <div class="row col-12 justify-center">
-          <q-btn
-            class="generate-button btn-rounded-50"
-            label="Nuevo código QR"
+          <q-btn color="primary"
+            glossy
+            ripple
+            outline
+            label="Novo QR Code"
             @click="solicitarQrCode"
-            icon="mdi-qrcode" />
+            icon="watch_later" />
         </div>
       </q-card-section>
     </q-card>
@@ -81,9 +81,6 @@ export default {
     solicitarQrCode () {
       this.$emit('gerar-novo-qrcode', this.channel)
       this.fecharModalQrModal()
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
     },
     fecharModalQrModal () {
       this.$emit('update:abrirModalQR', false)

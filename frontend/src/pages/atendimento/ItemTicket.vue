@@ -1,13 +1,14 @@
 <template>
   <q-list separator
-    style="max-width: 100%"
+    style="max-width: 370px"
     class="q-px-sm q-py-none q-pt-sm">
+    <!-- :clickable="ticket.status !== 'pending' && (ticket.id !== $store.getters['ticketFocado'].id || $route.name !== 'chat')" -->
     <q-item clickable
       style="height: 95px; max-width: 100%;"
       @click="abrirChatContato(ticket)"
       :style="`border-left: 6px solid ${borderColor[ticket.status]}; border-radius: 10px`"
       id="item-ticket-houve"
-      class=" ticketBorder q-px-sm"
+      class="ticketBorder q-px-sm"
       :class="{
         'ticketBorderGrey': !$q.dark.isActive,
         'ticket-active-item': ticket.id === $store.getters['ticketFocado'].id,
@@ -18,7 +19,7 @@
         <q-btn flat
           @click="iniciarAtendimento(ticket)"
           push
-          color="green"
+          color="primary"
           dense
           round
           v-if="ticket.status === 'pending' || (buscaTicket && ticket.status === 'pending')">
@@ -49,16 +50,16 @@
             text-color="white"
             color="red"
             :label="ticket.unreadMessages" />
-          <img :src="ticket.contact.profilePicUrl"
+          <img :src="ticket.profilePicUrl"
             onerror="this.style.display='none'"
-            v-show="ticket.contact.profilePicUrl">
+            v-show="ticket.profilePicUrl">
           <q-icon size="50px"
             name="mdi-account-circle"
             color="grey-8" />
         </q-avatar>
 
       </q-item-section>
-      <q-item-section id="ListItemsTicket" >
+      <q-item-section id="ListItemsTicket">
         <q-item-label class="text-bold"
           lines="1">
           {{ !ticket.name ? ticket.contact.name : ticket.name }}
@@ -69,7 +70,7 @@
               style="font-size: .7em;"
               transparent
               square
-              text-color="green-5"
+              text-color="grey-10"
               color="secondary"
               :label="dataInWords(ticket.lastMessageAt, ticket.updatedAt)"
               :key="recalcularHora" />
@@ -77,7 +78,7 @@
         </q-item-label>
         <q-item-label lines="1"
           caption>
-          {{ truncatedMessage(ticket.lastMessage, 20) }}
+          {{ ticket.lastMessage }}
         </q-item-label>
         <q-item-label lines="1"
           caption>
@@ -103,14 +104,26 @@
               {{wallet.wallet}}
             </q-tooltip>
           </q-icon>
-          <q-chip
-          :style="chipStyle"
-          dense
-          square
-          :label="chipLabel"
-          size="11px"
-          class="q-mr-md text-bold"
-          />
+          <!-- <span class="q-ml-sm text-bold" :style="{ color: (ticket.queue || obterNomeFila(ticket)) ? 'black' : '' }"
+          :color="$q.dark.isActive ? 'blue-9' : 'blue-2'"
+          > -->
+          <span class="q-ml-sm text-bold"
+          :color="$q.dark.isActive ? 'white ' : 'black'"
+          >
+            {{ `${ticket.queue || obterNomeFila(ticket) || ''}` }}
+          </span>
+          <!-- <span class="q-ml-sm text-bold" :style="{ color: 'black' }">
+            Etiquetas:
+          </span> -->
+          <!-- <q-chip
+            v-for="tag in tagsDoTicket"
+            :color="tag.color"
+            :key="tag.tag"
+            dense
+            square
+            :label="tag && tag.tag"
+            size="10px"
+            class="q-mr-md text-bold" /> -->
           <span class="absolute-bottom-right ">
             <q-icon v-if="ticket.status === 'closed'"
               name="mdi-check-circle-outline"
@@ -118,7 +131,7 @@
               size="1.8em"
               class="q-mb-sm">
               <q-tooltip>
-                Atención Resuelta
+                Atendimento Resolvido
               </q-tooltip>
             </q-icon>
             <q-icon
@@ -128,67 +141,107 @@
               size="1.8em"
               class="q-mb-sm">
               <q-tooltip>
-                ChatBot atendiendo
-              </q-tooltip>
-            </q-icon>
-            <q-icon
-              v-if="(ticket.typebotStatus && ticket.useIntegration && ticket.status === 'pending')"
-              name="mdi-robot-outline"
-              color="primary"
-              size="1.8em"
-              class="q-mb-sm">
-              <q-tooltip>
-                Typebot atendiendo
-              </q-tooltip>
-            </q-icon>
-            <q-icon
-              v-if="(ticket.IA && ticket.useIntegration && ticket.status === 'pending')"
-              name="mdi-robot-happy"
-              color="primary"
-              size="1.8em"
-              class="q-mb-sm">
-              <q-tooltip>
-                IA atendiendo
+                ChatBot atendendo
               </q-tooltip>
             </q-icon>
           </span>
         </q-item-label>
         <q-item-label class="row col items-center justify-between"
           caption>
-          {{ ticket.user?.name || '' }}
-          <q-chip :style="{ backgroundColor: ticket.whatsapp.color, color: 'white' }"
+          Usuário: {{ ticket.username || '' }}
+          <q-chip :color="$q.dark.isActive ? '$primary' : 'blue-2'"
             dense
             square
             :label="ticket.whatsapp && ticket.whatsapp.name"
             size="10px"
             class="q-mr-md text-bold" />
         </q-item-label>
+        <!-- <span class="absolute-bottom-right" v-if="ticket.unreadMessages">
+          <q-badge style="font-size: .8em; border-radius: 10px;" class="q-py-xs" dense text-color="white" color="green" :label="ticket.unreadMessages" />
+        </span> -->
         </q-item-section>
         <q-item-section avatar
         class="q-px-none">
-
-<q-btn flat
-          v-if="ticket.status === 'open' || (buscaTicket && ticket.status === 'open')"
-          @click="atualizarStatusTicket2(ticket, 'closed')"
+        <q-btn flat
+          @click="espiarAtendimento(ticket)"
           push
+          color="primary"
           dense
           round
-          class="btn-rounded"
-          :class="{
-          'text-green bg-black': $q.dark.isActive,
-          'tab-item': !$q.dark.isActive
-          }">
+          v-if="!$q.screen.xs && (ticket.status === 'pending' || (buscaTicket && ticket.status === 'pending'))"
+          class="q-mr-md">
+          <q-dialog v-model="isTicketModalOpen">
+            <q-card :style="cardStyle">
+              <q-card-section class="row items-center justify-between">
+                <div class="text-h6">{{ 'Espiar Atendimento: ' + currentTicket.id}}</div>
+                <q-btn icon="close" flat round @click="closeModal" />
+              </q-card-section>
+              <q-card-section>
+                <MensagemChat :mensagens="currentTicket.messages" />
+              </q-card-section>
+            </q-card>
+          </q-dialog>
+          <!-- <q-badge v-if="ticket.unreadMessages"
+            style="border-radius: 10px;"
+            class="text-center text-bold"
+            floating
+            dense
+            text-color="black"
+            color="blue-2"
+            :label="ticket.unreadMessages" /> -->
           <q-avatar>
             <q-icon size="20px"
-              name="eva-checkmark-circle-2-outline" />
+              name="mdi-eye-outline" />
           </q-avatar>
           <q-tooltip>
-            Resolver
+            Espiar
           </q-tooltip>
         </q-btn>
 
+        <q-btn flat
+          @click="espiarAtendimento(ticket)"
+          push
+          color="primary"
+          dense
+          round
+          v-if="$q.screen.xs && (ticket.status === 'pending' || (buscaTicket && ticket.status === 'pending'))"
+          class="q-mr-md">
+          <q-dialog v-model="isTicketModalOpen">
+            <q-card :style="cardStyle">
+              <q-card-section class="row items-center justify-between">
+                <div class="text-h6">{{ 'Espiar Atendimento: ' + currentTicket.id}}</div>
+                <q-btn icon="close" flat round @click="closeModal" />
+              </q-card-section>
+              <q-card-section>
+                <MensagemChat :mensagens="currentTicket.messages" />
+              </q-card-section>
+            </q-card>
+          </q-dialog>
+          <q-badge v-if="ticket.unreadMessages"
+            style="border-radius: 10px;"
+            class="text-center text-bold"
+            floating
+            dense
+            text-color="black"
+            color="blue-2"
+            :label="ticket.unreadMessages" />
+          <q-avatar>
+            <q-icon size="20px"
+              name="mdi-eye-outline" />
+          </q-avatar>
+          <q-tooltip>
+            Espiar
+          </q-tooltip>
+        </q-btn>
+
+        <!-- <span class="absolute-bottom-right" v-if="ticket.unreadMessages">
+          <q-badge style="font-size: .8em; border-radius: 10px;" class="q-py-xs" dense text-color="white" color="green" :label="ticket.unreadMessages" />
+        </span> -->
       </q-item-section>
     </q-item>
+    <!-- <q-separator color="grey-2"
+      inset="item" /> -->
+    <!-- <q-separator /> -->
   </q-list>
 </template>
 
@@ -197,13 +250,22 @@ import { formatDistance, parseJSON } from 'date-fns'
 import es from 'date-fns/locale/es'
 import mixinAtualizarStatusTicket from './mixinAtualizarStatusTicket'
 import { outlinedAccountCircle } from '@quasar/extras/material-icons-outlined'
+// import { GetColorName } from 'hex-color-to-color-name';
 import { ObterContato } from 'src/service/contatos'
+import MensagemChat from './MensagemChat.vue'
+import whatsBackground from 'src/assets/wa-background.png'
+import whatsBackgroundDark from 'src/assets/wa-background-dark.jpg'
 
 export default {
   name: 'ItemTicket',
   mixins: [mixinAtualizarStatusTicket],
+  components: {
+    MensagemChat
+  },
   data () {
     return {
+      whatsBackground: whatsBackground,
+      whatsBackgroundDark: whatsBackgroundDark,
       isTicketModalOpen: false,
       currentTicket: {},
       tagsDoTicket: [],
@@ -217,9 +279,9 @@ export default {
         closed: 'R'
       },
       status: {
-        open: 'Abierto',
-        pending: 'Pendiente',
-        closed: 'Resuelto'
+        open: 'Aberto',
+        pending: 'Pendente',
+        closed: 'Resolvido'
       },
       color: {
         open: 'primary',
@@ -253,28 +315,25 @@ export default {
     }
   },
   computed: {
-    chipStyle() {
-      return { backgroundColor: this.ticket.color || this.obterCorFila(this.ticket) || 'grey', color: 'white' }
-    },
-    chipLabel() {
-      return this.obterNomeFila(this.ticket) || 'SIN FILA'
+    cardStyle () {
+      return {
+        backgroundImage: this.$q.dark.isActive ? `url(${this.whatsBackgroundDark})` : `url(${this.whatsBackground})`
+      }
     }
   },
-  async mounted() {
+  async mounted () {
     this.tagsDoTicket = await this.obterInformacoes(this.ticket, 'tags')
     this.walletsDoTicket = await this.obterInformacoes(this.ticket, 'carteiras')
+
+    this.$store.subscribe(async (mutation, state) => {
+      if (mutation.type === 'UPDATE_CONTACT' && mutation.payload.id === this.ticket.contactId) {
+        this.tagsDoTicket = await this.obterInformacoes(this.ticket, 'tags')
+        this.walletsDoTicket = await this.obterInformacoes(this.ticket, 'carteiras')
+      }
+    })
   },
   methods: {
-    truncatedMessage(message, maxLength) {
-      if (!message) {
-        return ''
-      }
-      if (message.length > maxLength) {
-        return message.substring(0, maxLength) + '...'
-      }
-      return message
-    },
-    closeModal() {
+    closeModal () {
       this.isTicketModalOpen = false
     },
     obterNomeFila (ticket) {
@@ -288,48 +347,21 @@ export default {
         return ''
       }
     },
-    obterCorFila (ticket) {
+    async obterInformacoes (ticket, tipo) {
       try {
-        const fila = this.filas.find(f => f.id === ticket.queueId)
-        if (fila) {
-          return fila.color
-        }
-        return ''
-      } catch (error) {
-        return ''
-      }
-    },
-    async obterInformacoes(ticket, tipo) {
-      try {
-      // Verifica si el tipo es válido antes de intentar la solicitud
-        if (!['tags', 'carteiras'].includes(tipo)) {
-          console.error(`Tipo de información inválido: ${tipo}`)
-          return []
-        }
-
         const contato = await ObterContato(ticket.contactId)
-
-        // Verifica si el contacto se ha devuelto correctamente
-        if (!contato || !contato.data) {
-          console.error('Contacto no encontrado o datos inválidos')
-          return []
+        if (contato) {
+          if (tipo === 'tags') {
+            const tags = contato.data.tags
+            return tags.map(tag => ({ tag: tag.tag, color: tag.color }))
+          } else if (tipo === 'carteiras') {
+            const wallets = contato.data.wallets
+            return wallets.map(wallet => ({ wallet: wallet.name }))
+          }
         }
-
-        // Verifica si el tipo de dato solicitado está disponible
-        if (tipo === 'tags') {
-          const tags = contato.data.tags || []
-          return tags.map(tag => ({ tag: tag.tag, color: tag.color }))
-        } else if (tipo === 'carteiras') {
-          const wallets = contato.data.wallets || []
-          return wallets.map(wallet => ({ wallet: wallet.name }))
-        }
-
-        // Retorna un array vacío si no se reconoce el tipo
         return []
       } catch (error) {
-        console.error(`Error al obtener ${tipo}:`, error)
-
-        // Devuelve un array vacío en caso de error para no romper la aplicación
+        console.error(`Erro ao obter ${tipo}:`, error)
         return []
       }
     },
@@ -341,11 +373,11 @@ export default {
       return formatDistance(data, new Date(), { locale: es })
     },
     abrirChatContato (ticket) {
-      // en caso de que esté en tamaño móvil, cerrar el drawer de contactos
+      // caso esteja em um tamanho mobile, fechar a drawer dos contatos
       if (this.$q.screen.lt.md && ticket.status !== 'pending') {
         this.$root.$emit('infor-cabecalo-chat:acao-menu')
       }
-      if (!((ticket.id !== this.$store.getters.ticketFocado.id || this.$route.name !== 'chat'))) return
+      if (!(ticket.status !== 'pending' && (ticket.id !== this.$store.getters.ticketFocado.id || this.$route.name !== 'chat'))) return
       this.$store.commit('SET_HAS_MORE', true)
       this.$store.dispatch('AbrirChatMensagens', ticket)
     }

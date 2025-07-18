@@ -1,32 +1,19 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <title>FlowDeskPro</title>
     <meta charset="utf-8">
     <meta name="description" content="Bot Multi-atendimento">
     <meta name="format-detection" content="telephone=no">
     <meta name="msapplication-tap-highlight" content="no">
-    <meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width<% if (ctx.mode.cordova || ctx.mode.capacitor) { %>, viewport-fit=cover<% } %>">
-    
-    <!-- Links de ícones -->
-    <link rel="icon" type="image/png" sizes="128x128" href="<%= process.env.VUE_URL_API %>/public/logos/icon-128x128.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="<%= process.env.VUE_URL_API %>/public/logos/favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="<%= process.env.VUE_URL_API %>/public/logos/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="<%= process.env.VUE_URL_API %>/public/logos/favicon-16x16.png">
-    <link rel="icon" type="image/ico" href="<%= process.env.VUE_URL_API %>/public/logos/favicon.ico">
-	<link rel="manifest" href="<%= process.env.VUE_URL_API %>/manifest.json">
-    <script>
-      // Fetch and set the title dynamically
-      fetch('<%= process.env.VUE_URL_API %>/title')
-        .then(response => response.json())
-        .then(data => {
-          document.title = data.title || 'Whazing';
-        })
-        .catch(error => {
-          console.error('Error fetching title:', error);
-          document.title = 'Whazing'; // Default title in case of error
-        });
-    </script>
+
+    <link rel="icon" type="image/png" sizes="128x128" href="icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="icons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+    <link rel="icon" type="image/ico" href="favicon.ico">
   </head>
   <body>
     <!-- DO NOT touch the following DIV -->

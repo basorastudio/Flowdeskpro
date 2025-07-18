@@ -6,7 +6,6 @@
 const Notifications = {
   state: {
     notifications: [],
-    notificacoesChat: [],
     notifications_p: []
   },
   mutations: {

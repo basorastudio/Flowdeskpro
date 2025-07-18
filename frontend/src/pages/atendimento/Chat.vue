@@ -1,88 +1,121 @@
 <template>
-  <div class="bg-white no-scroll hide-scrollbar overflow-hidden" :style="style">
-    <InforCabecalhoChat @updateTicket:resolver="atualizarStatusTicket('closed')"
+  <div
+    class="bg-white no-scroll hide-scrollbar overflow-hidden"
+    :style="style"
+  >
+    <InforCabecalhoChat
+      @updateTicket:resolver="atualizarStatusTicket('closed')"
       @updateTicket:retornar="atualizarStatusTicket('pending')"
       @updateTicket:reabrir="atualizarStatusTicket('open')"
-      @abrir:modalAgendamentoMensagem="onClickOpenAgendamentoMensagem()"
+      @abrir:modalAgendamentoMensagem="modalAgendamentoMensagem = true"
     />
 
-    <q-scroll-area ref="scrollContainer" class="scroll-y q-pb-lg" :style="cStyleScroll" @scroll="scrollArea" >
-      <transition appear enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-        <infinite-loading v-if="cMessages.length" @infinite="onLoadMore" direction="top" :identificador="ticketFocado.id" spinner="spiral">
+    <q-scroll-area
+      ref="scrollContainer"
+      class="scroll-y "
+      :style="cStyleScroll"
+      @scroll="scrollArea"
+    >
+      <transition
+        appear
+        enter-active-class="animated fadeIn"
+        leave-active-class="animated fadeOut"
+      >
+        <infinite-loading
+          v-if="cMessages.length"
+          @infinite="onLoadMore"
+          direction="top"
+          :identificador="ticketFocado.id"
+          spinner="spiral"
+        >
           <div slot="no-results">
-            <div v-if="!cMessages.length">Sin resultados :(</div>
+            <div v-if="!cMessages.length">
+              Sem resultados :(
+            </div>
           </div>
-          <div slot="no-more">Nada más que cargar :)</div>
+          <div slot="no-more">
+            Nada mais a carregar :)
+          </div>
         </infinite-loading>
       </transition>
-
-<MensagemChat
-  :replyingMessage.sync="replyingMessage"
-  :mensagens="cMessages"
-  v-if="cMessages.length && ticketFocado.id && !(ticketFocado.status === 'pending' && userProfile !== 'admin' && !spyticket)"
-  @mensagem-chat:encaminhar-mensagem="abrirModalEncaminharMensagem"
-  :ativarMultiEncaminhamento.sync="ativarMultiEncaminhamento"
-  :mensagensParaEncaminhar.sync="mensagensParaEncaminhar" />
-
+      <MensagemChat
+        :replyingMessage.sync="replyingMessage"
+        :mensagens="cMessages"
+        v-if="cMessages.length && ticketFocado.id"
+        @mensagem-chat:encaminhar-mensagem="abrirModalEncaminharMensagem"
+        :ativarMultiEncaminhamento.sync="ativarMultiEncaminhamento"
+        :mensagensParaEncaminhar.sync="mensagensParaEncaminhar"
+      />
       <div id="inicioListaMensagensChat"></div>
     </q-scroll-area>
     <div
       class="absolute-center items-center"
       :class="{
-        'row col text-center q-col-gutter-lg': !$q.screen.xs,
-        'full-width text-center': $q.screen.xs,
-      }"
+          'row col text-center q-col-gutter-lg': !$q.screen.xs,
+          'full-width text-center': $q.screen.xs
+        }"
       v-if="!ticketFocado.id"
     >
-    <div
-  style="margin-left: 30vw; display: flex; justify-content: center; align-items: center;">
-  <img :src="generateMediaUrl()" style="width: 400px; height: 160px;">
-</div>
-<h1 class="text-green row col justify-center"
-  :class="{
-      'full-width': $q.screen.xs
-    }">
-</h1>
+      <q-icon
+        style="margin-left: 30vw"
+        size="6em"
+        color="grey-6"
+        name="mdi-emoticon-wink-outline"
+        class="row col text-center"
+        :class="{
+            'row col text-center q-mr-lg': !$q.screen.xs,
+            'full-width text-center center-block': $q.screen.xs
+          }"
+      >
+      </q-icon>
+      <h1
+        class="text-grey-6 row col justify-center"
+        :class="{
+            'full-width': $q.screen.xs
+          }"
+      >
+        Selecione um ticket!
+      </h1>
     </div>
-    <div v-if="cMessages.length"
-      class="relative-position">
-      <transition appear
+    <div
+      v-if="cMessages.length"
+      class="relative-position"
+    >
+      <transition
+        appear
         enter-active-class="animated fadeIn"
-        leave-active-class="animated fadeOut">
+        leave-active-class="animated fadeOut"
+      >
         <div v-if="scrollIcon">
-          <q-btn class="vac-icon-scroll" color="white" text-color="green" icon="mdi-arrow-down" round push ripple dense @click="scrollToBottom" />
+          <q-btn
+            class="vac-icon-scroll"
+            color="white"
+            text-color="black"
+            icon="mdi-arrow-down"
+            round
+            push
+            ripple
+            dense
+            @click="scrollToBottom"
+          />
         </div>
       </transition>
-      <div v-if="ticketFocado.status === 'pending'"
-  class="bg-transparent fast-messages-list flex flex-center"
->
-        <q-btn @click="iniciarAtendimento(ticketFocado)"
-            flat
-            icon="mdi-send-circle"
-            label="Iniciar la atención"
-            class="generate-button btn-rounded-50"
-            :class="{'generate-button-dark' : $q.dark.isActive}">
-
-          <q-tooltip content-class="text-bold">
-            Iniciar la atención
-          </q-tooltip>
-        </q-btn>
-
-</div>
-
     </div>
 
     <q-footer class="bg-white">
       <q-separator class="bg-grey-4" />
-      <q-list v-if="replyingMessage"
+      <q-list
+        v-if="replyingMessage"
         :style="`border-top: 1px solid #; max-height: 140px; width: 100%;`"
         style=" max-height: 100px;"
         class="q-pa-none q-py-md text-black row items-center col justify-center full-width"
         :class="{
             'bg-grey-1': !$q.dark.isActive,
             'bg-grey-10': $q.dark.isActive
-          }">
-        <q-item class="q-card--bordered q-pb-sm btn-rounded"
+          }"
+      >
+        <q-item
+          class="q-card--bordered q-pb-sm btn-rounded"
           :style="`
             width: 460px;
             min-width: 460px;
@@ -93,32 +126,43 @@
               'bg-blue-1': !replyingMessage.fromMe && !$q.dark.isActive,
               'bg-blue-2 text-black': !replyingMessage.fromMe && $q.dark.isActive,
               'bg-grey-2 text-black': replyingMessage.fromMe
-            }">
+            }"
+        >
           <q-item-section>
-            <q-item-label v-if="!replyingMessage.fromMe"
+            <q-item-label
+              v-if="!replyingMessage.fromMe"
               :class="{ 'text-black': $q.dark.isActive }"
-              caption>
+              caption
+            >
               {{ replyingMessage.contact && replyingMessage.contact.name }}
             </q-item-label>
-            <q-item-label lines="4"
-              v-html="formatarMensagemWhatsapp(replyingMessage.body)">
+            <q-item-label
+              lines="4"
+              v-html="farmatarMensagemWhatsapp(replyingMessage.body)"
+            >
             </q-item-label>
           </q-item-section>
-          <q-btn @click="replyingMessage = null"
+          <q-btn
+            @click="replyingMessage = null"
             dense
             flat
             round
             icon="close"
             class="float-right absolute-top-right z-max"
-            :disabled="loading || ticketFocado.status !== 'open'" />
+            :disabled="loading || ticketFocado.status !== 'open'"
+          />
         </q-item>
       </q-list>
 
-      <q-banner class="text-grey-8"
-        v-if="mensagensParaEncaminhar.length > 0">
-        <span class="text-bold text-h5"> {{ mensagensParaEncaminhar.length }} de 10 mensajes</span> seleccionados para ser enviados.
+      <q-banner
+        class="text-grey-8"
+        v-if="mensagensParaEncaminhar.length > 0"
+      >
+        <span class="text-bold text-h5"> {{ mensagensParaEncaminhar.length }} de 10 mensagens</span> selecionadas para
+        serem encaminhadas.
         <q-separator class="bg-grey-4" />
-        <q-select dense
+        <q-select
+          dense
           class="q-my-md"
           ref="selectAutoCompleteContato"
           autofocus
@@ -136,12 +180,15 @@
           clearable
           option-label="name"
           option-value="id"
-          label="Localizar y seleccionar el contacto"
-          hint="Ingrese al menos dos letras para localizar el contacto. ¡Solo puede seleccionar 1 contacto!">
+          label="Localize e selecione o contato"
+          hint="Digite no mínimo duas letras para localizar o contato. É possível selecionar apenas 1 contato!"
+        >
           <template v-slot:option="scope">
-            <q-item v-bind="scope.itemProps"
+            <q-item
+              v-bind="scope.itemProps"
               v-on="scope.itemEvents"
-              v-if="scope.opt.name">
+              v-if="scope.opt.name"
+            >
               <q-item-section>
                 <q-item-label> {{ scope.opt.name }}</q-item-label>
                 <q-item-label caption>{{ scope.opt.number }}</q-item-label>
@@ -150,35 +197,89 @@
           </template>
         </q-select>
         <template v-slot:action>
-          <q-btn class="bg-padrao q-px-sm" flat color="negative" label="Cancelar" @click="cancelarMultiEncaminhamento" />
-          <q-btn class="bg-padrao q-px-sm" flat color="positive" label="Enviar" icon="mdi-send" @click="confirmarEncaminhamentoMensagem(mensagensParaEncaminhar)" />
+          <q-btn
+            class="bg-padrao q-px-sm"
+            flat
+            color="negative"
+            label="Cancelar"
+            @click="cancelarMultiEncaminhamento"
+          />
+          <q-btn
+            class="bg-padrao q-px-sm"
+            flat
+            color="positive"
+            label="Enviar"
+            icon="mdi-send"
+            @click="confirmarEncaminhamentoMensagem(mensagensParaEncaminhar)"
+          />
         </template>
       </q-banner>
 
-      <InputMensagem v-if="!mensagensParaEncaminhar.length"
+      <InputMensagem
+        v-if="!mensagensParaEncaminhar.length"
         :mensagensRapidas="mensagensRapidas"
-        :replyingMessage.sync="replyingMessage" />
+        :replyingMessage.sync="replyingMessage"
+      />
       <q-resize-observer @resize="onResizeInputMensagem" />
     </q-footer>
 
-    <q-dialog v-model="modalEncaminhamentoMensagem"
+    <q-dialog
+      v-model="modalAgendamentoMensagem"
       persistent
-      @hide="mensagemEncaminhamento = {}">
+    >
       <q-card :style="$q.screen.width < 770 ? `min-width: 98vw; max-width: 98vw` : 'min-width: 50vw; max-width: 50vw'">
         <q-card-section>
           <div class="text-h6">
-            Reenviando Mensaje
-            <q-btn flat class="bg-padrao btn-rounded float-right" color="negative" icon="close" v-close-popup />
+            Agendamento de Mensagem
+            <q-btn
+              flat
+              class="bg-padrao btn-rounded float-right"
+              color="negative"
+              icon="close"
+              v-close-popup
+            />
+          </div>
+        </q-card-section>
+        <q-card-section class="q-mb-lg">
+          <InputMensagem
+            isScheduleDate
+            :mensagensRapidas="mensagensRapidas"
+            :replyingMessage.sync="replyingMessage"
+          />
+        </q-card-section>
+
+      </q-card>
+
+    </q-dialog>
+    <q-dialog
+      v-model="modalEncaminhamentoMensagem"
+      persistent
+      @hide="mensagemEncaminhamento = {}"
+    >
+      <q-card :style="$q.screen.width < 770 ? `min-width: 98vw; max-width: 98vw` : 'min-width: 50vw; max-width: 50vw'">
+        <q-card-section>
+          <div class="text-h6">
+            Encaminhando Mensagem
+            <q-btn
+              flat
+              class="bg-padrao btn-rounded float-right"
+              color="negative"
+              icon="close"
+              v-close-popup
+            />
           </div>
         </q-card-section>
         <q-separator inset />
         <q-card-section>
-          <MensagemChat :isShowOptions="false"
+          <MensagemChat
+            :isShowOptions="false"
             :replyingMessage.sync="replyingMessage"
-            :mensagens="[mensagemEncaminhamento]" />
+            :mensagens="[mensagemEncaminhamento]"
+          />
         </q-card-section>
         <q-card-section>
-          <q-select class="q-px-lg"
+          <q-select
+            class="q-px-lg"
             ref="selectAutoCompleteContato"
             autofocus
             outlined
@@ -195,12 +296,15 @@
             clearable
             option-label="name"
             option-value="id"
-            label="Localizar y seleccionar el contacto"
-            hint="Ingrese al menos dos letras para localizar el contacto. ¡Solo puede seleccionar 1 contacto!">
+            label="Localize e selecione o contato"
+            hint="Digite no mínimo duas letras para localizar o contato. É possível selecionar apenas 1 contato!"
+          >
             <template v-slot:option="scope">
-              <q-item v-bind="scope.itemProps"
+              <q-item
+                v-bind="scope.itemProps"
                 v-on="scope.itemEvents"
-                v-if="scope.opt.name">
+                v-if="scope.opt.name"
+              >
                 <q-item-section>
                   <q-item-label> {{ scope.opt.name }}</q-item-label>
                   <q-item-label caption>{{ scope.opt.number }}</q-item-label>
@@ -209,8 +313,18 @@
             </template>
           </q-select>
         </q-card-section>
-        <q-card-actions align="right" class="q-pa-md">
-          <q-btn class="bg-padrao q-px-sm" flat color="positive" label="Enviar" icon="mdi-send" @click="confirmarEncaminhamentoMensagem([mensagemEncaminhamento])" />
+        <q-card-actions
+          align="right"
+          class="q-pa-md"
+        >
+          <q-btn
+            class="bg-padrao q-px-sm"
+            flat
+            color="positive"
+            label="Enviar"
+            icon="mdi-send"
+            @click="confirmarEncaminhamentoMensagem([mensagemEncaminhamento])"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -245,7 +359,6 @@ export default {
   },
   data () {
     return {
-      userProfile: 'user',
       scrollIcon: false,
       loading: false,
       exibirContato: false,
@@ -279,7 +392,9 @@ export default {
     style () {
       return {
         backgroundImage: this.$q.dark.isActive ? `url(${whatsBackgroundDark}) !important` : `url(${whatsBackground}) !important`,
+        // backgroundRepeat: 'no-repeat !important',
         backgroundPosition: 'center !important'
+        // backgroundSize: '50% !important',
       }
     },
     cStyleScroll () {
@@ -289,17 +404,6 @@ export default {
     }
   },
   methods: {
-    generateMediaUrl() {
-      return `${process.env.VUE_URL_API}/public/logos/atendimento.png`
-    },
-    onClickOpenAgendamentoMensagem() {
-      this.$q.dialog({
-        component: () => import('./AgendamentoMensagem.vue'),
-        parent: this,
-        mensagensRapidas: this.mensagensRapidas,
-        replyingMessage: this.replyingMessage
-      })
-    },
     async onResizeInputMensagem (size) {
       this.heigthInputMensagem = size.height
     },
@@ -363,17 +467,17 @@ export default {
     },
     confirmarEncaminhamentoMensagem (data) {
       if (!this.contatoSelecionado.id) {
-        this.$notificarErro('Seleccione el contacto de destino de los mensajes.')
+        this.$notificarErro('Selecione o contato de destino das mensagens.')
         return
       }
       EncaminharMensagem(data, this.contatoSelecionado)
         .then(r => {
-          this.$notificarSucesso(`Mensaje reenviado a ${this.contatoSelecionado.name} | Número: ${this.contatoSelecionado.number}`)
+          this.$notificarSucesso(`Mensagem encaminhada para ${this.contatoSelecionado.name} | Número: ${this.contatoSelecionado.number}`)
           this.mensagensParaEncaminhar = []
           this.ativarMultiEncaminhamento = false
         })
         .catch(e => {
-          this.$notificarErro('No fue posible enviar un mensaje. ¡Inténtalo de nuevo en unos minutos!', e)
+          this.$notificarErro('Não foi possível encaminhar mensagem. Tente novamente em alguns minutos!', e)
         })
     }
   },
@@ -383,7 +487,6 @@ export default {
   },
   mounted () {
     this.socketMessagesList()
-    this.userProfile = localStorage.getItem('profile')
   },
   destroyed () {
     this.$root.$off('scrollToBottomMessageChat', this.scrollToBottom)
@@ -423,7 +526,7 @@ audio {
     content: "";
     // use the linear-gradient for the fading effect
     // use a solid background color for a solid bar
-    //background: linear-gradient(to right, transparent, #818078, transparent);
+    background: linear-gradient(to right, transparent, #818078, transparent);
     position: absolute;
     left: 0;
     top: 50%;
@@ -435,13 +538,13 @@ audio {
     content: attr(data-content);
     position: relative;
     display: inline-block;
-    color: grey;
+    color: black;
     font-size: 16px;
     font-weight: 600;
     padding: 0 0.5em;
     line-height: 1.5em;
-    background-color: white;
-    border-radius: 5px;
+    background-color: $grey;
+    border-radius: 15px;
   }
 }
 
@@ -487,7 +590,8 @@ audio {
   position: absolute;
   bottom: 20px;
   right: 20px;
-  box-shadow: 0 1px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 2px 0 rgba(0, 0, 0, 0.12);
+  box-shadow: 0 1px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14),
+    0 1px 2px 0 rgba(0, 0, 0, 0.12);
   display: flex;
   cursor: pointer;
   z-index: 99;

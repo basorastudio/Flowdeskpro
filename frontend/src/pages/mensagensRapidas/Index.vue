@@ -5,7 +5,8 @@
       bordered
       square
       hide-bottom
-      class="contact-table container-rounded-10 my-sticky-dynamic q-ma-lg"
+      class="my-sticky-dynamic q-ma-lg"
+      title="Mensagens Rápidas"
       :data="mensagensRapidas"
       :columns="columns"
       :loading="loading"
@@ -13,20 +14,13 @@
       :pagination.sync="pagination"
       :rows-per-page-options="[0]"
     >
-      <template v-slot:top-left>
-        <div>
-          <h2  :class="$q.dark.isActive ? ('text-green') : ''">
-            <q-icon name="mdi-reply-all-outline" />
-            Mensajes rápidos
-          </h2>
-          <q-btn
-          class="generate-button btn-rounded-50"
-          icon="eva-plus-outline"
+      <template v-slot:top-right>
+        <q-btn
+          color="primary"
           label="Adicionar"
+          rounded
           @click="mensagemRapidaEmEdicao = {}; modalMensagemRapida = true"
         />
-        </div>
-
       </template>
       <template v-slot:body-cell-isActive="props">
         <q-td class="text-center">
@@ -37,32 +31,18 @@
           />
         </q-td>
       </template>
-      <template v-slot:body-cell-media="props">
-        <q-td :props="props">
-          <span v-if="props.row.media">
-            <a :href="generateMediaUrl(props.row.media)" target="_blank" style="text-decoration: underline; cursor: pointer;">
-              Abrir Archivo
-            </a>
-          </span>
-          <span v-else>
-            Sin Archivo
-          </span>
-        </q-td>
-      </template>
       <template v-slot:body-cell-acoes="props">
         <q-td class="text-center">
           <q-btn
             flat
             round
-             :class="$q.dark.isActive ? ('text-green') : ''"
-            icon="eva-edit-outline"
+            icon="edit"
             @click="editarMensagem(props.row)"
           />
           <q-btn
             flat
             round
-             :class="$q.dark.isActive ? ('text-green') : ''"
-            icon="eva-trash-outline"
+            icon="mdi-delete"
             @click="deletarMensagem(props.row)"
           />
         </q-td>
@@ -91,10 +71,10 @@ export default {
       mensagemRapidaEmEdicao: {},
       columns: [
         { name: 'id', label: '#', field: 'id', align: 'left' },
-        { name: 'key', label: 'Clave', field: 'key', align: 'left' },
-        { name: 'message', label: 'Mensaje', field: 'message', align: 'left' },
-        { name: 'media', label: 'Archivo', field: 'media', align: 'left' },
-        { name: 'acoes', label: 'Acciones', field: 'acoes', align: 'center' }
+        { name: 'key', label: 'Chave', field: 'key', align: 'left' },
+        { name: 'message', label: 'Mensagem', field: 'message', align: 'left', classes: 'ellipsis', style: 'max-width: 400px;' },
+        { name: 'acoes', label: 'Ações', field: 'acoes', align: 'center' }
+
       ],
       pagination: {
         rowsPerPage: 40,
@@ -104,9 +84,6 @@ export default {
     }
   },
   methods: {
-    generateMediaUrl(mediaFileName) {
-      return `${process.env.VUE_URL_API}/public/${mediaFileName}`
-    },
     async listarMensagensRapidas () {
       const { data } = await ListarMensagensRapidas()
       this.mensagensRapidas = data
@@ -121,8 +98,6 @@ export default {
         newMensagens[idx] = mensagem
       }
       this.mensagensRapidas = [...newMensagens]
-      // console.log(this.mensagensRapidas)
-      // console.log('mensagemEditada')
     },
     editarMensagem (mensagem) {
       this.mensagemRapidaEmEdicao = { ...mensagem }
@@ -130,15 +105,15 @@ export default {
     },
     deletarMensagem (mensagem) {
       this.$q.dialog({
-        title: '¡¡Atención!!',
-        message: `¿Desea realmente eliminar el mensaje con clave "${mensagem.key}"?`,
+        title: 'Atenção!!',
+        message: `Deseja realmente deletar a mensagem de chave "${mensagem.key}"?`,
         cancel: {
-          label: 'No',
+          label: 'Não',
           color: 'primary',
           push: true
         },
         ok: {
-          label: 'Si',
+          label: 'Sim',
           color: 'negative',
           push: true
         },
@@ -155,7 +130,7 @@ export default {
               type: 'positive',
               progress: true,
               position: 'top',
-              message: '¡Mensaje eliminado!',
+              message: 'Mensagem deletada!',
               actions: [{
                 icon: 'close',
                 round: true,

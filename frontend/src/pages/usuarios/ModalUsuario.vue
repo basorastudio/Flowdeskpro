@@ -5,58 +5,40 @@
     @hide="fecharModal"
     @show="abrirModal"
   >
-    <q-card class="container-rounded-10 modal-container q-pa-lg">
-
-      <q-card-actions align="right">
-        <q-btn
-          flat
-          color="negative"
-          icon="eva-close-outline"
-          v-close-popup
-        />
-      </q-card-actions>
-
+    <q-card style="width: 600px">
       <q-card-section>
-        <div class="text-h6 text-center font-family-main">{{usuario.name ? "Editar" : "Registrar"}} Usuario</div>
+        <div class="text-h6">Cadastrar Usuário</div>
       </q-card-section>
-      <div class="container-border container-rounded-10">
-
-      <q-card-section class="row flex-gap-1 q-col-gutter-sm">
-        <div class="text-h6 font-family-main">
-          Información
-        </div>
-        <div class="flex-gap-1 full-width row q-col-gutter-sm">
-          <div class="full-width">
+      <q-card-section class="q-col-gutter-sm">
+        <div class="row q-col-gutter-sm">
+          <div class="col-12">
             <c-input
               outlined
               v-model.trim="usuario.name"
               :validator="$v.usuario.name"
               @blur="$v.usuario.name.$touch"
-              label="Nombre"
-              rounded
+              label="Nome"
             />
           </div>
-          <div class="full-width">
+          <div class="col-12">
             <c-input
               outlined
               :validator="$v.usuario.email"
               @blur="$v.usuario.email.$touch"
               v-model.trim="usuario.email"
-              label="Correo electrónico"
-              rounded
+              label="E-mail"
             />
           </div>
         </div>
-        <div class="flex-gap-1 full-width row q-col-gutter-sm">
-          <div class="full-width">
+        <div class="row q-col-gutter-sm">
+          <div class="col-12">
             <c-input
-              rounded
               outlined
               v-model="usuario.password"
               :validator="$v.usuario.password"
               @blur="$v.usuario.password.$touch"
               :type="isPwd ? 'password' : 'text'"
-              label="Contraseña"
+              label="Senha"
             >
               <template v-slot:append>
                 <q-icon
@@ -67,11 +49,12 @@
               </template>
             </c-input>
           </div>
-          <div class="full-width">
+          <div class="col-12">
             <q-select
-              rounded
               :disable="isProfile"
               outlined
+              rounded
+              dense
               v-model="usuario.profile"
               :options="optionsProfile"
               option-value="value"
@@ -83,19 +66,19 @@
           </div>
         </div>
       </q-card-section>
-      </div>
-
       <q-card-actions align="right">
         <q-btn
-          label="Cancelar"
-          class="q-px-md q-mr-sm btn-rounded-50"
+          rounded
+          label="Sair"
+          class="q-px-md q-mr-sm"
           color="negative"
           v-close-popup
         />
         <q-btn
+          rounded
           label="Salvar"
-          class="q-px-md btn-rounded-50 generate-button"
-          icon="eva-save-outline"
+          class="q-px-md"
+          color="primary"
           @click="handleUsuario"
         />
       </q-card-actions>
@@ -128,7 +111,7 @@ export default {
     return {
       isPwd: false,
       optionsProfile: [
-        { value: 'user', label: 'Usuario' },
+        { value: 'user', label: 'Usuário' },
         { value: 'admin', label: 'Administrador' }
       ],
       usuario: {
@@ -189,7 +172,7 @@ export default {
           type: 'warning',
           progress: true,
           position: 'top',
-          message: '¡Ups! Verifique los errores ...',
+          message: 'Ops! Verifique os erros...',
           actions: [{
             icon: 'close',
             round: true,
@@ -201,10 +184,10 @@ export default {
       try {
         if (this.usuario.id) {
           const {
-            email, id, name, tenantId, password, profile
+            email, id, name, tenantId, password
           } = this.usuario
 
-          const params = { email, id, name, tenantId, password, profile }
+          const params = { email, id, name, tenantId, password }
 
           if (this.$store.state.user.isAdmin) {
             params.profile = this.usuario.profile
@@ -217,7 +200,7 @@ export default {
             progress: true,
             position: 'top',
             textColor: 'black',
-            message: '¡Usuario editado!',
+            message: 'Usuário editado!',
             actions: [{
               icon: 'close',
               round: true,
@@ -231,7 +214,7 @@ export default {
             type: 'positive',
             progress: true,
             position: 'top',
-            message: '¡Usuario creado!',
+            message: 'Usuário criado!',
             actions: [{
               icon: 'close',
               round: true,
@@ -245,7 +228,7 @@ export default {
         if (error.data.error === 'ERR_USER_LIMIT_USER_CREATION') {
           Notify.create({
             type: 'negative',
-            message: 'Límite de usuario alcanzado.',
+            message: 'Limite de usuario atingido.',
             caption: 'ERR_USER_LIMIT_USER_CREATION',
             position: 'top',
             progress: true
