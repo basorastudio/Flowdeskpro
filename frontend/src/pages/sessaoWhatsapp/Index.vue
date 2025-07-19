@@ -94,6 +94,15 @@
                 icon-right="watch_later"
                 :disable="!isAdmin"
               />
+              <q-btn
+                rounded
+                v-if="item.type == 'baileys' && item.status == 'qrcode'"
+                color="green-6"
+                label="QR Baileys"
+                @click="handleRequestNewQrCodeBaileys(item)"
+                icon-right="qr_code"
+                :disable="!isAdmin"
+              />
 
               <div
                 v-if="item.status == 'DISCONNECTED'"
@@ -112,6 +121,15 @@
                   label="Novo QR Code"
                   @click="handleRequestNewQrCode(item, 'btn-qrCode')"
                   icon-right="watch_later"
+                  :disable="!isAdmin"
+                />
+                <q-btn
+                  rounded
+                  v-if="item.status == 'DISCONNECTED' && item.type == 'baileys'"
+                  color="green-6"
+                  label="Novo QR Baileys"
+                  @click="handleRequestNewQrCodeBaileys(item)"
+                  icon-right="qr_code"
                   :disable="!isAdmin"
                 />
               </div>
@@ -165,6 +183,12 @@
       :channel="cDadosWhatsappSelecionado"
       @gerar-novo-qrcode="v => handleRequestNewQrCode(v, 'btn-qrCode')"
     />
+    <ModalQrCodeBaileys
+      :modalQrCode.sync="modalQrCodeBaileys"
+      :whatsappId="whatsappIdBaileys"
+      @fecharModal="modalQrCodeBaileys = false"
+      @connected="handleBaileysConnected"
+    />
     <ModalWhatsapp
       :modalWhatsapp.sync="modalWhatsapp"
       :whatsAppEdit.sync="whatsappSelecionado"
@@ -185,6 +209,7 @@ import { DeletarWhatsapp, DeleteWhatsappSession, StartWhatsappSession, ListarWha
 import { format, parseISO } from 'date-fns'
 import es from 'date-fns/locale/es/index'
 import ModalQrCode from './ModalQrCode'
+import ModalQrCodeBaileys from './ModalQrCodeBaileys'
 import { mapGetters } from 'vuex'
 import ModalWhatsapp from './ModalWhatsapp'
 import ItemStatusChannel from './ItemStatusChannel'
@@ -196,6 +221,7 @@ export default {
   name: 'IndexSessoesWhatsapp',
   components: {
     ModalQrCode,
+    ModalQrCodeBaileys,
     ModalWhatsapp,
     ItemStatusChannel
   },
@@ -207,6 +233,8 @@ export default {
       isAdmin: false,
       abrirModalQR: false,
       modalWhatsapp: false,
+      modalQrCodeBaileys: false,
+      whatsappIdBaileys: null,
       whatsappSelecionado: {},
       listaChatFlow: [],
       whatsAppId: null,
@@ -397,6 +425,35 @@ export default {
           }]
         })
       }
+    },
+
+    async handleRequestNewQrCodeBaileys (channel) {
+      this.whatsappIdBaileys = channel.id
+      this.modalQrCodeBaileys = true
+
+      try {
+        this.loading = true
+        await RequestNewQrCode({ id: channel.id, isQrcode: true })
+      } catch (error) {
+        console.error('Error requesting Baileys QR:', error)
+        this.$q.notify({
+          type: 'negative',
+          message: 'Error al solicitar código QR para Baileys',
+          position: 'top'
+        })
+      } finally {
+        this.loading = false
+      }
+    },
+
+    handleBaileysConnected () {
+      this.modalQrCodeBaileys = false
+      this.listarWhatsapps()
+      this.$q.notify({
+        type: 'positive',
+        message: '¡Baileys Plus conectado exitosamente!',
+        position: 'top'
+      })
     }
   },
   mounted () {

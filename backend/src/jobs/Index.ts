@@ -5,3 +5,5 @@ export { default as SendMessages } from "./SendMessages";
 export { default as WebHooksAPI } from "./WebHooksAPI";
 export { default as VerifyTicketsChatBotInactives } from "./VerifyTicketsChatBotInactives";
 export { default as SendMessageSchenduled } from "./SendMessageSchenduled";
+export { default as HandleMessageBaileys } from "./HandleMessageBaileys";
+export { default as HandleMsgAckBaileys } from "./HandleMsgAckBaileys";

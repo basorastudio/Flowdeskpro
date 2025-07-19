@@ -102,7 +102,7 @@ class Whatsapp extends Model<Whatsapp> {
   fbObject: object;
 
   @Default("whatsapp")
-  @Column(DataType.ENUM("whatsapp", "telegram", "instagram", "messenger"))
+  @Column(DataType.ENUM("whatsapp", "telegram", "instagram", "messenger", "baileys"))
   type: string;
 
   @CreatedAt

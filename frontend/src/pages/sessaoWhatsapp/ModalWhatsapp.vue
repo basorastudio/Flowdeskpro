@@ -135,6 +135,66 @@
 
             </div>
           </div>
+
+          <!-- Sección para Baileys Plus -->
+          <div
+            class="q-mt-md row full-width justify-center"
+            v-if="whatsapp.type === 'baileys'"
+          >
+            <div class="col">
+              <fieldset class="full-width q-pa-md rounded-all">
+                <legend>Configuración Baileys Plus</legend>
+                <div class="q-mb-md">
+                  <q-banner
+                    inline-actions
+                    icon="info"
+                    class="text-white bg-green"
+                  >
+                    Baileys Plus es una conexión directa con WhatsApp Web usando la última tecnología.
+                    Más estable y rápida que WhatsApp Web tradicional.
+                    <template v-slot:action>
+                      <q-btn
+                        flat
+                        label="Docs"
+                        @click="openBaileysDocs"
+                      />
+                    </template>
+                  </q-banner>
+                </div>
+                <div class="q-mb-md">
+                  <q-list bordered separator>
+                    <q-item>
+                      <q-item-section avatar>
+                        <q-icon name="check_circle" color="green" />
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label>Conexión más estable</q-item-label>
+                        <q-item-label caption>Menor probabilidad de desconexiones</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                    <q-item>
+                      <q-item-section avatar>
+                        <q-icon name="speed" color="green" />
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label>Mayor velocidad</q-item-label>
+                        <q-item-label caption>Envío y recepción de mensajes más rápido</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                    <q-item>
+                      <q-item-section avatar>
+                        <q-icon name="security" color="green" />
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label>Tecnología avanzada</q-item-label>
+                        <q-item-label caption>Basado en @whiskeysockets/baileys</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </div>
+              </fieldset>
+            </div>
+          </div>
         </div>
 
         <div class="row q-my-md">
@@ -278,6 +338,7 @@ export default {
       },
       optionsWhatsappsTypes: [
         { label: 'Whatsapp', value: 'whatsapp' },
+        { label: 'Baileys Plus', value: 'baileys' },
         { label: 'Telegram', value: 'telegram' }
         // { label: 'Instagram', value: 'instagram' }
       ],
@@ -421,6 +482,10 @@ export default {
           })
         }
       }
+    },
+
+    openBaileysDocs () {
+      window.open('/api/baileys/docs', '_blank')
     }
   },
   destroyed () {

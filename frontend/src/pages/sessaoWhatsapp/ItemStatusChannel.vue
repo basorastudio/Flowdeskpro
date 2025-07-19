@@ -35,6 +35,8 @@
             v-if="item.type === 'whatsapp'"> Certifique-se de que seu celular esteja conectado à internet e tente
             novamente, ou solicite um novo QR Code </span>
           <span class="row col"
+            v-if="item.type === 'baileys'"> Verifique su conexión a internet e intente nuevamente, o solicite un nuevo QR Code para conectar con Baileys Plus </span>
+          <span class="row col"
             v-if="item.type === 'telegram'"> Tente conectar novamente. Caso o erro permaneça, confirme se o token está
             correto.</span>
           <span class="row col"
