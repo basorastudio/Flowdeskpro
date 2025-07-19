@@ -6,6 +6,7 @@ import { StartMessengerBot } from "../MessengerChannelServices/StartMessengerBot
 import { StartTbotSession } from "../TbotServices/StartTbotSession";
 import { StartWaba360 } from "../WABA360/StartWaba360";
 import { StartWhatsAppSession } from "./StartWhatsAppSession";
+import { StartBaileysSession } from "../BaileysServices/StartBaileysSession";
 // import { StartTbotSession } from "../TbotServices/StartTbotSession";
 
 export const StartAllWhatsAppsSessions = async (): Promise<void> => {
@@ -15,7 +16,7 @@ export const StartAllWhatsAppsSessions = async (): Promise<void> => {
         {
           [Op.and]: {
             type: {
-              [Op.in]: ["instagram", "telegram", "waba", "messenger"]
+              [Op.in]: ["instagram", "telegram", "waba", "messenger", "baileys"]
             },
             status: {
               [Op.notIn]: ["DISCONNECTED"]
@@ -36,6 +37,7 @@ export const StartAllWhatsAppsSessions = async (): Promise<void> => {
     }
   });
   const whatsappSessions = whatsapps.filter(w => w.type === "whatsapp");
+  const baileysSessions = whatsapps.filter(w => w.type === "baileys");
   const telegramSessions = whatsapps.filter(
     w => w.type === "telegram" && !!w.tokenTelegram
   );
@@ -46,6 +48,12 @@ export const StartAllWhatsAppsSessions = async (): Promise<void> => {
   if (whatsappSessions.length > 0) {
     whatsappSessions.forEach(whatsapp => {
       StartWhatsAppSession(whatsapp);
+    });
+  }
+
+  if (baileysSessions.length > 0) {
+    baileysSessions.forEach(whatsapp => {
+      StartBaileysSession(whatsapp);
     });
   }
 

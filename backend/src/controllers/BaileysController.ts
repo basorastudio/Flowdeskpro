@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { initBaileys, getBaileys, sendMessageBaileys, sendButtonsBaileys, removeBaileys } from "../libs/baileys";
 import ShowWhatsAppService from "../services/WhatsappService/ShowWhatsAppService";
+import { StartBaileysSession } from "../services/BaileysServices/StartBaileysSession";
 import AppError from "../errors/AppError";
 import { logger } from "../utils/logger";
 
@@ -19,13 +20,16 @@ export const baileysConnect = async (req: Request, res: Response): Promise<Respo
       throw new AppError("Esta conexión no es de tipo Baileys", 400);
     }
 
+    // Iniciar la sesión de Baileys
+    await StartBaileysSession(whatsapp);
+
     return res.status(200).json({
       success: true,
-      message: "Iniciando conexión Baileys",
+      message: "Sesión Baileys iniciada exitosamente",
       whatsapp: {
         id: whatsapp.id,
         name: whatsapp.name,
-        status: whatsapp.status,
+        status: "OPENING",
         type: whatsapp.type
       }
     });
@@ -246,10 +250,20 @@ export const baileysDisconnect = async (req: Request, res: Response): Promise<Re
       throw new AppError("Esta conexión no es de tipo Baileys", 400);
     }
 
-    // El logout se maneja en el controlador de sesiones
+    // Desconectar la sesión de Baileys
+    removeBaileys(Number(whatsappId));
+
+    // Actualizar estado en base de datos
+    await whatsapp.update({
+      status: "DISCONNECTED",
+      qrcode: null,
+      retries: 0
+    });
+
     return res.status(200).json({
       success: true,
-      message: "Desconexión de Baileys iniciada"
+      message: "Sesión Baileys desconectada exitosamente",
+      status: "DISCONNECTED"
     });
   } catch (error) {
     logger.error("Error en baileysDisconnect:", error);

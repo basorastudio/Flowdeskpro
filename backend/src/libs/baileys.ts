@@ -114,7 +114,19 @@ export const initBaileys = async (whatsapp: Whatsapp): Promise<any> => {
         generateHighQualityLinkPreview: true,
         syncFullHistory: false,
         markOnlineOnConnect: true,
-        keepAliveIntervalMs: 30000
+        keepAliveIntervalMs: 30000,
+        // Configuraciones adicionales para mejorar la conexión
+        connectTimeoutMs: 60000,
+        defaultQueryTimeoutMs: 60000,
+        emitOwnEvents: true,
+        // Configuración para mejor manejo de mensajes
+        shouldIgnoreJid: (jid: string) => {
+          // Ignorar mensajes de estado
+          return jid === "status@broadcast";
+        },
+        // Configuración de reintento
+        retryRequestDelayMs: 250,
+        maxMsgRetryCount: 3
       });
 
       session.socket = socket;
@@ -177,10 +189,12 @@ export const initBaileys = async (whatsapp: Whatsapp): Promise<any> => {
 
         if (connection === "close") {
           const shouldReconnect = (lastDisconnect?.error as any)?.output?.statusCode !== DisconnectReason.loggedOut;
+          const statusCode = (lastDisconnect?.error as any)?.output?.statusCode;
           
-          logger.info(`Conexión cerrada para WhatsApp ${whatsapp.id}, reconnecting: ${shouldReconnect}`);
+          logger.info(`Conexión cerrada para WhatsApp ${whatsapp.id}, código: ${statusCode}, reconnecting: ${shouldReconnect}`);
 
-          if (!shouldReconnect) {
+          // Actualizar estado según el motivo de desconexión
+          if (statusCode === DisconnectReason.loggedOut) {
             await whatsapp.update({
               status: "DISCONNECTED",
               session: "",
@@ -197,14 +211,49 @@ export const initBaileys = async (whatsapp: Whatsapp): Promise<any> => {
             return;
           }
 
-          // Reconectar después de 3 segundos
-          setTimeout(async () => {
-            try {
-              await initBaileys(whatsapp);
-            } catch (error) {
-              logger.error("Error en reconexión:", error);
-            }
-          }, 3000);
+          if (!shouldReconnect) {
+            await whatsapp.update({
+              status: "DISCONNECTED",
+              qrcode: null,
+              retries: 0
+            });
+
+            io.emit(`${whatsapp.tenantId}:whatsappSession`, {
+              action: "update",
+              session: whatsapp
+            });
+
+            removeBaileys(whatsapp.id);
+            return;
+          }
+
+          // Reconectar después de 3 segundos con límite de reintentos
+          const currentRetries = whatsapp.retries || 0;
+          if (currentRetries < 3) {
+            setTimeout(async () => {
+              try {
+                logger.info(`Reintentando conexión para WhatsApp ${whatsapp.id}, intento ${currentRetries + 1}`);
+                await whatsapp.update({ retries: currentRetries + 1 });
+                await initBaileys(whatsapp);
+              } catch (error) {
+                logger.error("Error en reconexión:", error);
+              }
+            }, 3000);
+          } else {
+            logger.warn(`Máximo de reintentos alcanzado para WhatsApp ${whatsapp.id}`);
+            await whatsapp.update({
+              status: "DISCONNECTED",
+              qrcode: null,
+              retries: 0
+            });
+
+            io.emit(`${whatsapp.tenantId}:whatsappSession`, {
+              action: "update",
+              session: whatsapp
+            });
+
+            removeBaileys(whatsapp.id);
+          }
         }
 
         if (connection === "open") {
@@ -251,13 +300,18 @@ export const initBaileys = async (whatsapp: Whatsapp): Promise<any> => {
 
       // Manejar mensajes entrantes
       socket.ev.on("messages.upsert", async ({ messages, type }) => {
-        if (type === "notify") {
+        if (type === "notify" || type === "append") {
           for (const message of messages) {
-            await Queue.add("HandleMessageBaileys", {
-              whatsappId: whatsapp.id,
-              tenantId: whatsapp.tenantId,
-              message
-            });
+            // Solo procesar mensajes válidos
+            if (message.key && message.key.remoteJid) {
+              logger.info(`Nuevo mensaje recibido de ${message.key.remoteJid}: ${message.key.id}`);
+              
+              await Queue.add("HandleMessageBaileys", {
+                whatsappId: whatsapp.id,
+                tenantId: whatsapp.tenantId,
+                message
+              });
+            }
           }
         }
       });
@@ -265,12 +319,55 @@ export const initBaileys = async (whatsapp: Whatsapp): Promise<any> => {
       // Manejar actualizaciones de estado de mensajes
       socket.ev.on("messages.update", async (updates) => {
         for (const update of updates) {
-          await Queue.add("HandleMsgAckBaileys", {
-            whatsappId: whatsapp.id,
-            tenantId: whatsapp.tenantId,
-            messageUpdate: update
-          });
+          // Solo procesar si hay una actualización de estado
+          if (update.key?.id && (update.update?.status !== undefined || update.update?.reactions)) {
+            logger.info(`Actualizando estado de mensaje ${update.key.id}`);
+            
+            await Queue.add("HandleMsgAckBaileys", {
+              whatsappId: whatsapp.id,
+              tenantId: whatsapp.tenantId,
+              messageUpdate: {
+                key: update.key,
+                status: update.update?.status
+              }
+            });
+          }
         }
+      });
+
+      // Manejar mensajes borrados
+      socket.ev.on("messages.delete", async (deleteData) => {
+        if ('keys' in deleteData) {
+          for (const key of deleteData.keys) {
+            logger.info(`Mensaje eliminado: ${key.id}`);
+            // TODO: Implementar manejo de mensajes eliminados si es necesario
+          }
+        }
+      });
+
+      // Manejar llamadas
+      socket.ev.on("call", async (callEvents) => {
+        for (const call of callEvents) {
+          logger.info(`Llamada recibida de ${call.from}: ${call.id}`);
+          // TODO: Implementar manejo de llamadas si es necesario
+        }
+      });
+
+      // Manejar presencia (online/offline/typing)
+      socket.ev.on("presence.update", async ({ id, presences }) => {
+        logger.debug(`Actualización de presencia para ${id}:`, presences);
+      });
+
+      // Manejar cambios en grupos
+      socket.ev.on("groups.update", async (updates) => {
+        for (const update of updates) {
+          logger.debug(`Actualización de grupo ${update.id}:`, update);
+        }
+      });
+
+      // Manejar participantes de grupo
+      socket.ev.on("group-participants.update", async ({ id, participants, action }) => {
+        logger.debug(`Participantes de grupo ${id} - acción ${action}:`, participants);
       });
 
     } catch (err) {
