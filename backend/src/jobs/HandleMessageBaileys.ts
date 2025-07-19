@@ -58,8 +58,8 @@ const HandleMessageBaileys = async (job: any): Promise<void> => {
         user: contactId.replace("@s.whatsapp.net", "")
       },
       number: contactId.replace("@s.whatsapp.net", ""),
-      pushname: message.pushName || null,
-      name: message.pushName || null,
+      pushname: message.pushName || undefined,
+      name: message.pushName || undefined,
       isGroup: isGroup,
       isUser: !isGroup,
       isWAContact: true

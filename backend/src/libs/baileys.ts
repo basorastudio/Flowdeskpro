@@ -404,6 +404,65 @@ export const sendMessageBaileys = async (
   }
 };
 
+export const getBaileysContacts = async (whatsappId: number): Promise<any[]> => {
+  try {
+    const socket = getBaileys(whatsappId);
+    
+    if (!socket) {
+      throw new Error("Socket de Baileys no encontrado");
+    }
+
+    let contacts: any[] = [];
+
+    // Método 1: Obtener desde chats
+    try {
+      const chats = await socket.getOrderedChats({});
+      if (chats && chats.length > 0) {
+        contacts = chats
+          .filter(chat => {
+            return !chat.id.endsWith('@g.us') && 
+                   !chat.id.includes('status') &&
+                   !chat.id.includes('broadcast');
+          })
+          .map(chat => ({
+            id: chat.id,
+            name: chat.name || chat.pushName,
+            number: chat.id.split('@')[0],
+            lastMessageTime: chat.lastMessageTime
+          }));
+        
+        logger.info(`getBaileysContacts: Obtenidos ${contacts.length} contactos desde chats`);
+        return contacts;
+      }
+    } catch (chatError) {
+      logger.warn(`Error obteniendo chats: ${chatError.message}`);
+    }
+
+    // Método 2: Obtener desde store si existe
+    if (socket.store && socket.store.contacts) {
+      contacts = Object.values(socket.store.contacts).map((contact: any) => ({
+        id: contact.id,
+        name: contact.name || contact.notify,
+        number: contact.id ? contact.id.split('@')[0] : '',
+      }));
+      logger.info(`getBaileysContacts: Obtenidos ${contacts.length} contactos desde store`);
+      return contacts;
+    }
+
+    // Método 3: Obtener información básica del usuario si no hay contactos
+    if (socket.user && socket.user.id) {
+      const userNumber = socket.user.id.split(':')[0];
+      logger.info(`getBaileysContacts: Usuario conectado: ${userNumber}, pero sin contactos disponibles`);
+    }
+
+    return [];
+    
+  } catch (error) {
+    logger.error(`Error en getBaileysContacts: ${error}`);
+    throw error;
+  }
+};
+
 export const sendButtonsBaileys = async (
   whatsappId: number,
   phoneNumber: string,

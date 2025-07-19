@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
-import { initBaileys, getBaileys, sendMessageBaileys, sendButtonsBaileys, removeBaileys } from "../libs/baileys";
+import { initBaileys, getBaileys, sendMessageBaileys, sendButtonsBaileys, removeBaileys, getBaileysContacts } from "../libs/baileys";
 import ShowWhatsAppService from "../services/WhatsappService/ShowWhatsAppService";
 import { StartBaileysSession } from "../services/BaileysServices/StartBaileysSession";
+import ImportContactsBaileysService from "../services/BaileysServices/ImportContactsBaileysService";
 import AppError from "../errors/AppError";
 import { logger } from "../utils/logger";
 
@@ -268,6 +269,97 @@ export const baileysDisconnect = async (req: Request, res: Response): Promise<Re
   } catch (error) {
     logger.error("Error en baileysDisconnect:", error);
     throw new AppError("Error desconectando Baileys", 500);
+  }
+};
+
+export const baileysImportContacts = async (req: Request, res: Response): Promise<Response> => {
+  const { whatsappId } = req.params;
+  const { tenantId } = req.user;
+
+  try {
+    const whatsapp = await ShowWhatsAppService({
+      id: whatsappId,
+      tenantId,
+      isInternal: true
+    });
+
+    if (whatsapp.type !== "baileys") {
+      throw new AppError("Esta conexión no es de tipo Baileys", 400);
+    }
+
+    if (whatsapp.status !== "CONNECTED") {
+      throw new AppError("La sesión de Baileys no está conectada", 400);
+    }
+
+    // Importar contactos usando el servicio específico de Baileys
+    await ImportContactsBaileysService(tenantId, parseInt(whatsappId));
+
+    return res.status(200).json({
+      success: true,
+      message: "Importación de contactos de Baileys iniciada exitosamente"
+    });
+  } catch (error) {
+    logger.error("Error en baileysImportContacts:", error);
+    throw new AppError("Error importando contactos de Baileys", 500);
+  }
+};
+
+export const baileysTestContacts = async (req: Request, res: Response): Promise<Response> => {
+  const { whatsappId } = req.params;
+  const { tenantId } = req.user;
+
+  try {
+    const whatsapp = await ShowWhatsAppService({
+      id: whatsappId,
+      tenantId,
+      isInternal: true
+    });
+
+    if (whatsapp.type !== "baileys") {
+      throw new AppError("Esta conexión no es de tipo Baileys", 400);
+    }
+
+    if (whatsapp.status !== "CONNECTED") {
+      throw new AppError("La sesión de Baileys no está conectada", 400);
+    }
+
+    // Obtener información detallada de la sesión
+    const socket = getBaileys(parseInt(whatsappId));
+    
+    const debugInfo = {
+      whatsappId: parseInt(whatsappId),
+      status: whatsapp.status,
+      type: whatsapp.type,
+      socketExists: !!socket,
+      userInfo: socket?.user || null,
+      storeExists: !!socket?.store,
+      contactsInStore: socket?.store?.contacts ? Object.keys(socket.store.contacts).length : 0
+    };
+
+    // Intentar obtener contactos usando nuestra función
+    let contacts: any[] = [];
+    let error = null;
+    
+    try {
+      contacts = await getBaileysContacts(parseInt(whatsappId));
+    } catch (contactError) {
+      error = contactError.message;
+    }
+
+    return res.status(200).json({
+      success: true,
+      debugInfo,
+      contactsFound: contacts.length,
+      contacts: contacts.slice(0, 10), // Solo mostrar los primeros 10
+      error
+    });
+
+  } catch (error) {
+    logger.error("Error en baileysTestContacts:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 };
 

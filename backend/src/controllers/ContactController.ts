@@ -18,6 +18,7 @@ import AppError from "../errors/AppError";
 import UpdateContactWalletsService from "../services/ContactServices/UpdateContactWalletsService";
 import SyncContactsWhatsappInstanceService from "../services/WbotServices/SyncContactsWhatsappInstanceService";
 import Whatsapp from "../models/Whatsapp";
+import ImportContactsBaileysService from "../services/BaileysServices/ImportContactsBaileysService";
 import { ImportFileContactsService } from "../services/WbotServices/ImportFileContactsService";
 import Contact from "../models/Contact";
 
@@ -36,6 +37,13 @@ interface ContactData {
   email?: string;
   extraInfo?: ExtraInfo[];
   wallets?: null | number[] | string[];
+}
+
+interface SyncResult {
+  whatsappId: number;
+  type: string;
+  status: "success" | "error";
+  message: string;
 }
 
 export const index = async (req: Request, res: Response): Promise<Response> => {
@@ -181,33 +189,66 @@ export const syncContacts = async (
   res: Response
 ): Promise<Response> => {
   const { tenantId } = req.user;
-  const sessoes = await Whatsapp.findAll({
-    where: {
-      tenantId,
-      status: "CONNECTED",
-      type: "whatsapp"
-    }
-  });
-
-  if (!sessoes.length) {
-    throw new AppError(
-      "Não existem sessões ativas para sincronização dos contatos."
-    );
-  }
-
-  await Promise.all(
-    sessoes.map(async s => {
-      if (s.id) {
-        if (s.id) {
-          await SyncContactsWhatsappInstanceService(s.id, +tenantId);
-        }
+  
+  try {
+    const sessoes = await Whatsapp.findAll({
+      where: {
+        tenantId,
+        status: "CONNECTED"
       }
-    })
-  );
+    });
 
-  return res
-    .status(200)
-    .json({ message: "Contatos estão sendo sincronizados." });
+    if (!sessoes.length) {
+      throw new AppError(
+        "Não existem sessões ativas para sincronização dos contatos."
+      );
+    }
+
+    const results: SyncResult[] = [];
+    
+    for (const sessao of sessoes) {
+      try {
+        if (sessao.type === "whatsapp") {
+          await SyncContactsWhatsappInstanceService(sessao.id, +tenantId);
+          results.push({
+            whatsappId: sessao.id,
+            type: "whatsapp",
+            status: "success",
+            message: "Contactos sincronizados exitosamente"
+          });
+        } else if (sessao.type === "baileys") {
+          await ImportContactsBaileysService(tenantId, sessao.id);
+          results.push({
+            whatsappId: sessao.id,
+            type: "baileys",
+            status: "success", 
+            message: "Contactos importados desde Baileys exitosamente"
+          });
+        }
+      } catch (sessionError) {
+        console.error(`Error sincronizando sesión ${sessao.id}:`, sessionError);
+        results.push({
+          whatsappId: sessao.id,
+          type: sessao.type,
+          status: "error",
+          message: sessionError.message || "Error desconocido"
+        });
+      }
+    }
+
+    const successCount = results.filter(r => r.status === "success").length;
+    const errorCount = results.filter(r => r.status === "error").length;
+    
+    return res.status(200).json({ 
+      message: `Sincronización completada. Éxitos: ${successCount}, Errores: ${errorCount}`,
+      results,
+      success: successCount > 0
+    });
+
+  } catch (error) {
+    console.error("Error en syncContacts:", error);
+    throw new AppError(error.message || "Error sincronizando contactos");
+  }
 };
 
 export const upload = async (req: Request, res: Response) => {

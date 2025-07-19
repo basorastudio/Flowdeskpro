@@ -4,3 +4,10 @@ declare namespace NodeJS {
     rabbitWhatsapp: any;
   }
 }
+
+// Extender interfaces de whatsapp-web.js para compatibilidad
+declare module "whatsapp-web.js" {
+  interface Location {
+    options?: string;
+  }
+}

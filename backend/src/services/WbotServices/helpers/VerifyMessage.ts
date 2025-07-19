@@ -5,8 +5,10 @@ import CreateMessageService from "../../MessageServices/CreateMessageService";
 import VerifyQuotedMessage from "./VerifyQuotedMessage";
 
 const prepareLocation = (msg: WbotMessage): WbotMessage => {
-  const gmapsUrl = `https://maps.google.com/maps?q=${msg.location.latitude}%2C${msg.location.longitude}&z=17`;
-  msg.body = `${gmapsUrl}`;
+  if (msg.location) {
+    const gmapsUrl = `https://maps.google.com/maps?q=${msg.location.latitude}%2C${msg.location.longitude}&z=17`;
+    msg.body = `${gmapsUrl}`;
+  }
   return msg;
 };
 
@@ -35,7 +37,7 @@ const VerifyMessage = async (
   await ticket.update({
     lastMessage:
       msg.type === "location"
-        ? msg.location.options
+        ? msg.location?.options
           ? `Localization - ${msg.location.options}`
           : "Localization"
         : msg.body

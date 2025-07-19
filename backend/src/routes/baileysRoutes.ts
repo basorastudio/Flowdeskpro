@@ -47,6 +47,18 @@ baileysRoutes.post(
   BaileysController.baileysDisconnect
 );
 
+baileysRoutes.post(
+  "/baileys/:whatsappId/import-contacts",
+  isAuth,
+  BaileysController.baileysImportContacts
+);
+
+baileysRoutes.get(
+  "/baileys/:whatsappId/test-contacts",
+  isAuth,
+  BaileysController.baileysTestContacts
+);
+
 baileysRoutes.get(
   "/baileys/docs",
   BaileysController.baileysDocs
